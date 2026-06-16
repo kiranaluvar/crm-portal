@@ -9,7 +9,6 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased overflow-hidden selection:bg-blue-500 selection:text-white">
 
-    <!-- CLUSTER PROTECTION AUTHENTICATION GATEWAY -->
     <div id="authScreen" class="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center z-50 p-4 transition-all duration-300">
         <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl max-w-md w-full shadow-2xl text-center">
             <div class="h-12 w-12 rounded-xl bg-blue-600/10 flex items-center justify-center mx-auto mb-4 border border-blue-500/20">
@@ -24,10 +23,8 @@
         </div>
     </div>
 
-    <!-- MAIN CRM CORE WRAPPER CONTAINER -->
     <div id="mainDashboard" class="hidden flex h-screen w-screen overflow-hidden">
         
-        <!-- SIDE NAVIGATION BAR PANEL -->
         <aside class="w-64 bg-slate-950 border-r border-slate-800 p-5 flex flex-col justify-between h-full flex-shrink-0 z-40">
             <div>
                 <div class="flex items-center space-x-2 mb-6">
@@ -63,16 +60,12 @@
             </div>
         </aside>
 
-        <!-- DASHBOARD CONTAINER PANEL -->
         <main class="flex-1 bg-slate-900 h-full overflow-hidden relative flex flex-col">
             
-            <!-- ACCOUNTS DASHBOARD TAB CONSOLE -->
             <div id="log-tab" class="tab-content flex-1 flex overflow-hidden h-full">
                 
-                <!-- LEFT SIDEBAR SECTION WORKSPACE: GRID CONTROL BAR AND TABLE RECORD LIST -->
                 <div class="flex-1 flex flex-col p-6 overflow-y-auto space-y-4 h-full">
                     
-                    <!-- HIGH-SPEED SALESFORCE DESIGN DATA CREATION LAYER -->
                     <div class="bg-slate-950 border border-slate-800 p-5 rounded-xl shadow-lg">
                         <details class="group">
                             <summary class="list-none flex items-center justify-between cursor-pointer select-none text-xs font-bold text-slate-400 uppercase tracking-widest">
@@ -156,7 +149,6 @@
                         </details>
                     </div>
 
-                    <!-- CONTROL UTILITY BAR PANEL FOR SEARCH AND MULTI-FILTER CRITERIA -->
                     <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex flex-wrap gap-2 items-center justify-between">
                         <div class="flex flex-wrap gap-2 flex-1 max-w-4xl">
                             <input type="text" id="filterSearch" oninput="executeDataGridFilters()" placeholder="🔍 Quick Find by Name or Email..." class="bg-slate-900 border border-slate-800 text-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500 w-48 flex-shrink-0">
@@ -187,7 +179,6 @@
                         </button>
                     </div>
 
-                    <!-- CENTRAL CONSOLE COMPACT DATA GRID VIEW TABLE -->
                     <div class="bg-slate-950 border border-slate-800 rounded-xl shadow-xl overflow-hidden flex-1 min-h-[300px]">
                         <div class="h-full overflow-y-auto">
                             <table class="w-full text-left border-collapse table-fixed">
@@ -209,7 +200,6 @@
                     </div>
                 </div>
 
-                <!-- CONTEXTUAL CONSOLE SLIDE DRAWER (SALESFORCE SIDEBAR VIEW MODULE) -->
                 <div id="contextDrawer" class="w-96 bg-slate-950 border-l border-slate-800 h-full flex flex-col transform translate-x-0 transition-transform duration-200 shadow-2xl flex-shrink-0">
                     <div id="drawerEmptyState" class="flex-1 flex flex-col items-center justify-center p-6 text-center text-slate-500">
                         <span class="text-3xl mb-2">👈</span>
@@ -225,7 +215,6 @@
                             <button onclick="closeWorkspaceDrawer()" class="text-slate-500 hover:text-slate-300 font-bold p-1 text-sm">✕</button>
                         </div>
                         <div class="flex-1 overflow-y-auto p-4 space-y-4">
-                            <!-- Block 1: Status Processing Action Layer -->
                             <div class="bg-slate-900/60 border border-slate-800/80 p-3 rounded-lg space-y-2">
                                 <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Modify Record Status</label>
                                 <select id="drawerStatusSelect" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-white focus:outline-none focus:border-blue-500">
@@ -242,7 +231,6 @@
                                     Save Operational Stage Change
                                 </button>
                             </div>
-                            <!-- Block 2: Complete Metadata Matrix Info -->
                             <div class="space-y-3">
                                 <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-1">Primary Contacts</h4>
                                 <div class="grid grid-cols-2 gap-2 text-[11px]">
@@ -274,31 +262,52 @@
 
             </div>
 
-            <!-- AUDIT TAB CONTAINER -->
-            <div id="audit-tab" class="tab-content hidden flex-1 flex flex-col p-6 overflow-hidden h-full">
-                <div class="mb-3">
+            <div id="audit-tab" class="tab-content hidden flex-1 flex flex-col p-6 overflow-hidden h-full space-y-4">
+                <div>
                     <h2 class="text-base font-bold text-white">Cloud Node System Log Trail</h2>
                     <p class="text-slate-400 text-xs">Chronological stream tracking unalterable pipeline modification events</p>
                 </div>
+                
+                <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex flex-wrap gap-2 items-center">
+                    <input type="text" id="auditFilterUser" oninput="applyAuditLogInterfaceFilters()" placeholder="🔍 Search by Operator Email..." class="bg-slate-900 border border-slate-800 text-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500 w-56">
+                    <input type="date" id="auditFilterDate" onchange="applyAuditLogInterfaceFilters()" class="bg-slate-900 border border-slate-800 text-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500">
+                    <select id="auditFilterStage" onchange="applyAuditLogInterfaceFilters()" class="bg-slate-900 border border-slate-800 text-slate-300 rounded-lg p-1.5 text-xs focus:outline-none">
+                        <option value="">All Transition Stages</option>
+                        <option value="New Lead">New Lead</option>
+                        <option value="Contacted">Contacted</option>
+                        <option value="Webinar Agreed">Webinar Agreed</option>
+                        <option value="Not Interested">Not Interested</option>
+                    </select>
+                </div>
+
                 <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-[11px] text-emerald-400 space-y-1.5 flex-1 overflow-y-auto shadow-inner" id="auditTerminal"></div>
             </div>
 
-            <!-- ANALYTICS TAB CONTAINER -->
-            <div id="analytics-tab" class="tab-content hidden flex-1 flex flex-col p-6 overflow-y-auto space-y-4 h-full">
+            <div id="analytics-tab" class="tab-content hidden flex-1 flex flex-col p-6 overflow-y-auto space-y-6 h-full">
                 <div>
                     <h2 class="text-base font-bold text-white">Live Funnel Data Modeling</h2>
                     <p class="text-slate-400 text-xs">Real-time pipeline volume allocation metric mapping infrastructure</p>
                 </div>
-                <div class="bg-slate-950 border border-slate-800 p-5 rounded-xl shadow-xl max-w-sm">
-                    <h3 class="text-xs font-bold text-slate-300 mb-3">Pipeline Status Volume Weight</h3>
-                    <div class="h-48"><canvas id="pipelineChart"></canvas></div>
+                
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                    <div class="bg-slate-950 border border-slate-800 p-5 rounded-xl shadow-xl flex flex-col h-80">
+                        <h3 class="text-xs font-bold text-slate-300 mb-3 uppercase tracking-wider text-center">Pipeline Volume Weight (By Stage)</h3>
+                        <div class="flex-1 relative"><canvas id="pipelineChart"></canvas></div>
+                    </div>
+                    <div class="bg-slate-950 border border-slate-800 p-5 rounded-xl shadow-xl flex flex-col h-80">
+                        <h3 class="text-xs font-bold text-slate-300 mb-3 uppercase tracking-wider text-center">Daily Scouting Output (Day-Wise Trend)</h3>
+                        <div class="flex-1 relative"><canvas id="scoutsDayChart"></canvas></div>
+                    </div>
+                    <div class="bg-slate-950 border border-slate-800 p-5 rounded-xl shadow-xl flex flex-col h-80">
+                        <h3 class="text-xs font-bold text-slate-300 mb-3 uppercase tracking-wider text-center">Operational Velocity (Hour-Wise Peaks)</h3>
+                        <div class="flex-1 relative"><canvas id="scoutsHourChart"></canvas></div>
+                    </div>
                 </div>
             </div>
 
         </main>
     </div>
 
-    <!-- MAIN APP CONTROLLER MODULE ENGINE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -323,8 +332,14 @@
         provider.setCustomParameters({ prompt: 'select_account' });
 
         let localLeadsArray = [];
+        let localAuditLogsArray = [];
         let selectedRecordId = null;
+        
+        // Chart reference nodes
         let pipelineChartInstance = null;
+        let scoutsDayChartInstance = null;
+        let scoutsHourChartInstance = null;
+        
         let unsubscribeLeads = null;
         let unsubscribeLogs = null;
 
@@ -390,14 +405,6 @@
             if (unsubscribeLeads) unsubscribeLeads();
             if (unsubscribeLogs) unsubscribeLogs();
 
-            const terminal = document.getElementById('auditTerminal');
-            const parseDocumentTimestamp = (ts) => {
-                if (!ts) return new Date().toLocaleTimeString();
-                if (typeof ts.toDate === 'function') return new Date(ts.toDate()).toLocaleTimeString();
-                if (ts.seconds) return new Date(ts.seconds * 1000).toLocaleTimeString();
-                return new Date(ts).toLocaleTimeString();
-            };
-
             unsubscribeLeads = onSnapshot(query(collection(db, "leads"), orderBy("timestamp", "desc")), (snapshot) => {
                 localLeadsArray = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
                 populateScouterFilterOptions();
@@ -405,13 +412,17 @@
                 if(selectedRecordId) loadWorkspaceDrawerRecord(selectedRecordId);
             }, err => console.error("Pipeline Sync Error:", err));
 
+            // Upgraded log engine cache array map
             unsubscribeLogs = onSnapshot(query(collection(db, "audit_logs"), orderBy("timestamp", "desc")), (snapshot) => {
-                if (!terminal) return;
-                terminal.innerHTML = '';
-                snapshot.docs.forEach((docSnapshot) => {
-                    const log = docSnapshot.data();
-                    terminal.innerHTML += `<p class="py-0.5 font-mono"><span class="text-slate-600">[${parseDocumentTimestamp(log.timestamp)}]</span> <span class="text-emerald-400">${log.logText || 'Mutation Event Evaluated.'}</span></p>`;
+                localAuditLogsArray = snapshot.docs.map(d => {
+                    const data = d.data();
+                    let dateObj = new Date();
+                    if(data.timestamp) {
+                        dateObj = typeof data.timestamp.toDate === 'function' ? data.timestamp.toDate() : new Date(data.timestamp.seconds * 1000);
+                    }
+                    return { ...data, id: d.id, dateObject: dateObj };
                 });
+                applyAuditLogInterfaceFilters();
             }, err => console.error("Logging Error:", err));
         }
 
@@ -473,7 +484,6 @@
                     inlineWebinarPayload = `<span class="text-[10px] text-emerald-500 font-mono ml-2">(${lead.webinarDate})</span>`;
                 }
 
-                // Process the connection date safely
                 const displayDate = lead.addedDateTimeString ? lead.addedDateTimeString.split(',')[0] : 'N/A';
 
                 const tr = document.createElement('tr');
@@ -524,6 +534,8 @@
             document.getElementById('dEmailId2').innerText = lead.emailId2 || 'N/A';
             document.getElementById('dProgram').innerText = lead.scoutedFor || 'Other';
             document.getElementById('dScouter').innerText = lead.operator || 'System Log';
+            
+            // Critical fix: Ensure latest timestamp string displays correctly
             document.getElementById('dCreatedTime').innerText = lead.addedDateTimeString || 'N/A';
 
             const linkElement = document.getElementById('dLinks');
@@ -616,7 +628,9 @@
 
             addDoc(collection(db, "leads"), targetPayload).then(() => {
                 return addDoc(collection(db, "audit_logs"), {
-                    logText: `Operator [${operator}] scouted & created institutional entry: '${schoolName}' (${uniqueId})`,
+                    operator: operator,
+                    targetStage: status,
+                    logText: `Operator [${operator}] scouted & created institutional entry: '${schoolName}' (${uniqueId}) as [${status}]`,
                     timestamp: serverTimestamp()
                 });
             }).then(() => {
@@ -630,17 +644,66 @@
             });
         };
 
+        // FIXED: Updating status records now modifies the live connection timestamps!
         function executeStatusUpdate(id, schoolName, oldStatus, newStatus, targetWebinarDate) {
             const operator = auth.currentUser.email;
-            const updates = { status: newStatus, webinarDate: targetWebinarDate };
+            
+            // Refreshes the temporal tracking context metrics inside the record object
+            const updates = { 
+                status: newStatus, 
+                webinarDate: targetWebinarDate,
+                addedDateTimeString: new Date().toLocaleString(), 
+                timestamp: serverTimestamp() 
+            };
 
             updateDoc(doc(db, "leads", id), updates).then(() => {
                 return addDoc(collection(db, "audit_logs"), {
+                    operator: operator,
+                    targetStage: newStatus,
                     logText: `Operator [${operator}] modified pipeline stage of '${schoolName || 'Institution'}' from [${oldStatus}] to [${newStatus}] ${targetWebinarDate ? '(Webinar: ' + targetWebinarDate + ')' : ''}`,
                     timestamp: serverTimestamp()
                 });
             }).catch(err => alert("Mutation Interrupted: " + err.message));
         }
+
+        // NEW: MULTI-PARAM FILTER SEARCH CONTROLLER FOR AUDIT STREAM
+        window.applyAuditLogInterfaceFilters = function() {
+            const terminal = document.getElementById('auditTerminal');
+            if(!terminal) return;
+
+            const userFilter = document.getElementById('auditFilterUser').value.toLowerCase().trim();
+            const dateFilter = document.getElementById('auditFilterDate').value; 
+            const stageFilter = document.getElementById('auditFilterStage').value;
+
+            terminal.innerHTML = '';
+
+            let filteredLogs = localAuditLogsArray.filter(log => {
+                const logUser = log.operator || '';
+                const logStage = log.targetStage || '';
+                
+                const matchesUser = !userFilter || logUser.toLowerCase().includes(userFilter);
+                const matchesStage = !stageFilter || logStage === stageFilter;
+                
+                let matchesDate = true;
+                if(dateFilter && log.dateObject) {
+                    const localISOString = log.dateObject.toLocaleDateString('en-CA'); // Outputs format YYYY-MM-DD safely
+                    matchesDate = (localISOString === dateFilter);
+                }
+
+                return matchesUser && matchesStage && matchesDate;
+            });
+
+            if(filteredLogs.length === 0) {
+                terminal.innerHTML = '<p class="text-slate-600 italic">No historical tracking records matched current audit matrix parameter configurations.</p>';
+                return;
+            }
+
+            filteredLogs.forEach(log => {
+                const displayTime = log.dateObject ? log.dateObject.toLocaleTimeString() : 'N/A';
+                const displayDate = log.dateObject ? log.dateObject.toLocaleDateString() : 'N/A';
+                terminal.innerHTML += `<p class="py-0.5 font-mono"><span class="text-slate-600">[${displayDate} ${displayTime}]</span> <span class="text-emerald-400">${log.logText || 'System Mutation Verified.'}</span></p>`;
+            });
+        };
 
         window.exportDatabaseToCSV = function() {
             if (auth.currentUser.email.toLowerCase() !== SUPER_ADMIN_EMAIL.toLowerCase()) return;
@@ -667,26 +730,116 @@
             if (tabId === 'analytics-tab') generateChartAnalytics();
         };
 
+        // NEW: FULL THREE-CHART DATA MODELING PLATFORM ENGINE
         function generateChartAnalytics() {
-            const metrics = { 'New Lead': 0, 'Contacted': 0, 'Webinar Agreed': 0, 'Not Interested': 0 };
-            localLeadsArray.forEach(l => metrics[l.status] = (metrics[l.status] || 0) + 1);
+            // Chart 1 processing: Stages Breakdown
+            const stageMetrics = { 'New Lead': 0, 'Contacted': 0, 'Webinar Agreed': 0, 'Not Interested': 0 };
             
-            const ctx = document.getElementById('pipelineChart').getContext('2d');
+            // Chart 2 processing: Day-wise output tracking
+            const dayMetrics = {};
+            
+            // Chart 3 processing: Hour-wise distribution
+            const hourMetrics = Array(24).fill(0);
+
+            localLeadsArray.forEach(lead => {
+                // Pipeline count tracking
+                if(stageMetrics[lead.status] !== undefined) {
+                    stageMetrics[lead.status]++;
+                }
+
+                // Sift through time components
+                if(lead.addedDateTimeString) {
+                    const components = lead.addedDateTimeString.split(',');
+                    const datePart = components[0].trim(); // Formats as 'MM/DD/YYYY' or 'DD/MM/YYYY' based on browser locale context
+                    dayMetrics[datePart] = (dayMetrics[datePart] || 0) + 1;
+
+                    if(components[1]) {
+                        // Extract hour index safely
+                        const timePart = components[1].trim();
+                        const matchingHour = timePart.match(/^(\d+)/);
+                        if(matchingHour) {
+                            let hr = parseInt(matchingHour[1]);
+                            if(timePart.toLowerCase().includes('pm') && hr !== 12) hr += 12;
+                            if(timePart.toLowerCase().includes('am') && hr === 12) hr = 0;
+                            hourMetrics[hr]++;
+                        }
+                    }
+                }
+            });
+
+            // Re-render Chart 1: Pipeline Status Volume
+            const ctx1 = document.getElementById('pipelineChart').getContext('2d');
             if (pipelineChartInstance) pipelineChartInstance.destroy();
-            
-            pipelineChartInstance = new Chart(ctx, {
+            pipelineChartInstance = new Chart(ctx1, {
                 type: 'pie',
                 data: {
-                    labels: Object.keys(metrics),
+                    labels: Object.keys(stageMetrics),
                     datasets: [{
-                        data: Object.values(metrics),
+                        data: Object.values(stageMetrics),
                         backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#475569'],
                         borderWidth: 2,
                         borderColor: '#0f172a'
                     }]
                 },
                 options: {
-                    plugins: { legend: { labels: { color: '#94a3b8', font: { family: 'sans-serif', size: 10 } } } },
+                    plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10 } } } },
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Render Chart 2: Day-wise Scouting Outputs
+            const sortedDates = Object.keys(dayMetrics).sort((a,b) => new Date(a) - new Date(b)).slice(-7); // Slice the last 7 active logging days
+            const dayValues = sortedDates.map(d => dayMetrics[d]);
+
+            const ctx2 = document.getElementById('scoutsDayChart').getContext('2d');
+            if (scoutsDayChartInstance) scoutsDayChartInstance.destroy();
+            scoutsDayChartInstance = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: sortedDates,
+                    datasets: [{
+                        label: 'Accounts Created',
+                        data: dayValues,
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: { ticks: { color: '#94a3b8', font: { size: 9 } }, grid: { display: false } },
+                        y: { ticks: { color: '#94a3b8', font: { size: 9 }, stepSize: 1 }, grid: { color: '#1e293b' } }
+                    },
+                    plugins: { legend: { display: false } },
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Render Chart 3: Hour-wise Pipeline Traffic Density
+            const hourLabels = Array.from({length: 24}, (_, i) => `${i}:00`);
+            const ctx3 = document.getElementById('scoutsHourChart').getContext('2d');
+            if (scoutsHourChartInstance) scoutsHourChartInstance.destroy();
+            scoutsHourChartInstance = new Chart(ctx3, {
+                type: 'line',
+                data: {
+                    labels: hourLabels,
+                    datasets: [{
+                        label: 'Activity Concentration',
+                        data: hourMetrics,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: { ticks: { color: '#94a3b8', font: { size: 8 } }, grid: { display: false } },
+                        y: { ticks: { color: '#94a3b8', font: { size: 9 }, stepSize: 1 }, grid: { color: '#1e293b' } }
+                    },
+                    plugins: { legend: { display: false } },
                     responsive: true,
                     maintainAspectRatio: false
                 }
