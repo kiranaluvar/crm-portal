@@ -9,6 +9,7 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased overflow-hidden selection:bg-blue-500 selection:text-white">
 
+    <!-- CLUSTER PROTECTION AUTHENTICATION GATEWAY -->
     <div id="authScreen" class="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center z-50 p-4 transition-all duration-300">
         <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl max-w-md w-full shadow-2xl text-center">
             <div class="h-12 w-12 rounded-xl bg-blue-600/10 flex items-center justify-center mx-auto mb-4 border border-blue-500/20">
@@ -23,8 +24,10 @@
         </div>
     </div>
 
+    <!-- MAIN CRM CORE WRAPPER CONTAINER -->
     <div id="mainDashboard" class="hidden flex h-screen w-screen overflow-hidden">
         
+        <!-- SIDE NAVIGATION BAR PANEL -->
         <aside class="w-64 bg-slate-950 border-r border-slate-800 p-5 flex flex-col justify-between h-full flex-shrink-0 z-40">
             <div>
                 <div class="flex items-center space-x-2 mb-6">
@@ -38,6 +41,9 @@
                     <button onclick="switchTab('log-tab')" id="btn-log-tab" class="w-full text-left px-3 py-2.5 rounded-lg bg-blue-600 text-white font-medium text-xs transition flex items-center space-x-3">
                         <span>📝</span> <span>Accounts Console</span>
                     </button>
+                    <button onclick="switchTab('tasks-tab')" id="btn-tasks-tab" class="w-full text-left px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-900 hover:text-slate-200 font-medium text-xs transition flex items-center space-x-3">
+                        <span>📅</span> <span>Task Center Loop</span>
+                    </button>
                     <button onclick="switchTab('audit-tab')" id="btn-audit-tab" class="w-full text-left px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-900 hover:text-slate-200 font-medium text-xs transition flex items-center space-x-3">
                         <span>📜</span> <span>Audit Stream</span>
                     </button>
@@ -48,6 +54,7 @@
             </div>
             
             <div class="pt-4 border-t border-slate-800 space-y-4">
+                <!-- WORKFLOW TASK COUNTER FOR SCOUTERS -->
                 <div class="bg-blue-950/30 border border-blue-900/40 rounded-xl p-3 text-center">
                     <span class="text-[10px] text-blue-400 font-mono uppercase tracking-wider block mb-1">My Tasks Due Today</span>
                     <span id="sidebarTaskCount" class="text-2xl font-black text-white font-mono">0</span>
@@ -67,12 +74,15 @@
             </div>
         </aside>
 
+        <!-- DASHBOARD CONTAINER PANEL -->
         <main class="flex-1 bg-slate-900 h-full overflow-hidden relative flex flex-col">
             
+            <!-- ACCOUNTS DASHBOARD TAB CONSOLE -->
             <div id="log-tab" class="tab-content flex-1 flex overflow-hidden h-full">
-                
+                <!-- LEFT SIDEBAR SECTION WORKSPACE -->
                 <div class="flex-1 flex flex-col p-6 overflow-y-auto space-y-4 h-full">
                     
+                    <!-- DYNAMIC DATA CREATION LAYER -->
                     <div class="bg-slate-950 border border-slate-800 p-5 rounded-xl shadow-lg">
                         <details class="group">
                             <summary class="list-none flex items-center justify-between cursor-pointer select-none text-xs font-bold text-slate-400 uppercase tracking-widest">
@@ -146,10 +156,7 @@
                                         <label class="block text-[11px] font-semibold text-emerald-400 mb-1">Webinar Target Date *</label>
                                         <input type="date" id="webinarDate" class="w-full bg-slate-900 border border-emerald-900/40 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-emerald-500 transition">
                                     </div>
-                                    <div>
-                                        <label class="block text-[11px] font-semibold text-blue-400 mb-1">Next Follow-up Call Date</label>
-                                        <input type="date" id="nextFollowUpDate" class="w-full bg-slate-900 border border-blue-900/40 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition">
-                                    </div>
+                                    <div class="md:col-span-2"></div>
                                     <div class="md:col-span-3 pt-2">
                                         <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold p-2.5 rounded-lg transition text-xs shadow-md shadow-blue-600/10 active:scale-[0.98]">
                                             Commit Account Record
@@ -160,9 +167,10 @@
                         </details>
                     </div>
 
+                    <!-- CONTROL UTILITY BAR PANEL -->
                     <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex flex-wrap gap-2 items-center justify-between">
                         <div class="flex flex-wrap gap-2 flex-1 max-w-5xl">
-                            <input type="text" id="filterSearch" oninput="executeDataGridFilters()" placeholder="🔍 Quick Find by Name or Email..." class="bg-slate-900 border border-slate-800 text-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500 w-48 flex-shrink-0">
+                            <input type="text" id="filterSearch" oninput="executeDataGridFilters()" placeholder="🔍 Quick Find by Name..." class="bg-slate-900 border border-slate-800 text-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500 w-48 flex-shrink-0">
                             <select id="filterStage" onchange="executeDataGridFilters()" class="bg-slate-900 border border-slate-800 text-slate-300 rounded-lg p-1.5 text-xs focus:outline-none">
                                 <option value="">All Stages</option>
                                 <option value="New Lead">New Lead</option>
@@ -180,28 +188,25 @@
                             <select id="filterScouter" onchange="executeDataGridFilters()" class="bg-slate-900 border border-slate-800 text-slate-300 rounded-lg p-1.5 text-xs focus:outline-none">
                                 <option value="">All Lead Owners</option>
                             </select>
-                            <select id="filterTaskDue" onchange="executeDataGridFilters()" class="bg-slate-900 border border-blue-900 text-blue-400 rounded-lg p-1.5 text-xs focus:outline-none font-semibold">
-                                <option value="">All Deadlines</option>
-                                <option value="today">Tasks Due Today</option>
-                            </select>
                             <select id="filterDateSort" onchange="executeDataGridFilters()" class="bg-slate-900 border border-slate-800 text-slate-300 rounded-lg p-1.5 text-xs focus:outline-none">
                                 <option value="desc">Newest Connected</option>
                                 <option value="asc">Oldest Connected</option>
                             </select>
                         </div>
                         <button id="adminExportBtn" onclick="exportDatabaseToCSV()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition flex items-center space-x-1">
-                            <span>📥</span> <span>Export Master CSV</span>
+                            <span>📥</span> <span>Export CSV</span>
                         </button>
                     </div>
 
+                    <!-- CENTRAL DATA GRID VIEW TABLE -->
                     <div class="bg-slate-950 border border-slate-800 rounded-xl shadow-xl overflow-hidden flex-1 min-h-[300px]">
                         <div class="h-full overflow-y-auto">
                             <table class="w-full text-left border-collapse table-fixed">
                                 <thead class="sticky top-0 bg-slate-950 z-10 border-b border-slate-800">
                                     <tr class="text-slate-400 text-[10px] uppercase tracking-wider font-bold">
-                                        <th class="p-3 pl-4 w-[28%]">Target Institution Profile</th>
-                                        <th class="p-3 w-[22%]">Course / Owner</th>
-                                        <th class="p-3 w-[25%]">Last Connected</th>
+                                        <th class="p-3 pl-4 w-[30%]">Target Institution Profile</th>
+                                        <th class="p-3 w-[25%]">Course / Owner</th>
+                                        <th class="p-3 w-[20%]">Last Sync</th>
                                         <th class="p-3 w-[25%] pr-4">Pipeline Stage Status</th>
                                     </tr>
                                 </thead>
@@ -215,11 +220,11 @@
                     </div>
                 </div>
 
+                <!-- CONTEXTUAL CONSOLE SLIDE DRAWER -->
                 <div id="contextDrawer" class="w-96 bg-slate-950 border-l border-slate-800 h-full flex flex-col transform translate-x-0 transition-transform duration-200 shadow-2xl flex-shrink-0">
                     <div id="drawerEmptyState" class="flex-1 flex flex-col items-center justify-center p-6 text-center text-slate-500">
                         <span class="text-3xl mb-2">👈</span>
                         <p class="text-xs font-semibold">Select an Institutional Account Row</p>
-                        <p class="text-[11px] text-slate-600 mt-1">Review complex records, tracking parameters, and modify operational pipelines directly inside this workspace interface block.</p>
                     </div>
                     <div id="drawerActiveState" class="hidden flex-1 flex flex-col h-full overflow-hidden">
                         <div class="p-4 border-b border-slate-800 bg-slate-900/40 flex items-center justify-between">
@@ -230,8 +235,9 @@
                             <button onclick="closeWorkspaceDrawer()" class="text-slate-500 hover:text-slate-300 font-bold p-1 text-sm">✕</button>
                         </div>
                         <div class="flex-1 overflow-y-auto p-4 space-y-4">
+                            <!-- Status Processing Action Layer -->
                             <div class="bg-slate-900/60 border border-slate-800/80 p-3 rounded-lg space-y-2">
-                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Modify Record Status</label>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Modify Pipeline Stage</label>
                                 <select id="drawerStatusSelect" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-white focus:outline-none focus:border-blue-500">
                                     <option value="New Lead">New Lead</option>
                                     <option value="Contacted">Contacted</option>
@@ -242,15 +248,16 @@
                                     <label class="block text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Confirmed Webinar Date *</label>
                                     <input type="date" id="drawerWebinarDateInput" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-white">
                                 </div>
-                                <div class="space-y-1">
-                                    <label class="block text-[10px] font-bold text-blue-400 uppercase tracking-wider">Schedule Next Connect (Task)</label>
+                                <div id="drawerFollowUpWrapper" class="hidden space-y-1">
+                                    <label class="block text-[10px] font-bold text-amber-400 uppercase tracking-wider">Schedule Next Call Loop *</label>
                                     <input type="date" id="drawerNextFollowUpInput" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-white focus:outline-none focus:border-blue-500">
                                 </div>
                                 <button id="drawerSaveBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-1.5 rounded text-xs transition pt-2">
-                                    Save Operational Stage Change
+                                    Commit Stage Change
                                 </button>
                             </div>
                             
+                            <!-- Complete Metadata Matrix Info -->
                             <div class="space-y-3">
                                 <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-1">Primary Contacts</h4>
                                 <div class="grid grid-cols-2 gap-2 text-[11px]">
@@ -259,79 +266,85 @@
                                     <div class="col-span-2"><span class="text-slate-500 block">Primary Mobile:</span><span class="text-slate-200 font-mono block" id="dContactNo">N/A</span></div>
                                     <div class="col-span-2"><span class="text-slate-500 block">Primary Email:</span><span class="text-slate-200 font-mono block truncate" id="dEmailId">N/A</span></div>
                                 </div>
-                                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-1 pt-2">Secondary Contacts</h4>
-                                <div class="grid grid-cols-1 gap-2 text-[11px]">
-                                    <div><span class="text-slate-500 block">Secondary Phone:</span><span class="text-slate-300 font-mono block" id="dContactNo2">N/A</span></div>
-                                    <div><span class="text-slate-500 block">Secondary Email:</span><span class="text-slate-300 font-mono block truncate" id="dEmailId2">N/A</span></div>
-                                </div>
-                                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-1 pt-2">System Tracking Audit Fields</h4>
-                                <div class="grid grid-cols-1 gap-2 text-[11px]">
-                                    <div><span class="text-slate-500 block">Allocated Course:</span><span class="text-blue-400 font-semibold block" id="dProgram">Math</span></div>
-                                    <div><span class="text-slate-500 block">Lead Owner (Scouter):</span><span class="text-slate-300 block truncate font-semibold" id="dScouter">N/A</span></div>
-                                    <div><span class="text-slate-500 block">Last Connected Timestamp:</span><span class="text-amber-400 font-mono block text-[11px] font-semibold" id="dCreatedTime">N/A</span></div>
-                                    <div><span class="text-blue-400 block font-bold">Planned Task Action Date:</span><span class="text-slate-100 font-mono block text-[11px]" id="dNextTaskDate">None Scheduled</span></div>
-                                    <div>
-                                        <span class="text-slate-500 block mb-0.5">Referral Links:</span>
-                                        <a id="dLinks" href="#" target="_blank" class="text-blue-400 hover:underline font-medium text-xs hidden">Open Reference Link External URL</a>
-                                        <span id="dLinksNone" class="text-slate-600 italic block">No related link logs found.</span>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
             </div>
 
-            <div id="audit-tab" class="tab-content hidden flex-1 flex flex-col p-6 overflow-hidden h-full space-y-4">
+            <!-- DEDICATED SEPARATE TAB: TASK CENTER LOOP MAPPING -->
+            <div id="tasks-tab" class="tab-content hidden flex-1 flex flex-col p-6 overflow-hidden h-full space-y-4">
                 <div>
-                    <h2 class="text-base font-bold text-white">Cloud Node System Log Trail</h2>
-                    <p class="text-slate-400 text-xs">Chronological stream tracking unalterable pipeline modification events</p>
+                    <h2 class="text-base font-bold text-white">Task Operational Center</h2>
+                    <p class="text-slate-400 text-xs">Manage pending interactions. The execution engine enforces a non-terminal communication loop until a lead is finalized.</p>
                 </div>
                 
-                <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex flex-wrap gap-2 items-center">
-                    <input type="text" id="auditFilterUser" oninput="applyAuditLogInterfaceFilters()" placeholder="🔍 Search by Operator Email..." class="bg-slate-900 border border-slate-800 text-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500 w-56">
-                    <input type="date" id="auditFilterDate" onchange="applyAuditLogInterfaceFilters()" class="bg-slate-900 border border-slate-800 text-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500">
-                    <select id="auditFilterStage" onchange="applyAuditLogInterfaceFilters()" class="bg-slate-900 border border-slate-800 text-slate-300 rounded-lg p-1.5 text-xs focus:outline-none">
-                        <option value="">All Transition Stages</option>
-                        <option value="New Lead">New Lead</option>
-                        <option value="Contacted">Contacted</option>
-                        <option value="Webinar Agreed">Webinar Agreed</option>
-                        <option value="Not Interested">Not Interested</option>
-                    </select>
+                <!-- ADVANCED FILTER CONTROLS FOR THE TASK CENTER -->
+                <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex flex-wrap gap-3 items-center">
+                    <div class="flex flex-col">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase mb-1">Filter Institution Name</label>
+                        <input type="text" id="taskFilterName" oninput="renderTaskCenterConsole()" placeholder="🔍 Search School..." class="bg-slate-900 border border-slate-800 text-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500 w-48">
+                    </div>
+                    <div class="flex flex-col">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase mb-1">Due Date Range Start</label>
+                        <input type="date" id="taskFilterDateStart" onchange="renderTaskCenterConsole()" class="bg-slate-900 border border-slate-800 text-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none">
+                    </div>
+                    <div class="flex flex-col">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase mb-1">Due Date Range End</label>
+                        <input type="date" id="taskFilterDateEnd" onchange="renderTaskCenterConsole()" class="bg-slate-900 border border-slate-800 text-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none">
+                    </div>
+                    <div class="flex flex-col">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase mb-1">Task Pipeline Status</label>
+                        <select id="taskFilterStatus" onchange="renderTaskCenterConsole()" class="bg-slate-900 border border-slate-800 text-slate-300 rounded-lg p-1.5 text-xs focus:outline-none">
+                            <option value="Pending">Pending Actions</option>
+                            <option value="Completed">Completed History</option>
+                            <option value="All">All Structural Records</option>
+                        </select>
+                    </div>
                 </div>
 
+                <!-- MAIN INTERACTION TASKING GRID -->
+                <div class="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden flex-1 shadow-2xl">
+                    <div class="h-full overflow-y-auto">
+                        <table class="w-full text-left border-collapse table-fixed">
+                            <thead class="sticky top-0 bg-slate-950 border-b border-slate-800 text-slate-400 text-[10px] uppercase tracking-wider font-bold z-10">
+                                <tr>
+                                    <th class="p-3 pl-4 w-[30%]">School Target Account</th>
+                                    <th class="p-3 w-[20%]">Current Pipeline Stage</th>
+                                    <th class="p-3 w-[20%]">Action Due Deadline</th>
+                                    <th class="p-3 w-[15%]">Status</th>
+                                    <th class="p-3 w-[15%] pr-4 text-right">Context Controls</th>
+                                </tr>
+                            </thead>
+                            <tbody id="taskTableBody" class="text-xs divide-y divide-slate-800/60 font-medium">
+                                <tr>
+                                    <td colspan="5" class="p-8 text-center text-slate-500">Awaiting safe data collection packets...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AUDIT STREAM TAB CONTAINER -->
+            <div id="audit-tab" class="tab-content hidden flex-1 flex flex-col p-6 overflow-hidden h-full space-y-4">
+                <div>
+                    <h2 class="text-base font-bold text-white">System Log Trail</h2>
+                    <p class="text-slate-400 text-xs">Chronological stream tracking pipeline verification logs.</p>
+                </div>
                 <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-[11px] text-emerald-400 space-y-1.5 flex-1 overflow-y-auto shadow-inner" id="auditTerminal"></div>
             </div>
 
+            <!-- ANALYTICS TAB CONTAINER -->
             <div id="analytics-tab" class="tab-content hidden flex-1 flex flex-col p-6 overflow-y-auto space-y-6 h-full">
-                <div>
-                    <h2 class="text-base font-bold text-white">Live Funnel Data Modeling</h2>
-                    <p class="text-slate-400 text-xs">Real-time pipeline volume allocation metric mapping infrastructure</p>
-                </div>
-                
-                <div class="bg-slate-950 border-l-4 border-l-amber-500 border border-slate-800 p-4 rounded-xl shadow-md">
-                    <h3 class="text-xs font-bold text-amber-400 uppercase tracking-widest flex items-center gap-2 mb-2">
-                        <span>💡</span> System Efficiency Operations Insights
-                    </h3>
-                    <ul id="insightsTargetContainer" class="text-xs text-slate-300 space-y-1.5 list-disc pl-4 font-medium">
-                        <li class="text-slate-500 italic">Compiling diagnostic indicators from cloud infrastructure cache logs...</li>
-                    </ul>
-                </div>
-                
-                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                    <div class="bg-slate-950 border border-slate-800 p-5 rounded-xl shadow-xl flex flex-col h-80">
-                        <h3 class="text-xs font-bold text-slate-300 mb-3 uppercase tracking-wider text-center">Pipeline Volume Weight (By Stage)</h3>
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                    <div class="bg-slate-950 border border-slate-800 p-5 rounded-xl flex flex-col h-80">
+                        <h3 class="text-xs font-bold text-slate-300 mb-3 uppercase text-center">Pipeline Volume Weight</h3>
                         <div class="flex-1 relative"><canvas id="pipelineChart"></canvas></div>
                     </div>
-                    <div class="bg-slate-950 border border-slate-800 p-5 rounded-xl shadow-xl flex flex-col h-80">
-                        <h3 class="text-xs font-bold text-slate-300 mb-3 uppercase tracking-wider text-center">Daily Scouting Output (Day-Wise Trend)</h3>
+                    <div class="bg-slate-950 border border-slate-800 p-5 rounded-xl flex flex-col h-80">
+                        <h3 class="text-xs font-bold text-slate-300 mb-3 uppercase text-center">Daily Input Output Trend</h3>
                         <div class="flex-1 relative"><canvas id="scoutsDayChart"></canvas></div>
-                    </div>
-                    
-                    <div class="bg-slate-950 border border-slate-800 p-5 rounded-xl shadow-xl flex flex-col h-80">
-                        <h3 class="text-xs font-bold text-slate-300 mb-3 uppercase tracking-wider text-center">Hourly Velocity (Leads vs Follow-ups)</h3>
-                        <div class="flex-1 relative"><canvas id="scoutsHourChart"></canvas></div>
                     </div>
                 </div>
             </div>
@@ -339,10 +352,33 @@
         </main>
     </div>
 
+    <!-- PIPELINE LOOP INLINE ACTION MODAL FOR RE-TASKING -->
+    <div id="loopModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-sm w-full shadow-2xl space-y-4">
+            <div class="flex items-center space-x-2 text-amber-400">
+                <span class="text-lg">🔁</span>
+                <h3 class="font-bold text-sm tracking-tight uppercase">Loop Follow-Up Validation</h3>
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+                This account is currently marked in an active pipeline tier: <span id="modalStageBadge" class="px-1.5 py-0.5 rounded text-[10px] bg-blue-950 border border-blue-900 text-blue-400 font-bold">Stage</span>. 
+                Before resolving this action record, set your next follow-up calendar parameter.
+            </p>
+            <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">New Communication Execution Date *</label>
+                <input type="date" id="modalNextFollowUpInput" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
+            </div>
+            <div class="flex space-x-2 pt-2">
+                <button onclick="closeLoopResolutionModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-2 rounded-lg text-xs transition">Abort</button>
+                <button id="modalCommitBtn" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-lg text-xs transition shadow-lg shadow-blue-600/20">Commit Next Task</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- APP CONTROLLER SYSTEM -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, doc, updateDoc, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const ALLOWED_DOMAIN = 'brightchamps.com'; 
         const SUPER_ADMIN_EMAIL = 'kiran.aluvara@brightchamps.com'; 
@@ -363,269 +399,163 @@
         provider.setCustomParameters({ prompt: 'select_account' });
 
         let localLeadsArray = [];
+        let localTasksArray = [];
         let localAuditLogsArray = [];
         let selectedRecordId = null;
+        let activeModalTaskId = null;
         
         let pipelineChartInstance = null;
         let scoutsDayChartInstance = null;
-        let scoutsHourChartInstance = null;
         
         let unsubscribeLeads = null;
+        let unsubscribeTasks = null;
         let unsubscribeLogs = null;
 
         onAuthStateChanged(auth, (user) => {
             const authScreen = document.getElementById('authScreen');
             const mainDashboard = document.getElementById('mainDashboard');
-            const authMessage = document.getElementById('authMessage');
-
-            if (user) {
-                const email = user.email || '';
-                const domain = email.split('@')[1];
-
-                if (domain !== ALLOWED_DOMAIN) {
-                    authMessage.className = "text-xs font-semibold p-3 rounded-lg mb-4 text-center bg-red-950/50 text-red-400 border border-red-900/30";
-                    authMessage.innerText = `Access Denied: ${email} is not authorized.`;
-                    authMessage.classList.remove('hidden');
-                    signOut(auth);
-                    return;
-                }
-
-                document.getElementById('adminExportBtn').classList.toggle('hidden', email.toLowerCase() !== SUPER_ADMIN_EMAIL.toLowerCase());
+            if (user && (user.email || '').split('@')[1] === ALLOWED_DOMAIN) {
+                document.getElementById('adminExportBtn').classList.toggle('hidden', user.email.toLowerCase() !== SUPER_ADMIN_EMAIL.toLowerCase());
                 authScreen.classList.add('opacity-0', 'pointer-events-none');
                 mainDashboard.classList.remove('hidden');
-                
                 document.getElementById('userNameProfile').innerText = user.displayName || 'Agent';
-                document.getElementById('userEmailProfile').innerText = email;
+                document.getElementById('userEmailProfile').innerText = user.email;
                 document.getElementById('userInitial').innerText = (user.displayName || 'A').charAt(0);
-
                 initializeDataStreams();
             } else {
                 if (unsubscribeLeads) unsubscribeLeads();
+                if (unsubscribeTasks) unsubscribeTasks();
                 if (unsubscribeLogs) unsubscribeLogs();
+                if (user) signOut(auth);
                 mainDashboard.classList.add('hidden');
                 authScreen.classList.remove('opacity-0', 'pointer-events-none');
             }
         });
 
-        document.getElementById('signInBtn').onclick = () => {
-            signInWithPopup(auth, provider).catch(err => {
-                const msg = document.getElementById('authMessage');
-                msg.className = "text-xs font-semibold p-3 rounded-lg mb-4 text-center bg-red-950/50 text-red-400 border border-red-900/30";
-                msg.innerText = "Connection Failed: " + err.message;
-                msg.classList.remove('hidden');
-            });
-        };
-
+        document.getElementById('signInBtn').onclick = () => signInWithPopup(auth, provider);
         document.getElementById('signOutBtn').onclick = () => signOut(auth);
 
-        window.toggleWebinarDateConstraint = function(statusValue, targetWrapperId) {
-            const wrapper = document.getElementById(targetWrapperId);
-            const dateInput = wrapper.querySelector('input');
-            if (statusValue === 'Webinar Agreed') {
-                wrapper.classList.remove('hidden');
-                dateInput.required = true;
-            } else {
-                wrapper.classList.add('hidden');
-                dateInput.required = false;
-                dateInput.value = '';
-            }
+        window.toggleWebinarDateConstraint = function(val, targetId) {
+            const wrapper = document.getElementById(targetId);
+            wrapper.classList.toggle('hidden', val !== 'Webinar Agreed');
+            wrapper.querySelector('input').required = (val === 'Webinar Agreed');
         };
 
         function initializeDataStreams() {
-            if (unsubscribeLeads) unsubscribeLeads();
-            if (unsubscribeLogs) unsubscribeLogs();
-
             unsubscribeLeads = onSnapshot(query(collection(db, "leads"), orderBy("timestamp", "desc")), (snapshot) => {
                 localLeadsArray = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
                 populateScouterFilterOptions();
-                calculateActiveTaskWorkflowCounters(); // New task tracker push
                 executeDataGridFilters();
                 if(selectedRecordId) loadWorkspaceDrawerRecord(selectedRecordId);
-            }, err => console.error("Pipeline Sync Error:", err));
+                calculateActiveTaskWorkflowCounters();
+            });
+
+            unsubscribeTasks = onSnapshot(query(collection(db, "crm_tasks"), orderBy("dueDate", "asc")), (snapshot) => {
+                localTasksArray = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
+                renderTaskCenterConsole();
+                calculateActiveTaskWorkflowCounters();
+            });
 
             unsubscribeLogs = onSnapshot(query(collection(db, "audit_logs"), orderBy("timestamp", "desc")), (snapshot) => {
-                localAuditLogsArray = snapshot.docs.map(d => {
-                    const data = d.data();
-                    let dateObj = new Date();
-                    if(data.timestamp) {
-                        dateObj = typeof data.timestamp.toDate === 'function' ? data.timestamp.toDate() : new Date(data.timestamp.seconds * 1000);
-                    }
-                    return { ...data, id: d.id, dateObject: dateObj };
-                });
-                applyAuditLogInterfaceFilters();
-            }, err => console.error("Logging Error:", err));
+                localAuditLogsArray = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
+                const terminal = document.getElementById('auditTerminal');
+                if(terminal) {
+                    terminal.innerHTML = localAuditLogsArray.slice(0, 40).map(log => `<p class="py-0.5"><span class="text-slate-600">[LOG]</span> ${log.logText}</p>`).join('');
+                }
+            });
         }
 
         function populateScouterFilterOptions() {
-            const scouterDropdown = document.getElementById('filterScouter');
-            const savedValue = scouterDropdown.value;
-            const uniqueScouters = [...new Set(localLeadsArray.map(l => l.operator).filter(Boolean))];
-            
-            scouterDropdown.innerHTML = '<option value="">All Lead Owners</option>';
-            uniqueScouters.forEach(scouter => {
-                scouterDropdown.innerHTML += `<option value="${scouter}">${scouter.split('@')[0]}</option>`;
-            });
-            scouterDropdown.value = savedValue;
+            const dropdown = document.getElementById('filterScouter');
+            const uniq = [...new Set(localLeadsArray.map(l => l.operator).filter(Boolean))];
+            dropdown.innerHTML = '<option value="">All Lead Owners</option>' + uniq.map(s => `<option value="${s}">${s.split('@')[0]}</option>`).join('');
         }
 
-        // NEW: CALCULATES THE PENDING TASK RUNNING COUNTER FOR THE SCOUTER
         function calculateActiveTaskWorkflowCounters() {
-            const todayISO = new Date().toLocaleDateString('en-CA'); // "YYYY-MM-DD"
-            const totalTasksDueToday = localLeadsArray.filter(lead => lead.nextFollowUpDate === todayISO).length;
-            document.getElementById('sidebarTaskCount').innerText = totalTasksDueToday;
+            const today = new Date().toLocaleDateString('en-CA');
+            const total = localTasksArray.filter(t => t.dueDate === today && t.taskStatus === 'Pending').length;
+            document.getElementById('sidebarTaskCount').innerText = total;
         }
 
         window.executeDataGridFilters = function() {
-            const searchQuery = document.getElementById('filterSearch').value.toLowerCase().trim();
-            const stageQuery = document.getElementById('filterStage').value;
-            const programQuery = document.getElementById('filterProgram').value;
-            const scouterQuery = document.getElementById('filterScouter').value;
-            const taskDueQuery = document.getElementById('filterTaskDue').value;
-            const sortDirection = document.getElementById('filterDateSort').value;
+            const search = document.getElementById('filterSearch').value.toLowerCase().trim();
+            const stage = document.getElementById('filterStage').value;
+            const prog = document.getElementById('filterProgram').value;
+            const scout = document.getElementById('filterScouter').value;
+            const sort = document.getElementById('filterDateSort').value;
 
-            const todayISO = new Date().toLocaleDateString('en-CA');
-
-            let filteredArray = localLeadsArray.filter(lead => {
-                const matchesSearch = !searchQuery || 
-                    (lead.school || '').toLowerCase().includes(searchQuery) || 
-                    (lead.mainEmailId || '').toLowerCase().includes(searchQuery);
-                const matchesStage = !stageQuery || lead.status === stageQuery;
-                const matchesProgram = !programQuery || lead.scoutedFor === programQuery;
-                const matchesScouter = !scouterQuery || lead.operator === scouterQuery;
-                
-                // NEW TASK DUE QUERY FILTER CONDITION
-                const matchesTaskDue = !taskDueQuery || (lead.nextFollowUpDate === todayISO);
-
-                return matchesSearch && matchesStage && matchesProgram && matchesScouter && matchesTaskDue;
+            let filtered = localLeadsArray.filter(l => {
+                return (!search || (l.school || '').toLowerCase().includes(search)) &&
+                       (!stage || l.status === stage) &&
+                       (!prog || l.scoutedFor === prog) &&
+                       (!scout || l.operator === scout);
             });
 
-            filteredArray.sort((a, b) => {
-                const timeA = a.timestamp?.seconds || 0;
-                const timeB = b.timestamp?.seconds || 0;
-                return sortDirection === 'asc' ? timeA - timeB : timeB - timeA;
-            });
-
-            renderDataTable(filteredArray);
+            filtered.sort((a,b) => sort === 'asc' ? (a.timestamp?.seconds || 0) - (b.timestamp?.seconds || 0) : (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+            renderDataTable(filtered);
         };
 
-        function renderDataTable(dataSubset) {
+        function renderDataTable(subset) {
             const tbody = document.getElementById('dataTableBody');
-            tbody.innerHTML = '';
-
-            if (dataSubset.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-500">No accounts found matching active criteria.</td></tr>';
-                return;
-            }
-
-            dataSubset.forEach(lead => {
-                let statusBadge = "bg-slate-900 text-slate-400 border-slate-800";
-                if(lead.status === 'Webinar Agreed') statusBadge = "bg-emerald-950/40 text-emerald-400 border-emerald-900/30";
-                if(lead.status === 'Contacted') statusBadge = "bg-blue-950/40 text-blue-400 border-blue-900/30";
-                if(lead.status === 'New Lead') statusBadge = "bg-amber-950/40 text-amber-400 border-amber-900/30";
-
-                let inlineWebinarPayload = "";
-                if(lead.status === 'Webinar Agreed' && lead.webinarDate) {
-                    inlineWebinarPayload = `<span class="text-[10px] text-emerald-500 font-mono ml-2">(${lead.webinarDate})</span>`;
-                }
-
-                // UI ADJUSTMENT: DISPLAY LEAD OWNER ALONGSIDE ALLOCATED COURSE PROFILE
-                const displayOwnerShort = lead.operator ? lead.operator.split('@')[0] : 'System';
-                const displayDate = lead.addedDateTimeString ? lead.addedDateTimeString.split(',')[0] : 'N/A';
-
+            tbody.innerHTML = subset.length === 0 ? '<tr><td colspan="4" class="p-8 text-center text-slate-500">No matching school accounts inside network view.</td></tr>' : '';
+            
+            subset.forEach(lead => {
                 const tr = document.createElement('tr');
                 tr.className = `cursor-pointer transition border-b border-slate-800/40 hover:bg-slate-900/60 ${selectedRecordId === lead.id ? 'bg-slate-900/80 border-l-2 border-l-blue-500' : ''}`;
-                tr.onclick = () => selectRecordWorkspaceRow(lead.id);
+                tr.onclick = () => { selectedRecordId = lead.id; executeDataGridFilters(); loadWorkspaceDrawerRecord(lead.id); };
                 
                 tr.innerHTML = `
-                    <td class="p-3 pl-4 max-w-xs truncate">
-                        <div class="font-bold text-white truncate">${lead.school || 'Unnamed'}</div>
-                        <div class="text-[10px] text-slate-500 font-mono tracking-tight">${lead.mainContactName || 'N/A'}</div>
-                    </td>
-                    <td class="p-3">
-                        <div class="font-semibold text-slate-300">${lead.scoutedFor || 'Other'}</div>
-                        <div class="text-[10px] text-slate-500 truncate">👤 ${displayOwnerShort}</div>
-                    </td>
-                    <td class="p-3 text-amber-400/90 font-mono text-[11px]">${displayDate}</td>
-                    <td class="p-3 pr-4">
-                        <span class="inline-block px-2 py-0.5 text-[10px] font-bold rounded border ${statusBadge}">${lead.status || 'New Lead'}</span>
-                        ${inlineWebinarPayload}
-                    </td>
+                    <td class="p-3 pl-4 max-w-xs truncate"><div class="font-bold text-white">${lead.school || 'Unnamed'}</div><div class="text-[10px] text-slate-500 font-mono">${lead.mainContactName || 'N/A'}</div></td>
+                    <td class="p-3"><div class="font-semibold text-slate-300">${lead.scoutedFor}</div><div class="text-[10px] text-slate-500">👤 ${lead.operator.split('@')[0]}</div></td>
+                    <td class="p-3 text-amber-400 font-mono text-[11px]">${lead.addedDateTimeString?.split(',')[0] || 'N/A'}</td>
+                    <td class="p-3 pr-4"><span class="px-2 py-0.5 text-[10px] font-bold rounded border ${lead.status === 'Not Interested' ? 'bg-slate-900 border-slate-800 text-slate-500' : 'bg-blue-950/40 text-blue-400 border-blue-900/30'}">${lead.status}</span></td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        window.selectRecordWorkspaceRow = function(recordId) {
-            selectedRecordId = recordId;
-            executeDataGridFilters(); 
-            loadWorkspaceDrawerRecord(recordId);
-        };
-
         function loadWorkspaceDrawerRecord(id) {
             const lead = localLeadsArray.find(l => l.id === id);
-            if(!lead) {
-                closeWorkspaceDrawer();
-                return;
-            }
-
+            if(!lead) return;
             document.getElementById('drawerEmptyState').classList.add('hidden');
             document.getElementById('drawerActiveState').classList.remove('hidden');
-
-            document.getElementById('drawerSchoolId').innerText = lead.uniqueSchoolId || 'N/A';
-            document.getElementById('drawerSchoolName').innerText = lead.school || 'Unnamed';
-            document.getElementById('drawerStatusSelect').value = lead.status || 'New Lead';
-
+            document.getElementById('drawerSchoolId').innerText = lead.uniqueSchoolId;
+            document.getElementById('drawerSchoolName').innerText = lead.school;
+            document.getElementById('drawerStatusSelect').value = lead.status;
             document.getElementById('dContactName').innerText = lead.mainContactName || 'N/A';
-            document.getElementById('dContactDesignation').innerText = lead.mainContactDesignation || 'N/A';
-            document.getElementById('dContactNo').innerText = lead.mainContactNo || 'N/A';
-            document.getElementById('dEmailId').innerText = lead.mainEmailId || 'N/A';
-            document.getElementById('dContactNo2').innerText = lead.contactNo2 || 'N/A';
-            document.getElementById('dEmailId2').innerText = lead.emailId2 || 'N/A';
-            document.getElementById('dProgram').innerText = lead.scoutedFor || 'Other';
-            document.getElementById('dScouter').innerText = lead.operator || 'System Log';
-            document.getElementById('dCreatedTime').innerText = lead.addedDateTimeString || 'N/A';
+            document.getElementById('dContactNo').innerText = lead.mainContactNo;
+
+            const fw = document.getElementById('drawerFollowUpWrapper');
+            const ww = document.getElementById('drawerWebinarDateWrapper');
             
-            // NEW NEXT TASK VALUE INJECTION
-            document.getElementById('dNextTaskDate').innerText = lead.nextFollowUpDate ? lead.nextFollowUpDate : 'No Tasks Scheduled';
-            document.getElementById('drawerNextFollowUpInput').value = lead.nextFollowUpDate || '';
-
-            const linkElement = document.getElementById('dLinks');
-            const linkNoneElement = document.getElementById('dLinksNone');
-            if (lead.anyRelatedLinks) {
-                linkElement.href = lead.anyRelatedLinks;
-                linkElement.classList.remove('hidden');
-                linkNoneElement.classList.add('hidden');
-            } else {
-                linkElement.classList.add('hidden');
-                linkNoneElement.classList.remove('hidden');
-            }
-
-            const wrapper = document.getElementById('drawerWebinarDateWrapper');
-            const dateInput = document.getElementById('drawerWebinarDateInput');
-            if(lead.status === 'Webinar Agreed') {
-                wrapper.classList.remove('hidden');
-                dateInput.value = lead.webinarDate || '';
-            } else {
-                wrapper.classList.add('hidden');
-                dateInput.value = '';
-            }
-
-            document.getElementById('drawerStatusSelect').onchange = (e) => {
-                toggleWebinarDateConstraint(e.target.value, 'drawerWebinarDateWrapper');
+            const evaluateFields = (st) => {
+                fw.classList.toggle('hidden', st === 'New Lead' || st === 'Not Interested');
+                ww.classList.toggle('hidden', st !== 'Webinar Agreed');
             };
+            evaluateFields(lead.status);
+            document.getElementById('drawerStatusSelect').onchange = (e) => evaluateFields(e.target.value);
 
             document.getElementById('drawerSaveBtn').onclick = () => {
-                const updatedStatus = document.getElementById('drawerStatusSelect').value;
-                const updatedDate = document.getElementById('drawerWebinarDateInput').value;
-                
-                // Fetch next task follow up input execution string payload
-                const updatedFollowUpTaskDate = document.getElementById('drawerNextFollowUpInput').value;
+                const status = document.getElementById('drawerStatusSelect').value;
+                const webDate = document.getElementById('drawerWebinarDateInput').value;
+                const nextDate = document.getElementById('drawerNextFollowUpInput').value;
 
-                if (updatedStatus === 'Webinar Agreed' && !updatedDate) {
-                    alert("Please log the Confirmed Webinar Date inside the dynamic fields input container before executing changes.");
-                    return;
-                }
-                executeStatusUpdate(lead.id, lead.school, lead.status, updatedStatus, updatedDate, updatedFollowUpTaskDate);
+                if (status === 'Webinar Agreed' && !webDate) return alert("Webinar date required.");
+                if (status !== 'New Lead' && status !== 'Not Interested' && !nextDate) return alert("Please assign a follow-up date for this stage change.");
+
+                updateDoc(doc(db, "leads", id), { status: status, webinarDate: webDate, timestamp: serverTimestamp() }).then(() => {
+                    if (status !== 'New Lead' && status !== 'Not Interested' && nextDate) {
+                        // Invalidate all prior pending tasks for this system segment to prevent overlap
+                        localTasksArray.filter(t => t.leadId === id && t.taskStatus === 'Pending').forEach(t => {
+                            updateDoc(doc(db, "crm_tasks", t.id), { taskStatus: 'Overridden' });
+                        });
+                        // Append next structural action parameters
+                        addDoc(collection(db, "crm_tasks"), {
+                            leadId: id, schoolName: lead.school, currentStage: status, dueDate: nextDate, taskStatus: 'Pending', operator: auth.currentUser.email
+                        });
+                    }
+                    addDoc(collection(db, "audit_logs"), { logText: `Agent shifted '${lead.school}' to pipeline state [${status}]`, timestamp: serverTimestamp() });
+                });
             };
         }
 
@@ -636,312 +566,169 @@
             executeDataGridFilters();
         };
 
+        window.renderTaskCenterConsole = function() {
+            const tbody = document.getElementById('taskTableBody');
+            if(!tbody) return;
+
+            const nameQuery = document.getElementById('taskFilterName').value.toLowerCase().trim();
+            const startRange = document.getElementById('taskFilterDateStart').value;
+            const endRange = document.getElementById('taskFilterDateEnd').value;
+            const statusFilter = document.getElementById('taskFilterStatus').value;
+
+            let filtered = localTasksArray.filter(t => {
+                const matchesName = !nameQuery || (t.schoolName || '').toLowerCase().includes(nameQuery);
+                const matchesStatus = statusFilter === 'All' || t.taskStatus === statusFilter;
+                
+                let matchesDate = true;
+                if(startRange && t.dueDate < startRange) matchesDate = false;
+                if(endRange && t.dueDate > endRange) matchesDate = false;
+
+                return matchesName && matchesStatus && matchesDate;
+            });
+
+            tbody.innerHTML = filtered.length === 0 ? '<tr><td colspan="5" class="p-8 text-center text-slate-500">No active operational tasks found matching parameters.</td></tr>' : '';
+
+            filtered.forEach(task => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-800/40 hover:bg-slate-900/40 transition font-medium";
+                
+                let actionButton = `<span class="text-xs text-slate-500 italic">Resolved</span>`;
+                if (task.taskStatus === 'Pending') {
+                    actionButton = `<button onclick="triggerTaskResolutionLoop('${task.id}')" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-1 rounded text-[11px] transition shadow-md">Complete Call</button>`;
+                }
+
+                tr.innerHTML = `
+                    <td class="p-3 pl-4 font-bold text-white">${task.schoolName}</td>
+                    <td class="p-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-900 border border-slate-800 text-slate-400">${task.currentStage}</span></td>
+                    <td class="p-3 font-mono text-amber-400">${task.dueDate}</td>
+                    <td class="p-3"><span class="text-[11px] ${task.taskStatus === 'Pending' ? 'text-amber-500 font-bold' : 'text-slate-500'}">${task.taskStatus}</span></td>
+                    <td class="p-3 pr-4 text-right">${actionButton}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+
+        window.triggerTaskResolutionLoop = function(taskId) {
+            const task = localTasksArray.find(t => t.id === taskId);
+            if(!task) return;
+
+            const connectedLead = localLeadsArray.find(l => l.id === task.leadId);
+            const activeStage = connectedLead ? connectedLead.status : task.currentStage;
+
+            // CRITICAL ARCHITECTURE REQUIREMENT: If the stage is "Not Interested" (Dead), close out cleanly without prompting a loop.
+            if(activeStage === 'Not Interested') {
+                if(confirm(`Confirm action closure? This lead's pipeline tier is currently marked as 'Not Interested' (Terminal/Dead). This action resolves the chain.`)) {
+                    updateDoc(doc(db, "crm_tasks", taskId), { taskStatus: 'Completed' }).then(() => {
+                        addDoc(collection(db, "audit_logs"), { logText: `Terminal loop closure executed on dead account record pipeline path for '${task.schoolName}'`, timestamp: serverTimestamp() });
+                    });
+                }
+                return;
+            }
+
+            // Otherwise, prompt user to anchor their next operational timeline follow-up execution step.
+            activeModalTaskId = taskId;
+            document.getElementById('modalStageBadge').innerText = activeStage;
+            document.getElementById('modalNextFollowUpInput').value = '';
+            document.getElementById('loopModal').style.display = 'flex';
+        };
+
+        window.closeLoopResolutionModal = function() {
+            document.getElementById('loopModal').style.display = 'none';
+            activeModalTaskId = null;
+        };
+
+        document.getElementById('modalCommitBtn').onclick = () => {
+            const nextDate = document.getElementById('modalNextFollowUpInput').value;
+            if(!nextDate) return alert("Pipeline Guardrail: You must establish a future calendar call matrix date to keep the lead cycle unbroken.");
+
+            const task = localTasksArray.find(t => t.id === activeModalTaskId);
+            const connectedLead = localLeadsArray.find(l => l.id === task.leadId);
+            const currentStage = connectedLead ? connectedLead.status : task.currentStage;
+
+            // 1. Resolve old transaction
+            updateDoc(doc(db, "crm_tasks", activeModalTaskId), { taskStatus: 'Completed' }).then(() => {
+                // 2. Automatically spawn the continuous task loop record
+                return addDoc(collection(db, "crm_tasks"), {
+                    leadId: task.leadId,
+                    schoolName: task.schoolName,
+                    currentStage: currentStage,
+                    dueDate: nextDate,
+                    taskStatus: 'Pending',
+                    operator: auth.currentUser.email
+                });
+            }).then(() => {
+                return addDoc(collection(db, "audit_logs"), {
+                    logText: `Loop Action Complete. Closed task for '${task.schoolName}'. Sequential task generated for next milestone: ${nextDate} under current stage [${currentStage}]`,
+                    timestamp: serverTimestamp()
+                });
+            }).then(() => {
+                closeLoopResolutionModal();
+            }).catch(err => alert("Loop Fault: " + err.message));
+        };
+
         window.handleFormSubmit = function(e) {
             e.preventDefault();
-            
             const schoolName = document.getElementById('schoolName').value.trim();
             const mainContactNo = document.getElementById('mainContactNo').value.trim();
             const mainEmailId = document.getElementById('mainEmailId').value.trim();
+            const status = document.getElementById('status').value;
 
-            const isDuplicate = localLeadsArray.some(lead => 
-                (lead.school || '').toLowerCase() === schoolName.toLowerCase() ||
-                (lead.mainEmailId || '').toLowerCase() === mainEmailId.toLowerCase() ||
-                (lead.mainContactNo || '') === mainContactNo
-            );
-
-            if (isDuplicate) {
-                alert(`Conflict Warning:\nAn entry tracking this School Name, Main Email, or Contact Number already exists in the database.`);
-                return;
+            if (localLeadsArray.some(l => (l.school || '').toLowerCase() === schoolName.toLowerCase() || (l.mainEmailId || '').toLowerCase() === mainEmailId.toLowerCase())) {
+                return alert("Conflict Warning: An entry tracking this account name or profile parameter already exists.");
             }
 
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
-            
-            const uniqueId = "BC-SCH-" + Math.random().toString(36).substr(2, 8).toUpperCase();
-            const operator = auth.currentUser.email;
-            const status = document.getElementById('status').value;
-            const webinarDate = document.getElementById('webinarDate').value;
-            const followUpTaskDate = document.getElementById('nextFollowUpDate').value; // Task reference assignment
 
-            const targetPayload = {
-                uniqueSchoolId: uniqueId,
-                school: schoolName,
-                mainContactNo: mainContactNo,
-                mainEmailId: mainEmailId,
+            const uniqueId = "BC-SCH-" + Math.random().toString(36).substr(2, 8).toUpperCase();
+            const payload = {
+                uniqueSchoolId: uniqueId, school: schoolName, mainContactNo: mainContactNo, mainEmailId: mainEmailId,
                 mainContactName: document.getElementById('mainContactName').value.trim(),
                 mainContactDesignation: document.getElementById('mainContactDesignation').value.trim(),
                 scoutedFor: document.getElementById('scoutedFor').value,
                 contactNo2: document.getElementById('contactNo2').value.trim(),
                 emailId2: document.getElementById('emailId2').value.trim(),
                 anyRelatedLinks: document.getElementById('anyRelatedLinks').value.trim(),
-                status: status,
-                webinarDate: webinarDate,
-                nextFollowUpDate: followUpTaskDate, // Saved to data core
-                operator: operator,
-                addedDateTimeString: new Date().toLocaleString(),
-                timestamp: serverTimestamp()
+                status: status, webinarDate: document.getElementById('webinarDate').value,
+                operator: auth.currentUser.email, addedDateTimeString: new Date().toLocaleString(), timestamp: serverTimestamp()
             };
 
-            addDoc(collection(db, "leads"), targetPayload).then(() => {
-                return addDoc(collection(db, "audit_logs"), {
-                    operator: operator,
-                    targetStage: status,
-                    logText: `Operator [${operator}] scouted & created institutional entry: '${schoolName}' (${uniqueId}) as [${status}] ${followUpTaskDate ? '[Task Date: '+followUpTaskDate+']' : ''}`,
-                    timestamp: serverTimestamp()
-                });
-            }).then(() => {
+            addDoc(collection(db, "leads"), payload).then(() => {
+                addDoc(collection(db, "audit_logs"), { logText: `Operator created school account asset framework: '${schoolName}' initialized as [${status}]`, timestamp: serverTimestamp() });
                 document.getElementById('outreachForm').reset();
                 document.getElementById('formWebinarDateWrapper').classList.add('hidden');
                 btn.disabled = false;
                 document.querySelector('details').open = false; 
-            }).catch(err => {
-                alert("Write Failed: " + err.message);
-                btn.disabled = false;
-            });
-        };
-
-        function executeStatusUpdate(id, schoolName, oldStatus, newStatus, targetWebinarDate, targetFollowUpTaskDate) {
-            const operator = auth.currentUser.email;
-            
-            const updates = { 
-                status: newStatus, 
-                webinarDate: targetWebinarDate,
-                nextFollowUpDate: targetFollowUpTaskDate, // Realtime mutations safely committed
-                addedDateTimeString: new Date().toLocaleString(), 
-                timestamp: serverTimestamp() 
-            };
-
-            updateDoc(doc(db, "leads", id), updates).then(() => {
-                return addDoc(collection(db, "audit_logs"), {
-                    operator: operator,
-                    targetStage: newStatus,
-                    logText: `Operator [${operator}] modified pipeline stage of '${schoolName || 'Institution'}' from [${oldStatus}] to [${newStatus}] ${targetFollowUpTaskDate ? '(Next Task Action: ' + targetFollowUpTaskDate + ')' : ''}`,
-                    timestamp: serverTimestamp()
-                });
-            }).catch(err => alert("Mutation Interrupted: " + err.message));
-        }
-
-        window.applyAuditLogInterfaceFilters = function() {
-            const terminal = document.getElementById('auditTerminal');
-            if(!terminal) return;
-
-            const userFilter = document.getElementById('auditFilterUser').value.toLowerCase().trim();
-            const dateFilter = document.getElementById('auditFilterDate').value; 
-            const stageFilter = document.getElementById('auditFilterStage').value;
-
-            terminal.innerHTML = '';
-
-            let filteredLogs = localAuditLogsArray.filter(log => {
-                const logUser = log.operator || '';
-                const logStage = log.targetStage || '';
-                
-                const matchesUser = !userFilter || logUser.toLowerCase().includes(userFilter);
-                const matchesStage = !stageFilter || logStage === stageFilter;
-                
-                let matchesDate = true;
-                if(dateFilter && log.dateObject) {
-                    const localISOString = log.dateObject.toLocaleDateString('en-CA'); 
-                    matchesDate = (localISOString === dateFilter);
-                }
-
-                return matchesUser && matchesStage && matchesDate;
-            });
-
-            if(filteredLogs.length === 0) {
-                terminal.innerHTML = '<p class="text-slate-600 italic">No historical tracking records matched current audit matrix parameter configurations.</p>';
-                return;
-            }
-
-            filteredLogs.forEach(log => {
-                const displayTime = log.dateObject ? log.dateObject.toLocaleTimeString() : 'N/A';
-                const displayDate = log.dateObject ? log.dateObject.toLocaleDateString() : 'N/A';
-                terminal.innerHTML += `<p class="py-0.5 font-mono"><span class="text-slate-600">[${displayDate} ${displayTime}]</span> <span class="text-emerald-400">${log.logText || 'System Mutation Verified.'}</span></p>`;
-            });
+            }).catch(err => { alert("Write failed: " + err.message); btn.disabled = false; });
         };
 
         window.exportDatabaseToCSV = function() {
-            if (auth.currentUser.email.toLowerCase() !== SUPER_ADMIN_EMAIL.toLowerCase()) return;
-            if (localLeadsArray.length === 0) return;
-
-            let csv = "data:text/csv;charset=utf-8,ID,School Name,Primary Contact,Primary Email,Course,Status,Webinar Date,Next Followup Task,Scouted By,Last Connected\n";
-            localLeadsArray.forEach(l => {
-                csv += `"${l.uniqueSchoolId}","${l.school}","${l.mainContactNo}","${l.mainEmailId}","${l.scoutedFor}","${l.status}","${l.webinarDate || ''}","${l.nextFollowUpDate || ''}","${l.operator}","${l.addedDateTimeString || ''}"\n`;
-            });
-
-            const link = document.createElement("a");
-            link.setAttribute("href", encodeURI(csv));
-            link.setAttribute("download", `Master_Pipeline_Export_${new Date().toISOString().slice(0,10)}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            if (auth.currentUser.email.toLowerCase() !== SUPER_ADMIN_EMAIL.toLowerCase() || localLeadsArray.length === 0) return;
+            let csv = "data:text/csv;charset=utf-8,ID,School Name,Contact,Email,Course,Status\n" + localLeadsArray.map(l => `"${l.uniqueSchoolId}","${l.school}","${l.mainContactNo}","${l.mainEmailId}","${l.scoutedFor}","${l.status}"`).join("\n");
+            const link = document.createElement("a"); link.setAttribute("href", encodeURI(csv)); link.setAttribute("download", `Master_Pipeline_Snapshot.csv`);
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
         };
 
         window.switchTab = function(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(tabId).classList.remove('hidden');
-            document.querySelectorAll('nav button').forEach(btn => btn.className = "w-full text-left px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-900 hover:text-slate-200 font-medium text-xs transition flex items-center space-x-3");
+            document.querySelectorAll('nav button').forEach(b => b.className = "w-full text-left px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-900 hover:text-slate-200 font-medium text-xs transition flex items-center space-x-3");
             document.getElementById(`btn-${tabId}`).className = "w-full text-left px-3 py-2.5 rounded-lg bg-blue-600 text-white font-medium text-xs transition flex items-center space-x-3";
             if (tabId === 'analytics-tab') generateChartAnalytics();
+            if (tabId === 'tasks-tab') renderTaskCenterConsole();
         };
 
-        // ENHANCED DATA MODELING PLATFORM: INTEGRATES SEPARATE HOURLY SERIES + DYNAMIC OUTREACH INSIGHTS
         function generateChartAnalytics() {
-            const stageMetrics = { 'New Lead': 0, 'Contacted': 0, 'Webinar Agreed': 0, 'Not Interested': 0 };
-            const dayMetrics = {};
-            
-            // HOURLY METRICS: SPLIT INTO SEPARATE SERIES FOR NEW LEADS AND FOLLOW-UPS
-            const hourLeadsMetrics = Array(24).fill(0);
-            const hourFollowUpsMetrics = Array(24).fill(0);
+            const metrics = { 'New Lead': 0, 'Contacted': 0, 'Webinar Agreed': 0, 'Not Interested': 0 };
+            localLeadsArray.forEach(l => { if(metrics[l.status] !== undefined) metrics[l.status]++; });
 
-            let totalFollowUpsCount = 0;
-            let missingFollowUpsCount = 0;
-
-            localLeadsArray.forEach(lead => {
-                if(stageMetrics[lead.status] !== undefined) stageMetrics[lead.status]++;
-                
-                // Track missing task scheduling parameters for insights engine
-                if(!lead.nextFollowUpDate) {
-                    missingFollowUpsCount++;
-                }
-
-                if(lead.addedDateTimeString) {
-                    const components = lead.addedDateTimeString.split(',');
-                    const datePart = components[0].trim(); 
-                    dayMetrics[datePart] = (dayMetrics[datePart] || 0) + 1;
-
-                    if(components[1]) {
-                        const timePart = components[1].trim();
-                        const matchingHour = timePart.match(/^(\d+)/);
-                        if(matchingHour) {
-                            let hr = parseInt(matchingHour[1]);
-                            if(timePart.toLowerCase().includes('pm') && hr !== 12) hr += 12;
-                            if(timePart.toLowerCase().includes('am') && hr === 12) hr = 0;
-                            
-                            // EXPLICIT SERIES SEPARATION
-                            if(lead.status === 'New Lead') {
-                                hourLeadsMetrics[hr]++;
-                            } else {
-                                hourFollowUpsMetrics[hr]++;
-                                totalFollowUpsCount++;
-                            }
-                        }
-                    }
-                }
-            });
-
-            // CHART 1: PIE BREAKDOWN RENDER
             const ctx1 = document.getElementById('pipelineChart').getContext('2d');
             if (pipelineChartInstance) pipelineChartInstance.destroy();
             pipelineChartInstance = new Chart(ctx1, {
                 type: 'pie',
-                data: {
-                    labels: Object.keys(stageMetrics),
-                    datasets: [{
-                        data: Object.values(stageMetrics),
-                        backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#475569'],
-                        borderWidth: 2,
-                        borderColor: '#0f172a'
-                    }]
-                },
-                options: {
-                    plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10 } } } },
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
+                data: { labels: Object.keys(metrics), datasets: [{ data: Object.values(metrics), backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#475569'], borderWidth: 2, borderColor: '#0f172a' }] },
+                options: { plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10 } } } }, responsive: true, maintainAspectRatio: false }
             });
-
-            // CHART 2: BAR OVERVIEW RENDER
-            const sortedDates = Object.keys(dayMetrics).sort((a,b) => new Date(a) - new Date(b)).slice(-7);
-            const dayValues = sortedDates.map(d => dayMetrics[d]);
-
-            const ctx2 = document.getElementById('scoutsDayChart').getContext('2d');
-            if (scoutsDayChartInstance) scoutsDayChartInstance.destroy();
-            scoutsDayChartInstance = new Chart(ctx2, {
-                type: 'bar',
-                data: {
-                    labels: sortedDates,
-                    datasets: [{
-                        label: 'Accounts Created',
-                        data: dayValues,
-                        backgroundColor: '#3b82f6',
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    scales: {
-                        x: { ticks: { color: '#94a3b8', font: { size: 9 } }, grid: { display: false } },
-                        y: { ticks: { color: '#94a3b8', font: { size: 9 }, stepSize: 1 }, grid: { color: '#1e293b' } }
-                    },
-                    plugins: { legend: { display: false } },
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-
-            // CHART 3: NEW UPGRADED DUAL LINE PLOT FOR LEADS VS FOLLOWUPS
-            const hourLabels = Array.from({length: 24}, (_, i) => `${i}:00`);
-            const ctx3 = document.getElementById('scoutsHourChart').getContext('2d');
-            if (scoutsHourChartInstance) scoutsHourChartInstance.destroy();
-            scoutsHourChartInstance = new Chart(ctx3, {
-                type: 'line',
-                data: {
-                    labels: hourLabels,
-                    datasets: [
-                        {
-                            label: 'New Leads Created',
-                            data: hourLeadsMetrics,
-                            borderColor: '#f59e0b',
-                            backgroundColor: 'rgba(245, 158, 11, 0.05)',
-                            fill: true,
-                            tension: 0.2,
-                            borderWidth: 2
-                        },
-                        {
-                            label: 'Follow-up Call Updates',
-                            data: hourFollowUpsMetrics,
-                            borderColor: '#3b82f6',
-                            backgroundColor: 'rgba(59, 130, 246, 0.05)',
-                            fill: true,
-                            tension: 0.2,
-                            borderWidth: 2
-                        }
-                    ]
-                },
-                options: {
-                    scales: {
-                        x: { ticks: { color: '#94a3b8', font: { size: 8 } }, grid: { display: false } },
-                        y: { ticks: { color: '#94a3b8', font: { size: 9 }, stepSize: 1 }, grid: { color: '#1e293b' } }
-                    },
-                    plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10 } } } },
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-
-            // NEW: DYNAMIC OPERATIONS DIAGNOSTIC INSIGHTS GENERATION LOGIC
-            const insightsContainer = document.getElementById('insightsTargetContainer');
-            insightsContainer.innerHTML = '';
-
-            // 1. Evaluate Unproductive Hour Coordinates
-            let unproductiveHours = [];
-            for(let h = 9; h <= 18; h++) { // Evaluates standard operating core shift hours (9 AM - 6 PM)
-                if(hourLeadsMetrics[h] === 0 && hourFollowUpsMetrics[h] === 0) {
-                    unproductiveHours.push(`${h}:00`);
-                }
-            }
-
-            if(unproductiveHours.length > 0) {
-                insightsContainer.innerHTML += `<li class="text-amber-400 font-semibold">⚠️ Unproductive Outreach Drops: Zero platform modifications detected during core operational block intervals: ${unproductiveHours.join(', ')}.</li>`;
-            } else {
-                insightsContainer.innerHTML += `<li class="text-emerald-400 font-semibold">✅ Continuous Velocity: The platform detected consistent outreach modifications during all standard shift intervals.</li>`;
-            }
-
-            // 2. Evaluate Stagnant Pipelines missing an actionable next connect parameter
-            if(missingFollowUpsCount > 0) {
-                insightsContainer.innerHTML += `<li class="text-rose-400 font-semibold">🚨 Task Deadline Deficit: There are <span class="underline font-bold">${missingFollowUpsCount} institutional school accounts</span> currently floating without any assigned 'Next Follow-up Call' tasks.</li>`;
-            } else {
-                insightsContainer.innerHTML += `<li class="text-emerald-400 font-semibold">🎉 All system pipeline instances currently possess an active future task anchor assignment.</li>`;
-            }
         }
     </script>
 </body>
