@@ -154,13 +154,11 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, doc, updateDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // DOM INTEGRITY PROTOCOLS
         const ALLOWED_DOMAIN = 'brightchamps.com'; 
-        const SUPER_ADMIN_EMAIL = 'kiran.aluvara@brightchamps.com'; // 👈 Synchronized to match profile metadata perfectly
+        const SUPER_ADMIN_EMAIL = 'kiran.aluvara@brightchamps.com'; 
 
-        // Core Infrastructure Credentials Linking
         const firebaseConfig = {
             apiKey: "AIzaSyAYpGUhW9CDWLwuj7ZHVRYFAq-37uS0flU",
             authDomain: "partnership-outreach-crm.firebaseapp.com",
@@ -178,8 +176,9 @@
 
         let localLeadsArray = [];
         let pipelineChartInstance = null;
+        let unsubscribeLeads = null;
+        let unsubscribeLogs = null;
 
-        // AUTHENTICATION WATCHDOG ENGINE LOOP
         onAuthStateChanged(auth, (user) => {
             const authScreen = document.getElementById('authScreen');
             const mainDashboard = document.getElementById('mainDashboard');
@@ -191,7 +190,7 @@
 
                 if (domain !== ALLOWED_DOMAIN) {
                     authMessage.className = "text-xs font-semibold p-3 rounded-lg mb-4 text-center bg-red-950/50 text-red-400 border border-red-900/30";
-                    authMessage.innerText = `Access Denied: ${email} is not authorized. Connection Severed.`;
+                    authMessage.innerText = `Access Denied: ${email} is not authorized.`;
                     authMessage.classList.remove('hidden');
                     signOut(auth);
                     return;
@@ -212,6 +211,8 @@
 
                 initializeDataStreams();
             } else {
+                if (unsubscribeLeads) unsubscribeLeads();
+                if (unsubscribeLogs) unsubscribeLogs();
                 mainDashboard.classList.add('hidden');
                 authScreen.classList.remove('opacity-0', 'pointer-events-none');
             }
@@ -228,11 +229,40 @@
 
         document.getElementById('signOutBtn').onclick = () => signOut(auth);
 
-        // RE-ENGINEERED STRUCTURAL SYNC LISTENER LOOP
-        function initializeDataStreams() {
-            // 1. Live Leads Register Synchronization Stream
+        async function initializeDataStreams() {
+            if (unsubscribeLeads) unsubscribeLeads();
+            if (unsubscribeLogs) unsubscribeLogs();
+
             const leadsQuery = query(collection(db, "leads"), orderBy("timestamp", "desc"));
-            onSnapshot(leadsQuery, (snapshot) => {
+            const logsQuery = query(collection(db, "audit_logs"), orderBy("timestamp", "desc"));
+
+            // SECURE FORCED COLD-START FETCH: Bypasses initial rule propagation lag
+            try {
+                const leadsInitial = await getDocs(leadsQuery);
+                localLeadsArray = [];
+                leadsInitial.forEach((docSnapshot) => {
+                    let data = docSnapshot.data();
+                    data.id = docSnapshot.id;
+                    localLeadsArray.push(data);
+                });
+                renderDataTable();
+
+                const logsInitial = await getDocs(logsQuery);
+                const terminal = document.getElementById('auditTerminal');
+                if (terminal) {
+                    terminal.innerHTML = '';
+                    logsInitial.forEach((docSnapshot) => {
+                        const log = docSnapshot.data();
+                        let timeString = log.timestamp ? new Date(log.timestamp.toDate()).toLocaleTimeString() : new Date().toLocaleTimeString();
+                        terminal.innerHTML += `<p class="py-0.5 font-mono"><span class="text-slate-600">[${timeString}]</span> <span class="text-emerald-400">${log.logText || 'System Check'}</span></p>`;
+                    });
+                }
+            } catch (initialFetchErr) {
+                console.warn("Initial payload sync queued, moving to streaming channel...", initialFetchErr);
+            }
+
+            // BACKUP DEPLOYMENT LAYER: Establish active listening hooks
+            unsubscribeLeads = onSnapshot(leadsQuery, (snapshot) => {
                 localLeadsArray = [];
                 snapshot.docs.forEach((docSnapshot) => {
                     let data = docSnapshot.data();
@@ -240,33 +270,17 @@
                     localLeadsArray.push(data);
                 });
                 renderDataTable();
-            }, (error) => {
-                console.error("Leads Sync Failure:", error);
             });
 
-            // 2. Fixed System Audit Log Live Rendering Engine
-            const logsQuery = query(collection(db, "audit_logs"), orderBy("timestamp", "desc"));
-            onSnapshot(logsQuery, (snapshot) => {
+            unsubscribeLogs = onSnapshot(logsQuery, (snapshot) => {
                 const terminal = document.getElementById('auditTerminal');
                 if (!terminal) return;
-                
                 terminal.innerHTML = '';
-                
                 snapshot.docs.forEach((docSnapshot) => {
                     const log = docSnapshot.data();
-                    
-                    let timeString = "Syncing...";
-                    if (log.timestamp) {
-                        timeString = new Date(log.timestamp.toDate()).toLocaleTimeString();
-                    } else {
-                        timeString = new Date().toLocaleTimeString();
-                    }
-                    
-                    const systemMessage = log.logText || "Unknown data mutation recorded.";
-                    terminal.innerHTML += `<p class="py-0.5 tracking-wide"><span class="text-slate-600">[${timeString}]</span> <span class="text-emerald-400">${systemMessage}</span></p>`;
+                    let timeString = log.timestamp ? new Date(log.timestamp.toDate()).toLocaleTimeString() : new Date().toLocaleTimeString();
+                    terminal.innerHTML += `<p class="py-0.5 font-mono"><span class="text-slate-600">[${timeString}]</span> <span class="text-emerald-400">${log.logText || 'Mutation logged'}</span></p>`;
                 });
-            }, (error) => {
-                console.error("Audit Logs Sync Failure:", error);
             });
         }
 
@@ -288,9 +302,9 @@
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-900/40 transition duration-150 border-b border-slate-900/60";
                 tr.innerHTML = `
-                    <td class="p-4 pl-6 font-bold text-white max-w-xs truncate">${lead.school}</td>
-                    <td class="p-4 text-slate-300 max-w-xs truncate">${lead.contact}</td>
-                    <td class="p-4"><span class="px-2.5 py-1 text-xs font-semibold rounded-lg border ${badgeStyle}">${lead.status}</span></td>
+                    <td class="p-4 pl-6 font-bold text-white max-w-xs truncate">${lead.school || 'Unnamed'}</td>
+                    <td class="p-4 text-slate-300 max-w-xs truncate">${lead.contact || 'N/A'}</td>
+                    <td class="p-4"><span class="px-2.5 py-1 text-xs font-semibold rounded-lg border ${badgeStyle}">${lead.status || 'New Lead'}</span></td>
                     <td class="p-4 pr-6 text-right">
                         <select class="status-select bg-slate-900 border border-slate-800 text-xs rounded-lg p-1.5 focus:outline-none focus:border-blue-500 transition text-slate-200" data-id="${lead.id}" data-school="${lead.school}" data-status="${lead.status}">
                             <option value="New Lead" ${lead.status === 'New Lead' ? 'selected' : ''}>New Lead</option>
@@ -372,9 +386,9 @@
             csvContent += "School Name,Contact Info,Status,Logging Operator\n";
 
             localLeadsArray.forEach(lead => {
-                let row = `"${lead.school.replace(/"/g, '""')}"` + ',' + 
-                          `"${lead.contact.replace(/"/g, '""')}"` + ',' + 
-                          `"${lead.status.replace(/"/g, '""')}"` + ',' + 
+                let row = `"${(lead.school || '').replace(/"/g, '""')}"` + ',' + 
+                          `"${(lead.contact || '').replace(/"/g, '""')}"` + ',' + 
+                          `"${(lead.status || '').replace(/"/g, '""')}"` + ',' + 
                           `"${(lead.operator || 'System Log').replace(/"/g, '""')}"`;
                 csvContent += row + "\n";
             });
