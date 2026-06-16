@@ -109,7 +109,7 @@
                                         <input type="text" id="mainContactDesignation" placeholder="Principal / Coordinator" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition">
                                     </div>
                                     <div>
-                                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Scouted For Program Track *</label>
+                                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Course Allocation *</label>
                                         <select id="scoutedFor" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition">
                                             <option value="Math">Math</option>
                                             <option value="Code">Code</option>
@@ -168,7 +168,7 @@
                                 <option value="Not Interested">Not Interested</option>
                             </select>
                             <select id="filterProgram" onchange="executeDataGridFilters()" class="bg-slate-900 border border-slate-800 text-slate-300 rounded-lg p-1.5 text-xs focus:outline-none">
-                                <option value="">All Program Tracks</option>
+                                <option value="">All Courses</option>
                                 <option value="Math">Math</option>
                                 <option value="Code">Code</option>
                                 <option value="Fin">Fin</option>
@@ -178,8 +178,8 @@
                                 <option value="">All Scouters</option>
                             </select>
                             <select id="filterDateSort" onchange="executeDataGridFilters()" class="bg-slate-900 border border-slate-800 text-slate-300 rounded-lg p-1.5 text-xs focus:outline-none">
-                                <option value="desc">Newest Created</option>
-                                <option value="asc">Oldest Created</option>
+                                <option value="desc">Newest Connected</option>
+                                <option value="asc">Oldest Connected</option>
                             </select>
                         </div>
                         <button id="adminExportBtn" onclick="exportDatabaseToCSV()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition flex items-center space-x-1">
@@ -193,10 +193,10 @@
                             <table class="w-full text-left border-collapse table-fixed">
                                 <thead class="sticky top-0 bg-slate-950 z-10 border-b border-slate-800">
                                     <tr class="text-slate-400 text-[10px] uppercase tracking-wider font-bold">
-                                        <th class="p-3 pl-4 w-1/3">Target Institution Profile</th>
-                                        <th class="p-3 w-1/4">Primary Identifier No</th>
-                                        <th class="p-3 w-1/6">Track Allocation</th>
-                                        <th class="p-3 w-1/4 pr-4">Pipeline Stage Status</th>
+                                        <th class="p-3 pl-4 w-[28%]">Target Institution Profile</th>
+                                        <th class="p-3 w-[22%]">Course</th>
+                                        <th class="p-3 w-[25%]">Last Connected</th>
+                                        <th class="p-3 w-[25%] pr-4">Pipeline Stage Status</th>
                                     </tr>
                                 </thead>
                                 <tbody id="dataTableBody" class="text-xs divide-y divide-slate-800/60 font-medium">
@@ -258,9 +258,9 @@
                                 </div>
                                 <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-1 pt-2">System Tracking Audit Fields</h4>
                                 <div class="grid grid-cols-1 gap-2 text-[11px]">
-                                    <div><span class="text-slate-500 block">Allocated Track:</span><span class="text-blue-400 font-semibold block" id="dProgram">Math</span></div>
+                                    <div><span class="text-slate-500 block">Allocated Course:</span><span class="text-blue-400 font-semibold block" id="dProgram">Math</span></div>
                                     <div><span class="text-slate-500 block">Account Scouter:</span><span class="text-slate-300 block truncate" id="dScouter">N/A</span></div>
-                                    <div><span class="text-slate-500 block">Creation Timestamp:</span><span class="text-slate-400 font-mono block text-[10px]" id="dCreatedTime">N/A</span></div>
+                                    <div><span class="text-slate-500 block">Last Connected Timestamp:</span><span class="text-amber-400 font-mono block text-[11px] font-semibold" id="dCreatedTime">N/A</span></div>
                                     <div>
                                         <span class="text-slate-500 block mb-0.5">Referral Links:</span>
                                         <a id="dLinks" href="#" target="_blank" class="text-blue-400 hover:underline font-medium text-xs hidden">Open Reference Link External URL</a>
@@ -473,6 +473,9 @@
                     inlineWebinarPayload = `<span class="text-[10px] text-emerald-500 font-mono ml-2">(${lead.webinarDate})</span>`;
                 }
 
+                // Process the connection date safely
+                const displayDate = lead.addedDateTimeString ? lead.addedDateTimeString.split(',')[0] : 'N/A';
+
                 const tr = document.createElement('tr');
                 tr.className = `cursor-pointer transition border-b border-slate-800/40 hover:bg-slate-900/60 ${selectedRecordId === lead.id ? 'bg-slate-900/80 border-l-2 border-l-blue-500' : ''}`;
                 tr.onclick = () => selectRecordWorkspaceRow(lead.id);
@@ -482,8 +485,8 @@
                         <div class="font-bold text-white truncate">${lead.school || 'Unnamed'}</div>
                         <div class="text-[10px] text-slate-500 font-mono tracking-tight">${lead.mainContactName || 'N/A'}</div>
                     </td>
-                    <td class="p-3 text-slate-400 font-mono truncate">${lead.mainContactNo || 'N/A'}</td>
                     <td class="p-3 font-semibold text-slate-300">${lead.scoutedFor || 'Other'}</td>
+                    <td class="p-3 text-amber-400/90 font-mono text-[11px]">${displayDate}</td>
                     <td class="p-3 pr-4">
                         <span class="inline-block px-2 py-0.5 text-[10px] font-bold rounded border ${statusBadge}">${lead.status || 'New Lead'}</span>
                         ${inlineWebinarPayload}
@@ -495,7 +498,7 @@
 
         window.selectRecordWorkspaceRow = function(recordId) {
             selectedRecordId = recordId;
-            executeDataGridFilters(); // Re-render to show active borders
+            executeDataGridFilters(); 
             loadWorkspaceDrawerRecord(recordId);
         };
 
@@ -620,7 +623,7 @@
                 document.getElementById('outreachForm').reset();
                 document.getElementById('formWebinarDateWrapper').classList.add('hidden');
                 btn.disabled = false;
-                document.querySelector('details').open = false; // Collapse panel
+                document.querySelector('details').open = false; 
             }).catch(err => {
                 alert("Write Failed: " + err.message);
                 btn.disabled = false;
@@ -643,7 +646,7 @@
             if (auth.currentUser.email.toLowerCase() !== SUPER_ADMIN_EMAIL.toLowerCase()) return;
             if (localLeadsArray.length === 0) return;
 
-            let csv = "data:text/csv;charset=utf-8,ID,School Name,Primary Contact,Primary Email,Scouted For,Status,Webinar Date,Scouted By,Date Created\n";
+            let csv = "data:text/csv;charset=utf-8,ID,School Name,Primary Contact,Primary Email,Course,Status,Webinar Date,Scouted By,Last Connected\n";
             localLeadsArray.forEach(l => {
                 csv += `"${l.uniqueSchoolId}","${l.school}","${l.mainContactNo}","${l.mainEmailId}","${l.scoutedFor}","${l.status}","${l.webinarDate || ''}","${l.operator}","${l.addedDateTimeString || ''}"\n`;
             });
