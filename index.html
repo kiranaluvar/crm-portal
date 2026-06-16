@@ -42,12 +42,19 @@
                         <span>📜</span> <span>Audit Stream</span>
                     </button>
                     <button onclick="switchTab('analytics-tab')" id="btn-analytics-tab" class="w-full text-left px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-900 hover:text-slate-200 font-medium text-xs transition flex items-center space-x-3">
-                        <span>📈</span> <span>Data Modeling</span>
+                        <span>📈</span> <span>Data Modeling & Insights</span>
                     </button>
                 </nav>
             </div>
-            <div class="pt-4 border-t border-slate-800">
-                <div class="flex items-center space-x-3 mb-3">
+            
+            <div class="pt-4 border-t border-slate-800 space-y-4">
+                <div class="bg-blue-950/30 border border-blue-900/40 rounded-xl p-3 text-center">
+                    <span class="text-[10px] text-blue-400 font-mono uppercase tracking-wider block mb-1">My Tasks Due Today</span>
+                    <span id="sidebarTaskCount" class="text-2xl font-black text-white font-mono">0</span>
+                    <span class="text-[9px] text-slate-500 block mt-0.5">Calls remaining in pipeline</span>
+                </div>
+
+                <div class="flex items-center space-x-3 pt-2 border-t border-slate-800/60">
                     <div class="h-8 w-8 rounded-full bg-slate-800 flex items-center justify-center font-bold text-blue-400 text-xs shadow-inner" id="userInitial">U</div>
                     <div class="truncate">
                         <p class="text-xs font-semibold text-white truncate" id="userNameProfile">Authorized User</p>
@@ -139,7 +146,11 @@
                                         <label class="block text-[11px] font-semibold text-emerald-400 mb-1">Webinar Target Date *</label>
                                         <input type="date" id="webinarDate" class="w-full bg-slate-900 border border-emerald-900/40 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-emerald-500 transition">
                                     </div>
-                                    <div class="md:col-start-3">
+                                    <div>
+                                        <label class="block text-[11px] font-semibold text-blue-400 mb-1">Next Follow-up Call Date</label>
+                                        <input type="date" id="nextFollowUpDate" class="w-full bg-slate-900 border border-blue-900/40 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition">
+                                    </div>
+                                    <div class="md:col-span-3 pt-2">
                                         <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold p-2.5 rounded-lg transition text-xs shadow-md shadow-blue-600/10 active:scale-[0.98]">
                                             Commit Account Record
                                         </button>
@@ -150,7 +161,7 @@
                     </div>
 
                     <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex flex-wrap gap-2 items-center justify-between">
-                        <div class="flex flex-wrap gap-2 flex-1 max-w-4xl">
+                        <div class="flex flex-wrap gap-2 flex-1 max-w-5xl">
                             <input type="text" id="filterSearch" oninput="executeDataGridFilters()" placeholder="🔍 Quick Find by Name or Email..." class="bg-slate-900 border border-slate-800 text-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500 w-48 flex-shrink-0">
                             <select id="filterStage" onchange="executeDataGridFilters()" class="bg-slate-900 border border-slate-800 text-slate-300 rounded-lg p-1.5 text-xs focus:outline-none">
                                 <option value="">All Stages</option>
@@ -167,7 +178,11 @@
                                 <option value="Other">Other</option>
                             </select>
                             <select id="filterScouter" onchange="executeDataGridFilters()" class="bg-slate-900 border border-slate-800 text-slate-300 rounded-lg p-1.5 text-xs focus:outline-none">
-                                <option value="">All Scouters</option>
+                                <option value="">All Lead Owners</option>
+                            </select>
+                            <select id="filterTaskDue" onchange="executeDataGridFilters()" class="bg-slate-900 border border-blue-900 text-blue-400 rounded-lg p-1.5 text-xs focus:outline-none font-semibold">
+                                <option value="">All Deadlines</option>
+                                <option value="today">Tasks Due Today</option>
                             </select>
                             <select id="filterDateSort" onchange="executeDataGridFilters()" class="bg-slate-900 border border-slate-800 text-slate-300 rounded-lg p-1.5 text-xs focus:outline-none">
                                 <option value="desc">Newest Connected</option>
@@ -185,7 +200,7 @@
                                 <thead class="sticky top-0 bg-slate-950 z-10 border-b border-slate-800">
                                     <tr class="text-slate-400 text-[10px] uppercase tracking-wider font-bold">
                                         <th class="p-3 pl-4 w-[28%]">Target Institution Profile</th>
-                                        <th class="p-3 w-[22%]">Course</th>
+                                        <th class="p-3 w-[22%]">Course / Owner</th>
                                         <th class="p-3 w-[25%]">Last Connected</th>
                                         <th class="p-3 w-[25%] pr-4">Pipeline Stage Status</th>
                                     </tr>
@@ -225,12 +240,17 @@
                                 </select>
                                 <div id="drawerWebinarDateWrapper" class="hidden space-y-1">
                                     <label class="block text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Confirmed Webinar Date *</label>
-                                    <input type="date" id="drawerWebinarDateInput" class="w-full bg-slate-950 border border-emerald-900/50 rounded p-2 text-xs text-white">
+                                    <input type="date" id="drawerWebinarDateInput" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-white">
                                 </div>
-                                <button id="drawerSaveBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-1.5 rounded text-xs transition">
+                                <div class="space-y-1">
+                                    <label class="block text-[10px] font-bold text-blue-400 uppercase tracking-wider">Schedule Next Connect (Task)</label>
+                                    <input type="date" id="drawerNextFollowUpInput" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-white focus:outline-none focus:border-blue-500">
+                                </div>
+                                <button id="drawerSaveBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-1.5 rounded text-xs transition pt-2">
                                     Save Operational Stage Change
                                 </button>
                             </div>
+                            
                             <div class="space-y-3">
                                 <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-1">Primary Contacts</h4>
                                 <div class="grid grid-cols-2 gap-2 text-[11px]">
@@ -247,8 +267,9 @@
                                 <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-1 pt-2">System Tracking Audit Fields</h4>
                                 <div class="grid grid-cols-1 gap-2 text-[11px]">
                                     <div><span class="text-slate-500 block">Allocated Course:</span><span class="text-blue-400 font-semibold block" id="dProgram">Math</span></div>
-                                    <div><span class="text-slate-500 block">Account Scouter:</span><span class="text-slate-300 block truncate" id="dScouter">N/A</span></div>
+                                    <div><span class="text-slate-500 block">Lead Owner (Scouter):</span><span class="text-slate-300 block truncate font-semibold" id="dScouter">N/A</span></div>
                                     <div><span class="text-slate-500 block">Last Connected Timestamp:</span><span class="text-amber-400 font-mono block text-[11px] font-semibold" id="dCreatedTime">N/A</span></div>
+                                    <div><span class="text-blue-400 block font-bold">Planned Task Action Date:</span><span class="text-slate-100 font-mono block text-[11px]" id="dNextTaskDate">None Scheduled</span></div>
                                     <div>
                                         <span class="text-slate-500 block mb-0.5">Referral Links:</span>
                                         <a id="dLinks" href="#" target="_blank" class="text-blue-400 hover:underline font-medium text-xs hidden">Open Reference Link External URL</a>
@@ -289,6 +310,15 @@
                     <p class="text-slate-400 text-xs">Real-time pipeline volume allocation metric mapping infrastructure</p>
                 </div>
                 
+                <div class="bg-slate-950 border-l-4 border-l-amber-500 border border-slate-800 p-4 rounded-xl shadow-md">
+                    <h3 class="text-xs font-bold text-amber-400 uppercase tracking-widest flex items-center gap-2 mb-2">
+                        <span>💡</span> System Efficiency Operations Insights
+                    </h3>
+                    <ul id="insightsTargetContainer" class="text-xs text-slate-300 space-y-1.5 list-disc pl-4 font-medium">
+                        <li class="text-slate-500 italic">Compiling diagnostic indicators from cloud infrastructure cache logs...</li>
+                    </ul>
+                </div>
+                
                 <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
                     <div class="bg-slate-950 border border-slate-800 p-5 rounded-xl shadow-xl flex flex-col h-80">
                         <h3 class="text-xs font-bold text-slate-300 mb-3 uppercase tracking-wider text-center">Pipeline Volume Weight (By Stage)</h3>
@@ -298,8 +328,9 @@
                         <h3 class="text-xs font-bold text-slate-300 mb-3 uppercase tracking-wider text-center">Daily Scouting Output (Day-Wise Trend)</h3>
                         <div class="flex-1 relative"><canvas id="scoutsDayChart"></canvas></div>
                     </div>
+                    
                     <div class="bg-slate-950 border border-slate-800 p-5 rounded-xl shadow-xl flex flex-col h-80">
-                        <h3 class="text-xs font-bold text-slate-300 mb-3 uppercase tracking-wider text-center">Operational Velocity (Hour-Wise Peaks)</h3>
+                        <h3 class="text-xs font-bold text-slate-300 mb-3 uppercase tracking-wider text-center">Hourly Velocity (Leads vs Follow-ups)</h3>
                         <div class="flex-1 relative"><canvas id="scoutsHourChart"></canvas></div>
                     </div>
                 </div>
@@ -335,7 +366,6 @@
         let localAuditLogsArray = [];
         let selectedRecordId = null;
         
-        // Chart reference nodes
         let pipelineChartInstance = null;
         let scoutsDayChartInstance = null;
         let scoutsHourChartInstance = null;
@@ -408,11 +438,11 @@
             unsubscribeLeads = onSnapshot(query(collection(db, "leads"), orderBy("timestamp", "desc")), (snapshot) => {
                 localLeadsArray = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
                 populateScouterFilterOptions();
+                calculateActiveTaskWorkflowCounters(); // New task tracker push
                 executeDataGridFilters();
                 if(selectedRecordId) loadWorkspaceDrawerRecord(selectedRecordId);
             }, err => console.error("Pipeline Sync Error:", err));
 
-            // Upgraded log engine cache array map
             unsubscribeLogs = onSnapshot(query(collection(db, "audit_logs"), orderBy("timestamp", "desc")), (snapshot) => {
                 localAuditLogsArray = snapshot.docs.map(d => {
                     const data = d.data();
@@ -431,11 +461,18 @@
             const savedValue = scouterDropdown.value;
             const uniqueScouters = [...new Set(localLeadsArray.map(l => l.operator).filter(Boolean))];
             
-            scouterDropdown.innerHTML = '<option value="">All Scouters</option>';
+            scouterDropdown.innerHTML = '<option value="">All Lead Owners</option>';
             uniqueScouters.forEach(scouter => {
                 scouterDropdown.innerHTML += `<option value="${scouter}">${scouter.split('@')[0]}</option>`;
             });
             scouterDropdown.value = savedValue;
+        }
+
+        // NEW: CALCULATES THE PENDING TASK RUNNING COUNTER FOR THE SCOUTER
+        function calculateActiveTaskWorkflowCounters() {
+            const todayISO = new Date().toLocaleDateString('en-CA'); // "YYYY-MM-DD"
+            const totalTasksDueToday = localLeadsArray.filter(lead => lead.nextFollowUpDate === todayISO).length;
+            document.getElementById('sidebarTaskCount').innerText = totalTasksDueToday;
         }
 
         window.executeDataGridFilters = function() {
@@ -443,7 +480,10 @@
             const stageQuery = document.getElementById('filterStage').value;
             const programQuery = document.getElementById('filterProgram').value;
             const scouterQuery = document.getElementById('filterScouter').value;
+            const taskDueQuery = document.getElementById('filterTaskDue').value;
             const sortDirection = document.getElementById('filterDateSort').value;
+
+            const todayISO = new Date().toLocaleDateString('en-CA');
 
             let filteredArray = localLeadsArray.filter(lead => {
                 const matchesSearch = !searchQuery || 
@@ -452,7 +492,11 @@
                 const matchesStage = !stageQuery || lead.status === stageQuery;
                 const matchesProgram = !programQuery || lead.scoutedFor === programQuery;
                 const matchesScouter = !scouterQuery || lead.operator === scouterQuery;
-                return matchesSearch && matchesStage && matchesProgram && matchesScouter;
+                
+                // NEW TASK DUE QUERY FILTER CONDITION
+                const matchesTaskDue = !taskDueQuery || (lead.nextFollowUpDate === todayISO);
+
+                return matchesSearch && matchesStage && matchesProgram && matchesScouter && matchesTaskDue;
             });
 
             filteredArray.sort((a, b) => {
@@ -484,6 +528,8 @@
                     inlineWebinarPayload = `<span class="text-[10px] text-emerald-500 font-mono ml-2">(${lead.webinarDate})</span>`;
                 }
 
+                // UI ADJUSTMENT: DISPLAY LEAD OWNER ALONGSIDE ALLOCATED COURSE PROFILE
+                const displayOwnerShort = lead.operator ? lead.operator.split('@')[0] : 'System';
                 const displayDate = lead.addedDateTimeString ? lead.addedDateTimeString.split(',')[0] : 'N/A';
 
                 const tr = document.createElement('tr');
@@ -495,7 +541,10 @@
                         <div class="font-bold text-white truncate">${lead.school || 'Unnamed'}</div>
                         <div class="text-[10px] text-slate-500 font-mono tracking-tight">${lead.mainContactName || 'N/A'}</div>
                     </td>
-                    <td class="p-3 font-semibold text-slate-300">${lead.scoutedFor || 'Other'}</td>
+                    <td class="p-3">
+                        <div class="font-semibold text-slate-300">${lead.scoutedFor || 'Other'}</div>
+                        <div class="text-[10px] text-slate-500 truncate">👤 ${displayOwnerShort}</div>
+                    </td>
                     <td class="p-3 text-amber-400/90 font-mono text-[11px]">${displayDate}</td>
                     <td class="p-3 pr-4">
                         <span class="inline-block px-2 py-0.5 text-[10px] font-bold rounded border ${statusBadge}">${lead.status || 'New Lead'}</span>
@@ -534,9 +583,11 @@
             document.getElementById('dEmailId2').innerText = lead.emailId2 || 'N/A';
             document.getElementById('dProgram').innerText = lead.scoutedFor || 'Other';
             document.getElementById('dScouter').innerText = lead.operator || 'System Log';
-            
-            // Critical fix: Ensure latest timestamp string displays correctly
             document.getElementById('dCreatedTime').innerText = lead.addedDateTimeString || 'N/A';
+            
+            // NEW NEXT TASK VALUE INJECTION
+            document.getElementById('dNextTaskDate').innerText = lead.nextFollowUpDate ? lead.nextFollowUpDate : 'No Tasks Scheduled';
+            document.getElementById('drawerNextFollowUpInput').value = lead.nextFollowUpDate || '';
 
             const linkElement = document.getElementById('dLinks');
             const linkNoneElement = document.getElementById('dLinksNone');
@@ -566,12 +617,15 @@
             document.getElementById('drawerSaveBtn').onclick = () => {
                 const updatedStatus = document.getElementById('drawerStatusSelect').value;
                 const updatedDate = document.getElementById('drawerWebinarDateInput').value;
+                
+                // Fetch next task follow up input execution string payload
+                const updatedFollowUpTaskDate = document.getElementById('drawerNextFollowUpInput').value;
 
                 if (updatedStatus === 'Webinar Agreed' && !updatedDate) {
                     alert("Please log the Confirmed Webinar Date inside the dynamic fields input container before executing changes.");
                     return;
                 }
-                executeStatusUpdate(lead.id, lead.school, lead.status, updatedStatus, updatedDate);
+                executeStatusUpdate(lead.id, lead.school, lead.status, updatedStatus, updatedDate, updatedFollowUpTaskDate);
             };
         }
 
@@ -607,6 +661,7 @@
             const operator = auth.currentUser.email;
             const status = document.getElementById('status').value;
             const webinarDate = document.getElementById('webinarDate').value;
+            const followUpTaskDate = document.getElementById('nextFollowUpDate').value; // Task reference assignment
 
             const targetPayload = {
                 uniqueSchoolId: uniqueId,
@@ -621,6 +676,7 @@
                 anyRelatedLinks: document.getElementById('anyRelatedLinks').value.trim(),
                 status: status,
                 webinarDate: webinarDate,
+                nextFollowUpDate: followUpTaskDate, // Saved to data core
                 operator: operator,
                 addedDateTimeString: new Date().toLocaleString(),
                 timestamp: serverTimestamp()
@@ -630,7 +686,7 @@
                 return addDoc(collection(db, "audit_logs"), {
                     operator: operator,
                     targetStage: status,
-                    logText: `Operator [${operator}] scouted & created institutional entry: '${schoolName}' (${uniqueId}) as [${status}]`,
+                    logText: `Operator [${operator}] scouted & created institutional entry: '${schoolName}' (${uniqueId}) as [${status}] ${followUpTaskDate ? '[Task Date: '+followUpTaskDate+']' : ''}`,
                     timestamp: serverTimestamp()
                 });
             }).then(() => {
@@ -644,14 +700,13 @@
             });
         };
 
-        // FIXED: Updating status records now modifies the live connection timestamps!
-        function executeStatusUpdate(id, schoolName, oldStatus, newStatus, targetWebinarDate) {
+        function executeStatusUpdate(id, schoolName, oldStatus, newStatus, targetWebinarDate, targetFollowUpTaskDate) {
             const operator = auth.currentUser.email;
             
-            // Refreshes the temporal tracking context metrics inside the record object
             const updates = { 
                 status: newStatus, 
                 webinarDate: targetWebinarDate,
+                nextFollowUpDate: targetFollowUpTaskDate, // Realtime mutations safely committed
                 addedDateTimeString: new Date().toLocaleString(), 
                 timestamp: serverTimestamp() 
             };
@@ -660,13 +715,12 @@
                 return addDoc(collection(db, "audit_logs"), {
                     operator: operator,
                     targetStage: newStatus,
-                    logText: `Operator [${operator}] modified pipeline stage of '${schoolName || 'Institution'}' from [${oldStatus}] to [${newStatus}] ${targetWebinarDate ? '(Webinar: ' + targetWebinarDate + ')' : ''}`,
+                    logText: `Operator [${operator}] modified pipeline stage of '${schoolName || 'Institution'}' from [${oldStatus}] to [${newStatus}] ${targetFollowUpTaskDate ? '(Next Task Action: ' + targetFollowUpTaskDate + ')' : ''}`,
                     timestamp: serverTimestamp()
                 });
             }).catch(err => alert("Mutation Interrupted: " + err.message));
         }
 
-        // NEW: MULTI-PARAM FILTER SEARCH CONTROLLER FOR AUDIT STREAM
         window.applyAuditLogInterfaceFilters = function() {
             const terminal = document.getElementById('auditTerminal');
             if(!terminal) return;
@@ -686,7 +740,7 @@
                 
                 let matchesDate = true;
                 if(dateFilter && log.dateObject) {
-                    const localISOString = log.dateObject.toLocaleDateString('en-CA'); // Outputs format YYYY-MM-DD safely
+                    const localISOString = log.dateObject.toLocaleDateString('en-CA'); 
                     matchesDate = (localISOString === dateFilter);
                 }
 
@@ -709,9 +763,9 @@
             if (auth.currentUser.email.toLowerCase() !== SUPER_ADMIN_EMAIL.toLowerCase()) return;
             if (localLeadsArray.length === 0) return;
 
-            let csv = "data:text/csv;charset=utf-8,ID,School Name,Primary Contact,Primary Email,Course,Status,Webinar Date,Scouted By,Last Connected\n";
+            let csv = "data:text/csv;charset=utf-8,ID,School Name,Primary Contact,Primary Email,Course,Status,Webinar Date,Next Followup Task,Scouted By,Last Connected\n";
             localLeadsArray.forEach(l => {
-                csv += `"${l.uniqueSchoolId}","${l.school}","${l.mainContactNo}","${l.mainEmailId}","${l.scoutedFor}","${l.status}","${l.webinarDate || ''}","${l.operator}","${l.addedDateTimeString || ''}"\n`;
+                csv += `"${l.uniqueSchoolId}","${l.school}","${l.mainContactNo}","${l.mainEmailId}","${l.scoutedFor}","${l.status}","${l.webinarDate || ''}","${l.nextFollowUpDate || ''}","${l.operator}","${l.addedDateTimeString || ''}"\n`;
             });
 
             const link = document.createElement("a");
@@ -730,44 +784,52 @@
             if (tabId === 'analytics-tab') generateChartAnalytics();
         };
 
-        // NEW: FULL THREE-CHART DATA MODELING PLATFORM ENGINE
+        // ENHANCED DATA MODELING PLATFORM: INTEGRATES SEPARATE HOURLY SERIES + DYNAMIC OUTREACH INSIGHTS
         function generateChartAnalytics() {
-            // Chart 1 processing: Stages Breakdown
             const stageMetrics = { 'New Lead': 0, 'Contacted': 0, 'Webinar Agreed': 0, 'Not Interested': 0 };
-            
-            // Chart 2 processing: Day-wise output tracking
             const dayMetrics = {};
             
-            // Chart 3 processing: Hour-wise distribution
-            const hourMetrics = Array(24).fill(0);
+            // HOURLY METRICS: SPLIT INTO SEPARATE SERIES FOR NEW LEADS AND FOLLOW-UPS
+            const hourLeadsMetrics = Array(24).fill(0);
+            const hourFollowUpsMetrics = Array(24).fill(0);
+
+            let totalFollowUpsCount = 0;
+            let missingFollowUpsCount = 0;
 
             localLeadsArray.forEach(lead => {
-                // Pipeline count tracking
-                if(stageMetrics[lead.status] !== undefined) {
-                    stageMetrics[lead.status]++;
+                if(stageMetrics[lead.status] !== undefined) stageMetrics[lead.status]++;
+                
+                // Track missing task scheduling parameters for insights engine
+                if(!lead.nextFollowUpDate) {
+                    missingFollowUpsCount++;
                 }
 
-                // Sift through time components
                 if(lead.addedDateTimeString) {
                     const components = lead.addedDateTimeString.split(',');
-                    const datePart = components[0].trim(); // Formats as 'MM/DD/YYYY' or 'DD/MM/YYYY' based on browser locale context
+                    const datePart = components[0].trim(); 
                     dayMetrics[datePart] = (dayMetrics[datePart] || 0) + 1;
 
                     if(components[1]) {
-                        // Extract hour index safely
                         const timePart = components[1].trim();
                         const matchingHour = timePart.match(/^(\d+)/);
                         if(matchingHour) {
                             let hr = parseInt(matchingHour[1]);
                             if(timePart.toLowerCase().includes('pm') && hr !== 12) hr += 12;
                             if(timePart.toLowerCase().includes('am') && hr === 12) hr = 0;
-                            hourMetrics[hr]++;
+                            
+                            // EXPLICIT SERIES SEPARATION
+                            if(lead.status === 'New Lead') {
+                                hourLeadsMetrics[hr]++;
+                            } else {
+                                hourFollowUpsMetrics[hr]++;
+                                totalFollowUpsCount++;
+                            }
                         }
                     }
                 }
             });
 
-            // Re-render Chart 1: Pipeline Status Volume
+            // CHART 1: PIE BREAKDOWN RENDER
             const ctx1 = document.getElementById('pipelineChart').getContext('2d');
             if (pipelineChartInstance) pipelineChartInstance.destroy();
             pipelineChartInstance = new Chart(ctx1, {
@@ -788,8 +850,8 @@
                 }
             });
 
-            // Render Chart 2: Day-wise Scouting Outputs
-            const sortedDates = Object.keys(dayMetrics).sort((a,b) => new Date(a) - new Date(b)).slice(-7); // Slice the last 7 active logging days
+            // CHART 2: BAR OVERVIEW RENDER
+            const sortedDates = Object.keys(dayMetrics).sort((a,b) => new Date(a) - new Date(b)).slice(-7);
             const dayValues = sortedDates.map(d => dayMetrics[d]);
 
             const ctx2 = document.getElementById('scoutsDayChart').getContext('2d');
@@ -816,7 +878,7 @@
                 }
             });
 
-            // Render Chart 3: Hour-wise Pipeline Traffic Density
+            // CHART 3: NEW UPGRADED DUAL LINE PLOT FOR LEADS VS FOLLOWUPS
             const hourLabels = Array.from({length: 24}, (_, i) => `${i}:00`);
             const ctx3 = document.getElementById('scoutsHourChart').getContext('2d');
             if (scoutsHourChartInstance) scoutsHourChartInstance.destroy();
@@ -824,26 +886,62 @@
                 type: 'line',
                 data: {
                     labels: hourLabels,
-                    datasets: [{
-                        label: 'Activity Concentration',
-                        data: hourMetrics,
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        fill: true,
-                        tension: 0.3,
-                        borderWidth: 2
-                    }]
+                    datasets: [
+                        {
+                            label: 'New Leads Created',
+                            data: hourLeadsMetrics,
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.05)',
+                            fill: true,
+                            tension: 0.2,
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Follow-up Call Updates',
+                            data: hourFollowUpsMetrics,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                            fill: true,
+                            tension: 0.2,
+                            borderWidth: 2
+                        }
+                    ]
                 },
                 options: {
                     scales: {
                         x: { ticks: { color: '#94a3b8', font: { size: 8 } }, grid: { display: false } },
                         y: { ticks: { color: '#94a3b8', font: { size: 9 }, stepSize: 1 }, grid: { color: '#1e293b' } }
                     },
-                    plugins: { legend: { display: false } },
+                    plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10 } } } },
                     responsive: true,
                     maintainAspectRatio: false
                 }
             });
+
+            // NEW: DYNAMIC OPERATIONS DIAGNOSTIC INSIGHTS GENERATION LOGIC
+            const insightsContainer = document.getElementById('insightsTargetContainer');
+            insightsContainer.innerHTML = '';
+
+            // 1. Evaluate Unproductive Hour Coordinates
+            let unproductiveHours = [];
+            for(let h = 9; h <= 18; h++) { // Evaluates standard operating core shift hours (9 AM - 6 PM)
+                if(hourLeadsMetrics[h] === 0 && hourFollowUpsMetrics[h] === 0) {
+                    unproductiveHours.push(`${h}:00`);
+                }
+            }
+
+            if(unproductiveHours.length > 0) {
+                insightsContainer.innerHTML += `<li class="text-amber-400 font-semibold">⚠️ Unproductive Outreach Drops: Zero platform modifications detected during core operational block intervals: ${unproductiveHours.join(', ')}.</li>`;
+            } else {
+                insightsContainer.innerHTML += `<li class="text-emerald-400 font-semibold">✅ Continuous Velocity: The platform detected consistent outreach modifications during all standard shift intervals.</li>`;
+            }
+
+            // 2. Evaluate Stagnant Pipelines missing an actionable next connect parameter
+            if(missingFollowUpsCount > 0) {
+                insightsContainer.innerHTML += `<li class="text-rose-400 font-semibold">🚨 Task Deadline Deficit: There are <span class="underline font-bold">${missingFollowUpsCount} institutional school accounts</span> currently floating without any assigned 'Next Follow-up Call' tasks.</li>`;
+            } else {
+                insightsContainer.innerHTML += `<li class="text-emerald-400 font-semibold">🎉 All system pipeline instances currently possess an active future task anchor assignment.</li>`;
+            }
         }
     </script>
 </body>
