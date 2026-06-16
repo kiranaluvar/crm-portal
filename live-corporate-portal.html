@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Multi-User CRM with Identity Capture</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+    <div class="flex">
+        <div class="w-64 bg-slate-900 min-h-screen text-white p-6 fixed">
+            <h1 class="text-xl font-bold tracking-wider text-blue-400 mb-1">Webinar Ops</h1>
+            <p class="text-xs text-slate-400 mb-8">🔒 Secure Google OAuth</p>
+            <nav class="space-y-2">
+                <button onclick="switchTab('log-tab')" id="btn-log-tab" class="w-full text-left px-4 py-3 rounded bg-blue-600 text-white font-medium transition">
+                    Outreach Log & Edit
+                </button>
+                <button onclick="switchTab('audit-tab')" id="btn-audit-tab" class="w-full text-left px-4 py-3 rounded text-gray-400 hover:bg-slate-800 hover:text-white font-medium transition">
+                    📜 System Audit Logs
+                </button>
+                <button onclick="switchTab('analytics-tab')" id="btn-analytics-tab" class="w-full text-left px-4 py-3 rounded text-gray-400 hover:bg-slate-800 hover:text-white font-medium transition">
+                    Live Analytics
+                </button>
+            </nav>
+        </div>
+
+        <div class="flex-1 ml-64 p-8">
+            
+            <div id="auth-section" class="bg-slate-800 text-white p-4 rounded-xl mb-6 flex items-center justify-between shadow-md">
+                <div class="flex items-center space-x-3">
+                    <span id="user-avatar" class="text-2xl">🔒</span>
+                    <div>
+                        <p id="user-display-name" class="text-sm font-bold text-blue-400">Not Authenticated</p>
+                        <p id="user-email" class="text-xs text-slate-400">Please sign in with Google to log activities or edit leads.</p>
+                    </div>
+                </div>
+                <button id="login-btn" onclick="googleSignIn()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2.5 px-5 rounded-lg transition shadow">
+                    Sign In with Google
+                </button>
+            </div>
+
+            <div id="log-tab" class="tab-content">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8">
+                    <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Log New School</h3>
+                    <form id="outreachForm" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">School Name</label>
+                            <input type="text" id="schoolName" required placeholder="Oakridge High" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Contact Details</label>
+                            <input type="text" id="contactInfo" required placeholder="Principal Jane (jane@school.edu)" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Initial Status</label>
+                            <select id="status" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
+                                <option value="New Lead">New Lead</option>
+                                <option value="Contacted">Contacted</option>
+                                <option value="Webinar Agreed">Webinar Agreed</option>
+                                <option value="Not Interested">Not Interested</option>
+                            </select>
+                        </div>
+                        <div>
+                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium p-2.5 rounded-lg transition shadow-sm text-sm">
+                                Create New Lead
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-600 text-xs uppercase font-bold border-b border-gray-100">
+                                <th class="p-4">School</th>
+                                <th class="p-4">Contact Info</th>
+                                <th class="p-4">Current Status</th>
+                                <th class="p-4">Quick Update Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataTableBody" class="text-sm divide-y divide-gray-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="audit-tab" class="tab-content hidden">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">System Change History Trail</h2>
+                    <p class="text-gray-500 text-sm">A read-only timeline tracking exactly who changed what stage over time.</p>
+                </div>
+                <div class="bg-slate-900 rounded-xl p-6 shadow-inner font-mono text-xs text-emerald-400 space-y-2 h-[500px] overflow-y-auto" id="auditTerminal">
+                    </div>
+            </div>
+
+            <div id="analytics-tab" class="tab-content hidden">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 max-w-md">
+                    <h3 class="text-md font-bold text-gray-700 mb-4">Pipeline Distribution</h3>
+                    <div class="h-64"><canvas id="pipelineChart"></canvas></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        // ✅ BAKED IN DIRECTLY FROM YOUR SCREENSHOT CREDENTIALS
+        const firebaseConfig = {
+            apiKey: "AIzaSyAYpGUhW9CDWLwuj7ZHVRYFAq-37uS0flU",
+            authDomain: "partnership-outreach-crm.firebaseapp.com",
+            projectId: "partnership-outreach-crm",
+            storageBucket: "partnership-outreach-crm.firebasestorage.app",
+            messagingSenderId: "142750401110",
+            appId: "1:142750401110:web:cd1a0494b731d11a2a71f7"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        const leadsRef = collection(db, "leads");
+        const auditRef = collection(db, "audit_logs");
+
+        let localLeads = [];
+        let myChart = null;
+        let currentSignedInEmail = null;
+
+        // Secure Authentication Event Routine
+        window.googleSignIn = function() {
+            signInWithPopup(auth, provider)
+                .then((result) => {
+                    console.log("Authenticated User: " + result.user.email);
+                }).catch((error) => {
+                    alert("Authentication Error: " + error.message);
+                });
+        }
+
+        // Monitor User Identity State Changes
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentSignedInEmail = user.email;
+                document.getElementById('user-display-name').innerText = user.displayName;
+                document.getElementById('user-email').innerText = user.email;
+                document.getElementById('user-avatar').innerText = "✅";
+                document.getElementById('login-btn').classList.add('hidden');
+                document.getElementById('auth-section').classList.remove('bg-slate-800');
+                document.getElementById('auth-section').classList.add('bg-slate-900');
+            } else {
+                currentSignedInEmail = null;
+                document.getElementById('user-display-name').innerText = "Not Authenticated";
+                document.getElementById('user-email').innerText = "Please sign in with Google to log activities or edit leads.";
+                document.getElementById('user-avatar').innerText = "🔒";
+                document.getElementById('login-btn').classList.remove('hidden');
+            }
+        });
+
+        // Verification guard protecting infrastructure write handlers
+        function verifyUserSession() {
+            if (!currentSignedInEmail) {
+                alert("🔴 ACCESS DENIED: You must authenticate using your Google account button at the top header before performing modifications!");
+                return false;
+            }
+            return true;
+        }
+
+        // Form Submission - Create Lead
+        document.getElementById('outreachForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if(!verifyUserSession()) return;
+
+            const payload = {
+                school: document.getElementById('schoolName').value,
+                contact: document.getElementById('contactInfo').value,
+                status: document.getElementById('status').value,
+                createdUnix: Date.now()
+            };
+
+            try {
+                await addDoc(leadsRef, payload);
+                await addDoc(auditRef, {
+                    timestamp: new Date().toLocaleTimeString(),
+                    logText: `User [${currentSignedInEmail}] created new lead entry: "${payload.school}" initialized to stage [${payload.status}]`,
+                    createdUnix: Date.now()
+                });
+                document.getElementById('outreachForm').reset();
+            } catch (err) { alert("Failed to save: " + err.message); }
+        });
+
+        // Live Change Event Handler Trigger
+        window.updateLeadStatus = async function(docId, oldStatus, newStatus, schoolName) {
+            if(!verifyUserSession()) {
+                renderTable(); // Revert selection UI box layout state
+                return;
+            }
+            if(oldStatus === newStatus) return;
+
+            try {
+                const recordDoc = doc(db, "leads", docId);
+                await updateDoc(recordDoc, { status: newStatus });
+
+                await addDoc(auditRef, {
+                    timestamp: new Date().toLocaleTimeString(),
+                    logText: `User [${currentSignedInEmail}] updated status of "${schoolName}" from [${oldStatus}] ➡️ [${newStatus}]`,
+                    createdUnix: Date.now()
+                });
+            } catch (err) { alert("Update operational failure: " + err.message); }
+        }
+
+        // Listen to Leads Stream
+        onSnapshot(query(leadsRef, orderBy("createdUnix", "desc")), (snapshot) => {
+            localLeads = [];
+            snapshot.forEach(doc => {
+                let data = doc.data();
+                data.id = doc.id;
+                localLeads.push(data);
+            });
+            renderTable();
+        });
+
+        // Listen to System Change Logs Stream
+        onSnapshot(query(auditRef, orderBy("createdUnix", "desc")), (snapshot) => {
+            const terminal = document.getElementById('auditTerminal');
+            terminal.innerHTML = '';
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                terminal.innerHTML += `<p class="py-0.5"><span class="text-slate-500">[${data.timestamp}]</span> ${data.logText}</p>`;
+            });
+        });
+
+        function renderTable() {
+            const tbody = document.getElementById('dataTableBody');
+            tbody.innerHTML = '';
+            localLeads.forEach(lead => {
+                let badge = lead.status === 'Webinar Agreed' ? 'bg-emerald-100 text-emerald-800' : lead.status === 'Contacted' ? 'bg-blue-100 text-blue-800' : lead.status === 'New Lead' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-800';
+                
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="p-4 font-bold text-gray-800">${lead.school}</td>
+                        <td class="p-4 text-gray-600">${lead.contact}</td>
+                        <td class="p-4"><span class="px-2 py-1 text-xs font-semibold rounded-full ${badge}">${lead.status}</span></td>
+                        <td class="p-4">
+                            <select onchange="updateLeadStatus('${lead.id}', '${lead.status}', this.value, '${lead.school}')" class="p-1 border text-xs rounded bg-white outline-none">
+                                <option value="New Lead" ${lead.status === 'New Lead' ? 'selected' : ''}>New Lead</option>
+                                <option value="Contacted" ${lead.status === 'Contacted' ? 'selected' : ''}>Contacted</option>
+                                <option value="Webinar Agreed" ${lead.status === 'Webinar Agreed' ? 'selected' : ''}>Webinar Agreed</option>
+                                <option value="Not Interested" ${lead.status === 'Not Interested' ? 'selected' : ''}>Not Interested</option>
+                            </select>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        window.switchTab = function(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+            document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('bg-blue-600', 'text-white'));
+            document.getElementById(`btn-${tabId}`).classList.add('bg-blue-600', 'text-white');
+            if(tabId === 'analytics-tab') {
+                const counts = { 'New Lead': 0, 'Contacted': 0, 'Webinar Agreed': 0, 'Not Interested': 0 };
+                localLeads.forEach(l => counts[l.status] = (counts[l.status] || 0) + 1);
+                const ctx = document.getElementById('pipelineChart').getContext('2d');
+                if(myChart) myChart.destroy();
+                myChart = new Chart(ctx, { type: 'pie', data: { labels: Object.keys(counts), datasets: [{ data: Object.values(counts), backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#9ca3af'] }] } });
+            }
+        }
+    </script>
+</body>
+</html>
