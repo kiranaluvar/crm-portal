@@ -16,9 +16,7 @@
             </div>
             <h1 class="text-2xl font-bold tracking-tight text-white mb-2">Webinar Ops CRM Portal</h1>
             <p class="text-sm text-slate-400 mb-6">Internal execution dashboard. Authorized access checkpoints enabled.</p>
-            
             <div id="authMessage" class="hidden text-xs font-semibold p-3 rounded-lg mb-4 text-center"></div>
-
             <button id="signInBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 px-4 rounded-xl transition duration-150 flex items-center justify-center space-x-2 shadow-lg shadow-blue-600/20 active:scale-[0.98]">
                 <span>Sign In with BrightChamps Account</span>
             </button>
@@ -36,7 +34,6 @@
                         <p class="text-[10px] text-emerald-400 font-mono tracking-wider uppercase">Secure Firewall Active</p>
                     </div>
                 </div>
-                
                 <nav class="space-y-1.5">
                     <button onclick="switchTab('log-tab')" id="btn-log-tab" class="w-full text-left px-4 py-3 rounded-xl bg-blue-600 text-white font-medium transition duration-150 flex items-center space-x-3">
                         <span>📝</span> <span>Pipeline Register</span>
@@ -49,7 +46,6 @@
                     </button>
                 </nav>
             </div>
-
             <div class="pt-4 border-t border-slate-800">
                 <div class="flex items-center space-x-3 mb-3">
                     <div class="h-9 w-9 rounded-full bg-slate-800 flex items-center justify-center font-bold text-blue-400" id="userInitial">U</div>
@@ -68,58 +64,141 @@
             
             <div id="log-tab" class="tab-content space-y-6">
                 <div class="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-xl">
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Initialize New School Pipeline Entry</h3>
-                    <form id="outreachForm" onsubmit="handleFormSubmit(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-400 mb-1.5">School Name</label>
-                            <input type="text" id="schoolName" required placeholder="Oakridge High" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 transition">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Initialize Next-Gen School Pipeline Entry</h3>
+                    <form id="outreachForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 mb-1.5">School Name *</label>
+                                <input type="text" id="schoolName" required placeholder="Oakridge High" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 transition">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 mb-1.5">Main Contact Number *</label>
+                                <input type="text" id="mainContactNo" required placeholder="+91 XXXXX XXXXX" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 transition">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 mb-1.5">Main Email ID *</label>
+                                <input type="email" id="mainEmailId" required placeholder="info@school.edu" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 transition">
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-400 mb-1.5">Point of Contact Details</label>
-                            <input type="text" id="contactInfo" required placeholder="Principal Jane (jane@school.edu)" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 transition">
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 mb-1.5">Main Contact Name</label>
+                                <input type="text" id="mainContactName" placeholder="Dr. Jane Doe" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 transition">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 mb-1.5">Main Contact Designation</label>
+                                <input type="text" id="mainContactDesignation" placeholder="Principal / Coordinator" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 transition">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 mb-1.5">Scouted For Program *</label>
+                                <select id="scoutedFor" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 transition">
+                                    <option value="Math">Math</option>
+                                    <option value="Code">Code</option>
+                                    <option value="Fin">Fin</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-400 mb-1.5">Funnel Allocation Stage</label>
-                            <select id="status" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 transition appearance-none">
-                                <option value="New Lead">New Lead</option>
-                                <option value="Contacted">Contacted</option>
-                                <option value="Webinar Agreed">Webinar Agreed</option>
-                                <option value="Not Interested">Not Interested</option>
-                            </select>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 mb-1.5">Secondary Contact Number</label>
+                                <input type="text" id="contactNo2" placeholder="Optional backup number" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 transition">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 mb-1.5">Secondary Email ID</label>
+                                <input type="email" id="emailId2" placeholder="backup@school.edu" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 transition">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 mb-1.5">Related Referral Links</label>
+                                <input type="url" id="anyRelatedLinks" placeholder="https://linkedin.com/school" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 transition">
+                            </div>
                         </div>
-                        <div>
-                            <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium p-3 rounded-xl transition duration-150 shadow-lg shadow-blue-600/10 active:scale-[0.98] text-sm">
-                                Append Pipeline Record
-                            </button>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-slate-800/60">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 mb-1.5">Initial Funnel Stage</label>
+                                <select id="status" onchange="toggleWebinarDateConstraint(this.value, 'formWebinarDateWrapper')" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 transition">
+                                    <option value="New Lead">New Lead</option>
+                                    <option value="Contacted">Contacted</option>
+                                    <option value="Webinar Agreed">Webinar Agreed</option>
+                                    <option value="Not Interested">Not Interested</option>
+                                </select>
+                            </div>
+                            <div id="formWebinarDateWrapper" class="hidden">
+                                <label class="block text-xs font-semibold text-emerald-400 mb-1.5">Webinar Schedule Date *</label>
+                                <input type="date" id="webinarDate" class="w-full bg-slate-900 border border-emerald-900/50 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-emerald-500 transition">
+                            </div>
+                            <div class="flex items-end md:col-start-3">
+                                <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium p-3 rounded-xl transition duration-150 shadow-lg shadow-blue-600/10 active:scale-[0.98] text-sm">
+                                    Append Pipeline Record
+                                </button>
+                            </div>
                         </div>
                     </form>
+                </div>
+
+                <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl grid grid-cols-1 md:grid-cols-5 gap-3">
+                    <div>
+                        <input type="text" id="filterSearch" oninput="executeDataGridFilters()" placeholder="Search Name/Email..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <select id="filterStage" onchange="executeDataGridFilters()" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none">
+                            <option value="">All Stages</option>
+                            <option value="New Lead">New Lead</option>
+                            <option value="Contacted">Contacted</option>
+                            <option value="Webinar Agreed">Webinar Agreed</option>
+                            <option value="Not Interested">Not Interested</option>
+                        </select>
+                    </div>
+                    <div>
+                        <select id="filterProgram" onchange="executeDataGridFilters()" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none">
+                            <option value="">All Programs</option>
+                            <option value="Math">Math</option>
+                            <option value="Code">Code</option>
+                            <option value="Fin">Fin</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <select id="filterScouter" onchange="executeDataGridFilters()" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none">
+                            <option value="">All Scouters</option>
+                        </select>
+                    </div>
+                    <div>
+                        <select id="filterDateSort" onchange="executeDataGridFilters()" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none">
+                            <option value="desc">Newest Added</option>
+                            <option value="asc">Oldest Added</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="bg-slate-950 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
                     <div class="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div>
                             <h3 class="text-base font-bold text-white">Active Institutional Accounts</h3>
-                            <p class="text-xs text-slate-500">Live system readouts streaming directly from cluster storage</p>
+                            <p class="text-xs text-slate-500">Live records streaming directly from cluster database storage</p>
                         </div>
-                        
-                        <button id="adminExportBtn" onclick="exportDatabaseToCSV()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs py-2.5 px-4 rounded-xl transition duration-150 shadow-md shadow-emerald-600/10 active:scale-[0.98] flex items-center space-x-1.5">
+                        <button id="adminExportBtn" onclick="exportDatabaseToCSV()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs py-2.5 px-4 rounded-xl transition duration-150 flex items-center space-x-1.5">
                             <span>📥</span> <span>Export Master Database to CSV</span>
                         </button>
                     </div>
-                    
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="bg-slate-950/50 text-slate-400 text-xs uppercase tracking-wider font-semibold border-b border-slate-800">
-                                    <th class="p-4 pl-6">Target Institution</th>
-                                    <th class="p-4">Contact Parameters</th>
-                                    <th class="p-4">Verification Stage Status</th>
-                                    <th class="p-4 pr-6 text-right">State Manipulation Override</th>
+                                    <th class="p-4 pl-6">ID & School Parameters</th>
+                                    <th class="p-4">Contact Logic</th>
+                                    <th class="p-4">Track Parameters</th>
+                                    <th class="p-4">Verification Status</th>
+                                    <th class="p-4 pr-6 text-right">Stage Override</th>
                                 </tr>
                             </thead>
-                            <tbody id="dataTableBody" class="text-sm divide-y divide-slate-800/60">
+                            <tbody id="dataTableBody" class="text-xs divide-y divide-slate-800/60">
                                 <tr>
-                                    <td colspan="4" class="p-8 text-center text-slate-500 font-medium">Establishing secure handshakes with database clusters...</td>
+                                    <td colspan="5" class="p-8 text-center text-slate-500 font-medium">Establishing secure handshakes with data clusters...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -130,9 +209,9 @@
             <div id="audit-tab" class="tab-content hidden space-y-4">
                 <div>
                     <h2 class="text-xl font-bold text-white">Cloud Node System Log Trail</h2>
-                    <p class="text-slate-400 text-sm">Chronological stream tracking unalterable modification actions</p>
+                    <p class="text-slate-400 text-sm">Chronological stream tracking unalterable pipeline mutations</p>
                 </div>
-                <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 shadow-inner font-mono text-xs text-emerald-400 space-y-2 h-[550px] overflow-y-auto" id="auditTerminal"></div>
+                <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 font-mono text-xs text-emerald-400 space-y-2 h-[550px] overflow-y-auto" id="auditTerminal"></div>
             </div>
 
             <div id="analytics-tab" class="tab-content hidden space-y-4">
@@ -142,19 +221,16 @@
                 </div>
                 <div class="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-xl max-w-md">
                     <h3 class="text-sm font-bold text-slate-300 mb-4">Pipeline Status Volume Weight</h3>
-                    <div class="h-64">
-                        <canvas id="pipelineChart"></canvas>
-                    </div>
+                    <div class="h-64"><canvas id="pipelineChart"></canvas></div>
                 </div>
             </div>
-
         </main>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, doc, updateDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const ALLOWED_DOMAIN = 'brightchamps.com'; 
         const SUPER_ADMIN_EMAIL = 'kiran.aluvara@brightchamps.com'; 
@@ -179,7 +255,6 @@
         let unsubscribeLeads = null;
         let unsubscribeLogs = null;
 
-        // AUTH CONTEXT WATCHDOG ENGINE LOOP
         onAuthStateChanged(auth, (user) => {
             const authScreen = document.getElementById('authScreen');
             const mainDashboard = document.getElementById('mainDashboard');
@@ -197,12 +272,7 @@
                     return;
                 }
 
-                if (email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()) {
-                    document.getElementById('adminExportBtn').classList.remove('hidden');
-                } else {
-                    document.getElementById('adminExportBtn').classList.add('hidden');
-                }
-
+                document.getElementById('adminExportBtn').classList.toggle('hidden', email.toLowerCase() !== SUPER_ADMIN_EMAIL.toLowerCase());
                 authScreen.classList.add('opacity-0', 'pointer-events-none');
                 mainDashboard.classList.remove('hidden');
                 
@@ -220,127 +290,144 @@
         });
 
         document.getElementById('signInBtn').onclick = () => {
-            signInWithPopup(auth, provider).catch(error => {
+            signInWithPopup(auth, provider).catch(err => {
                 const msg = document.getElementById('authMessage');
                 msg.className = "text-xs font-semibold p-3 rounded-lg mb-4 text-center bg-red-950/50 text-red-400 border border-red-900/30";
-                msg.innerText = "Connection Failed: " + error.message;
+                msg.innerText = "Connection Failed: " + err.message;
                 msg.classList.remove('hidden');
             });
         };
 
         document.getElementById('signOutBtn').onclick = () => signOut(auth);
 
-        // STABILIZED ASYNC RE-ROUTING STREAM LOGIC
-        async function initializeDataStreams() {
+        window.toggleWebinarDateConstraint = function(statusValue, targetWrapperId) {
+            const wrapper = document.getElementById(targetWrapperId);
+            const dateInput = wrapper.querySelector('input');
+            if (statusValue === 'Webinar Agreed') {
+                wrapper.classList.remove('hidden');
+                dateInput.required = true;
+            } else {
+                wrapper.classList.add('hidden');
+                dateInput.required = false;
+                dateInput.value = '';
+            }
+        };
+
+        function initializeDataStreams() {
             if (unsubscribeLeads) unsubscribeLeads();
             if (unsubscribeLogs) unsubscribeLogs();
 
             const terminal = document.getElementById('auditTerminal');
-            if (terminal) terminal.innerHTML = '<p class="text-slate-500 italic">Syncing with system audit logs data register...</p>';
-
-            // SECURE DEFENSIVE TIMESTAMP EVALUATOR COMPONENT
-            const parseDocumentTimestamp = (firebaseTimestamp) => {
-                if (!firebaseTimestamp) return new Date().toLocaleTimeString();
-                // If it is a real Firestore Timestamp with a helper method
-                if (typeof firebaseTimestamp.toDate === 'function') {
-                    return new Date(firebaseTimestamp.toDate()).toLocaleTimeString();
-                }
-                // If the data layout was saved directly as a numeric timestamp or string
-                if (firebaseTimestamp.seconds) {
-                    return new Date(firebaseTimestamp.seconds * 1000).toLocaleTimeString();
-                }
-                const fallbackParsedDate = new Date(firebaseTimestamp);
-                if (!isNaN(fallbackParsedDate.getTime())) {
-                    return fallbackParsedDate.toLocaleTimeString();
-                }
-                return new Date().toLocaleTimeString();
+            const parseDocumentTimestamp = (ts) => {
+                if (!ts) return new Date().toLocaleTimeString();
+                if (typeof ts.toDate === 'function') return new Date(ts.toDate()).toLocaleTimeString();
+                if (ts.seconds) return new Date(ts.seconds * 1000).toLocaleTimeString();
+                return new Date(ts).toLocaleTimeString();
             };
 
-            const leadsQuery = query(collection(db, "leads"), orderBy("timestamp", "desc"));
-            const logsQuery = query(collection(db, "audit_logs"), orderBy("timestamp", "desc"));
+            unsubscribeLeads = onSnapshot(query(collection(db, "leads"), orderBy("timestamp", "desc")), (snapshot) => {
+                localLeadsArray = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
+                populateScouterFilterOptions();
+                executeDataGridFilters();
+            }, err => console.error("Pipeline Sync Error:", err));
 
-            // SECURE COLD START RECOVERY PHASE
-            try {
-                const leadsInitial = await getDocs(leadsQuery);
-                localLeadsArray = [];
-                leadsInitial.forEach((docSnapshot) => {
-                    let data = docSnapshot.data();
-                    data.id = docSnapshot.id;
-                    localLeadsArray.push(data);
-                });
-                renderDataTable();
-
-                const logsInitial = await getDocs(logsQuery);
-                if (terminal) {
-                    terminal.innerHTML = '';
-                    logsInitial.forEach((docSnapshot) => {
-                        const log = docSnapshot.data();
-                        const timeString = parseDocumentTimestamp(log.timestamp);
-                        terminal.innerHTML += `<p class="py-0.5 font-mono"><span class="text-slate-600">[${timeString}]</span> <span class="text-emerald-400">${log.logText || 'System status confirmation payload checked.'}</span></p>`;
-                    });
-                }
-            } catch (initialFetchErr) {
-                console.warn("Initial cold payload load error bypassed, moving to hot runtime listeners...", initialFetchErr);
-            }
-
-            // RUNTIME SYSTEM LISTENERS WITH INCORPORATED EXCEPTION BLOCKS
-            unsubscribeLeads = onSnapshot(leadsQuery, (snapshot) => {
-                localLeadsArray = [];
-                snapshot.docs.forEach((docSnapshot) => {
-                    let data = docSnapshot.data();
-                    data.id = docSnapshot.id;
-                    localLeadsArray.push(data);
-                });
-                renderDataTable();
-            }, (error) => {
-                console.error("Critical block on pipeline records reader channel:", error);
-            });
-
-            unsubscribeLogs = onSnapshot(logsQuery, (snapshot) => {
+            unsubscribeLogs = onSnapshot(query(collection(db, "audit_logs"), orderBy("timestamp", "desc")), (snapshot) => {
                 if (!terminal) return;
                 terminal.innerHTML = '';
                 snapshot.docs.forEach((docSnapshot) => {
                     const log = docSnapshot.data();
-                    const timeString = parseDocumentTimestamp(log.timestamp);
-                    terminal.innerHTML += `<p class="py-0.5 font-mono"><span class="text-slate-600">[${timeString}]</span> <span class="text-emerald-400">${log.logText || 'Action event mutation logged.'}</span></p>`;
+                    terminal.innerHTML += `<p class="py-0.5 font-mono"><span class="text-slate-600">[${parseDocumentTimestamp(log.timestamp)}]</span> <span class="text-emerald-400">${log.logText || 'Mutation Event Evaluated.'}</span></p>`;
                 });
-            }, (error) => {
-                console.error("Critical block on logging engine stream:", error);
-                if (terminal) {
-                    terminal.innerHTML = `<p class="text-red-400 font-mono">Stream error intercepted: ${error.message}</p>`;
-                }
-            });
+            }, err => console.error("Logging Error:", err));
         }
 
-        // GRID OVERHAUL RENDER ENGINE
-        function renderDataTable() {
+        function populateScouterFilterOptions() {
+            const scouterDropdown = document.getElementById('filterScouter');
+            const savedValue = scouterDropdown.value;
+            const uniqueScouters = [...new Set(localLeadsArray.map(l => l.operator).filter(Boolean))];
+            
+            scouterDropdown.innerHTML = '<option value="">All Scouters</option>';
+            uniqueScouters.forEach(scouter => {
+                scouterDropdown.innerHTML += `<option value="${scouter}">${scouter}</option>`;
+            });
+            scouterDropdown.value = savedValue;
+        }
+
+        window.executeDataGridFilters = function() {
+            const searchQuery = document.getElementById('filterSearch').value.toLowerCase().trim();
+            const stageQuery = document.getElementById('filterStage').value;
+            const programQuery = document.getElementById('filterProgram').value;
+            const scouterQuery = document.getElementById('filterScouter').value;
+            const sortDirection = document.getElementById('filterDateSort').value;
+
+            let filteredArray = localLeadsArray.filter(lead => {
+                const matchesSearch = !searchQuery || 
+                    (lead.school || '').toLowerCase().includes(searchQuery) || 
+                    (lead.mainEmailId || '').toLowerCase().includes(searchQuery);
+                const matchesStage = !stageQuery || lead.status === stageQuery;
+                const matchesProgram = !programQuery || lead.scoutedFor === programQuery;
+                const matchesScouter = !scouterQuery || lead.operator === scouterQuery;
+                return matchesSearch && matchesStage && matchesProgram && matchesScouter;
+            });
+
+            filteredArray.sort((a, b) => {
+                const timeA = a.timestamp?.seconds || 0;
+                const timeB = b.timestamp?.seconds || 0;
+                return sortDirection === 'asc' ? timeA - timeB : timeB - timeA;
+            });
+
+            renderDataTable(filteredArray);
+        };
+
+        function renderDataTable(dataSubset) {
             const tbody = document.getElementById('dataTableBody');
             tbody.innerHTML = '';
 
-            if (localLeadsArray.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-500 font-medium">No records logged. Index clean.</td></tr>';
+            if (dataSubset.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-500 font-medium">No accounts found matching active filters.</td></tr>';
                 return;
             }
 
-            localLeadsArray.forEach(lead => {
-                let badgeStyle = "bg-slate-900 text-slate-400 border-slate-800";
-                if(lead.status === 'Webinar Agreed') badgeStyle = "bg-emerald-950/40 text-emerald-400 border-emerald-900/30";
-                if(lead.status === 'Contacted') badgeStyle = "bg-blue-950/40 text-blue-400 border-blue-900/30";
-                if(lead.status === 'New Lead') badgeStyle = "bg-amber-950/40 text-amber-400 border-amber-900/30";
+            dataSubset.forEach(lead => {
+                let statusBadge = "bg-slate-900 text-slate-400 border-slate-800";
+                if(lead.status === 'Webinar Agreed') statusBadge = "bg-emerald-950/40 text-emerald-400 border-emerald-900/30";
+                if(lead.status === 'Contacted') statusBadge = "bg-blue-950/40 text-blue-400 border-blue-900/30";
+                if(lead.status === 'New Lead') statusBadge = "bg-amber-950/40 text-amber-400 border-amber-900/30";
+
+                let inlineWebinarPayload = "";
+                if(lead.status === 'Webinar Agreed' && lead.webinarDate) {
+                    inlineWebinarPayload = `<div class="text-[10px] text-emerald-500 font-mono mt-0.5">Date: ${lead.webinarDate}</div>`;
+                }
 
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-900/40 transition duration-150 border-b border-slate-800/40";
+                tr.className = "hover:bg-slate-900/40 transition border-b border-slate-800/40";
                 tr.innerHTML = `
-                    <td class="p-4 pl-6 font-bold text-white max-w-xs truncate">${lead.school || 'Unnamed'}</td>
-                    <td class="p-4 text-slate-300 max-w-xs truncate">${lead.contact || 'N/A'}</td>
-                    <td class="p-4"><span class="px-2.5 py-1 text-xs font-semibold rounded-lg border ${badgeStyle}">${lead.status || 'New Lead'}</span></td>
+                    <td class="p-4 pl-6 max-w-xs">
+                        <div class="font-bold text-white truncate">${lead.school || 'Unnamed'}</div>
+                        <div class="text-[10px] text-slate-500 font-mono tracking-tight">${lead.uniqueSchoolId || 'N/A'}</div>
+                    </td>
+                    <td class="p-4 text-slate-300">
+                        <div class="font-medium text-slate-200 truncate">${lead.mainContactName || 'N/A'} (${lead.mainContactDesignation || 'POC'})</div>
+                        <div class="text-[11px] text-slate-400 font-mono">${lead.mainEmailId || 'N/A'} | ${lead.mainContactNo || 'N/A'}</div>
+                    </td>
+                    <td class="p-4">
+                        <div class="font-semibold text-slate-200">${lead.scoutedFor || 'Other'}</div>
+                        <div class="text-[10px] text-slate-500 truncate">By: ${lead.operator?.split('@')[0]}</div>
+                    </td>
+                    <td class="p-4">
+                        <span class="inline-block px-2 py-0.5 text-[11px] font-semibold rounded-md border ${statusBadge}">${lead.status || 'New Lead'}</span>
+                        ${inlineWebinarPayload}
+                    </td>
                     <td class="p-4 pr-6 text-right">
-                        <select class="status-select bg-slate-900 border border-slate-800 text-xs rounded-lg p-1.5 focus:outline-none focus:border-blue-500 transition text-slate-200" data-id="${lead.id}" data-school="${lead.school}" data-status="${lead.status}">
-                            <option value="New Lead" ${lead.status === 'New Lead' ? 'selected' : ''}>New Lead</option>
-                            <option value="Contacted" ${lead.status === 'Contacted' ? 'selected' : ''}>Contacted</option>
-                            <option value="Webinar Agreed" ${lead.status === 'Webinar Agreed' ? 'selected' : ''}>Webinar Agreed</option>
-                            <option value="Not Interested" ${lead.status === 'Not Interested' ? 'selected' : ''}>Not Interested</option>
-                        </select>
+                        <div class="flex items-center justify-end space-x-1">
+                            <input type="date" value="${lead.webinarDate || ''}" id="inlineDate-${lead.id}" class="${lead.status === 'Webinar Agreed' ? '' : 'hidden'} bg-slate-900 border border-slate-800 rounded p-1 text-[10px] text-white">
+                            <select class="status-select bg-slate-900 border border-slate-800 text-[11px] rounded-lg p-1.5 focus:outline-none focus:border-blue-500 text-slate-200" data-id="${lead.id}" data-school="${lead.school}" data-status="${lead.status}">
+                                <option value="New Lead" ${lead.status === 'New Lead' ? 'selected' : ''}>New Lead</option>
+                                <option value="Contacted" ${lead.status === 'Contacted' ? 'selected' : ''}>Contacted</option>
+                                <option value="Webinar Agreed" ${lead.status === 'Webinar Agreed' ? 'selected' : ''}>Webinar Agreed</option>
+                                <option value="Not Interested" ${lead.status === 'Not Interested' ? 'selected' : ''}>Not Interested</option>
+                            </select>
+                        </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -349,103 +436,124 @@
             document.querySelectorAll('.status-select').forEach(select => {
                 select.onchange = (e) => {
                     const el = e.target;
-                    executeStatusUpdate(el.getAttribute('data-id'), el.getAttribute('data-school'), el.getAttribute('data-status'), el.value);
+                    const docId = el.getAttribute('data-id');
+                    const inlineDateInput = document.getElementById(`inlineDate-${docId}`);
+                    const selectedStatus = el.value;
+                    
+                    let targetWebinarDate = "";
+                    if(selectedStatus === 'Webinar Agreed') {
+                        inlineDateInput.classList.remove('hidden');
+                        if(!inlineDateInput.value) {
+                            alert("Please select the Webinar Schedule Date using the inline date input.");
+                            el.value = el.getAttribute('data-status'); // Reset selection
+                            return;
+                        }
+                        targetWebinarDate = inlineDateInput.value;
+                    } else {
+                        inlineDateInput.classList.add('hidden');
+                    }
+                    executeStatusUpdate(docId, el.getAttribute('data-school'), el.getAttribute('data-status'), selectedStatus, targetWebinarDate);
                 };
             });
         }
 
-        // DATA ADD APPEND COMPONENT
         window.handleFormSubmit = function(e) {
             e.preventDefault();
+            
+            const schoolName = document.getElementById('schoolName').value.trim();
+            const mainContactNo = document.getElementById('mainContactNo').value.trim();
+            const mainEmailId = document.getElementById('mainEmailId').value.trim();
+
+            // REAL-TIME DUPLICATE INTERCEPTION RULES MATRIX
+            const isDuplicate = localLeadsArray.some(lead => 
+                (lead.school || '').toLowerCase() === schoolName.toLowerCase() ||
+                (lead.mainEmailId || '').toLowerCase() === mainEmailId.toLowerCase() ||
+                (lead.mainContactNo || '') === mainContactNo
+            );
+
+            if (isDuplicate) {
+                alert(`Data Conflict Aborted:\nAn entry matching either this School Name, Main Email ID, or Contact Number already exists in the master matrix database.`);
+                return;
+            }
+
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
-            btn.innerText = "Appending Data Array...";
-
-            const school = document.getElementById('schoolName').value;
-            const contact = document.getElementById('contactInfo').value;
-            const status = document.getElementById('status').value;
+            
+            const uniqueId = "BC-SCH-" + Math.random().toString(36).substr(2, 8).toUpperCase();
             const operator = auth.currentUser.email;
+            const status = document.getElementById('status').value;
+            const webinarDate = document.getElementById('webinarDate').value;
 
-            addDoc(collection(db, "leads"), {
-                school: school,
-                contact: contact,
+            const targetPayload = {
+                uniqueSchoolId: uniqueId,
+                school: schoolName,
+                mainContactNo: mainContactNo,
+                mainEmailId: mainEmailId,
+                mainContactName: document.getElementById('mainContactName').value.trim(),
+                mainContactDesignation: document.getElementById('mainContactDesignation').value.trim(),
+                scoutedFor: document.getElementById('scoutedFor').value,
+                contactNo2: document.getElementById('contactNo2').value.trim(),
+                emailId2: document.getElementById('emailId2').value.trim(),
+                anyRelatedLinks: document.getElementById('anyRelatedLinks').value.trim(),
                 status: status,
+                webinarDate: webinarDate,
                 operator: operator,
+                addedDateTimeString: new Date().toLocaleString(),
                 timestamp: serverTimestamp()
-            }).then(() => {
+            };
+
+            addDoc(collection(db, "leads"), targetPayload).then(() => {
                 return addDoc(collection(db, "audit_logs"), {
-                    logText: `Operator [${operator}] initialized entry: '${school}' to stage [${status}]`,
+                    logText: `Operator [${operator}] scouted & created institutional entry: '${schoolName}' (${uniqueId})`,
                     timestamp: serverTimestamp()
                 });
             }).then(() => {
                 document.getElementById('outreachForm').reset();
+                document.getElementById('formWebinarDateWrapper').classList.add('hidden');
                 btn.disabled = false;
-                btn.innerText = "Append Pipeline Record";
             }).catch(err => {
-                alert("Write Aborted: " + err.message);
+                alert("Write Failed: " + err.message);
                 btn.disabled = false;
-                btn.innerText = "Append Pipeline Record";
             });
         };
 
-        // MUTATION STAGE MODIFIER COMPONENT
-        function executeStatusUpdate(id, schoolName, oldStatus, newStatus) {
-            if (oldStatus === newStatus) return;
+        function executeStatusUpdate(id, schoolName, oldStatus, newStatus, targetWebinarDate) {
             const operator = auth.currentUser.email;
+            const updates = { status: newStatus, webinarDate: targetWebinarDate };
 
-            updateDoc(doc(db, "leads", id), { status: newStatus })
-            .then(() => {
+            updateDoc(doc(db, "leads", id), updates).then(() => {
                 return addDoc(collection(db, "audit_logs"), {
-                    logText: `Operator [${operator}] shifted '${schoolName}' from [${oldStatus}] to [${newStatus}]`,
+                    logText: `Operator [${operator}] updated stage of '${schoolName || 'Institution'}' from [${oldStatus}] to [${newStatus}] ${targetWebinarDate ? 'scheduled for ' + targetWebinarDate : ''}`,
                     timestamp: serverTimestamp()
                 });
             }).catch(err => alert("Mutation Interrupted: " + err.message));
         }
 
-        // ADMIN EXPORT COMPONENT
         window.exportDatabaseToCSV = function() {
-            if (auth.currentUser.email.toLowerCase() !== SUPER_ADMIN_EMAIL.toLowerCase()) {
-                alert("Security Rejection: Download privilege validation failed.");
-                return;
-            }
+            if (auth.currentUser.email.toLowerCase() !== SUPER_ADMIN_EMAIL.toLowerCase()) return;
+            if (localLeadsArray.length === 0) return;
 
-            if (localLeadsArray.length === 0) {
-                alert("Index empty.");
-                return;
-            }
-
-            let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "School Name,Contact Info,Status,Logging Operator\n";
-
-            localLeadsArray.forEach(lead => {
-                let row = `"${(lead.school || '').replace(/"/g, '""')}"` + ',' + 
-                          `"${(lead.contact || '').replace(/"/g, '""')}"` + ',' + 
-                          `"${(lead.status || '').replace(/"/g, '""')}"` + ',' + 
-                          `"${(lead.operator || 'System Log').replace(/"/g, '""')}"`;
-                csvContent += row + "\n";
+            let csv = "data:text/csv;charset=utf-8,ID,School Name,Primary Contact,Primary Email,Scouted For,Status,Webinar Date,Scouted By,Date Created\n";
+            localLeadsArray.forEach(l => {
+                csv += `"${l.uniqueSchoolId}","${l.school}","${l.mainContactNo}","${l.mainEmailId}","${l.scoutedFor}","${l.status}","${l.webinarDate || ''}","${l.operator}","${l.addedDateTimeString || ''}"\n`;
             });
 
-            const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `BrightChamps_Pipeline_Export_${new Date().toISOString().slice(0,10)}.csv`);
+            link.setAttribute("href", encodeURI(csv));
+            link.setAttribute("download", `Master_Pipeline_Export_${new Date().toISOString().slice(0,10)}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         };
 
-        // VIEW PORT NAVIGATION HARNESS
         window.switchTab = function(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(tabId).classList.remove('hidden');
-            
             document.querySelectorAll('nav button').forEach(btn => btn.className = "w-full text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-900 hover:text-slate-200 font-medium transition duration-150 flex items-center space-x-3");
             document.getElementById(`btn-${tabId}`).className = "w-full text-left px-4 py-3 rounded-xl bg-blue-600 text-white font-medium transition duration-150 flex items-center space-x-3";
-            
             if (tabId === 'analytics-tab') generateChartAnalytics();
         };
 
-        // CHART METRIC PROCESSING LAYER
         function generateChartAnalytics() {
             const metrics = { 'New Lead': 0, 'Contacted': 0, 'Webinar Agreed': 0, 'Not Interested': 0 };
             localLeadsArray.forEach(l => metrics[l.status] = (metrics[l.status] || 0) + 1);
