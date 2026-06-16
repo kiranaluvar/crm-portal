@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enterprise Multi-User CRM</title>
+    <title>Webinar Ops CRM Portal (Salesforce Engine Edition)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-gray-900 text-slate-100 min-h-screen font-sans selection:bg-blue-500 selection:text-white">
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased overflow-hidden selection:bg-blue-500 selection:text-white">
 
+    <!-- CLUSTER PROTECTION AUTHENTICATION GATEWAY -->
     <div id="authScreen" class="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center z-50 p-4 transition-all duration-300">
         <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl max-w-md w-full shadow-2xl text-center">
             <div class="h-12 w-12 rounded-xl bg-blue-600/10 flex items-center justify-center mx-auto mb-4 border border-blue-500/20">
@@ -17,216 +18,287 @@
             <h1 class="text-2xl font-bold tracking-tight text-white mb-2">Webinar Ops CRM Portal</h1>
             <p class="text-sm text-slate-400 mb-6">Internal execution dashboard. Authorized access checkpoints enabled.</p>
             <div id="authMessage" class="hidden text-xs font-semibold p-3 rounded-lg mb-4 text-center"></div>
-            <button id="signInBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 px-4 rounded-xl transition duration-150 flex items-center justify-center space-x-2 shadow-lg shadow-blue-600/20 active:scale-[0.98]">
-                <span>Sign In with BrightChamps Account</span>
+            <button id="signInBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 px-4 rounded-xl transition shadow-lg shadow-blue-600/20 active:scale-[0.98]">
+                Sign In with BrightChamps Account
             </button>
         </div>
     </div>
 
-    <div id="mainDashboard" class="hidden flex min-h-screen">
+    <!-- MAIN CRM CORE WRAPPER CONTAINER -->
+    <div id="mainDashboard" class="hidden flex h-screen w-screen overflow-hidden">
         
-        <aside class="w-64 bg-slate-950 border-r border-slate-800 p-6 flex flex-col justify-between fixed h-full z-40">
+        <!-- SIDE NAVIGATION BAR PANEL -->
+        <aside class="w-64 bg-slate-950 border-r border-slate-800 p-5 flex flex-col justify-between h-full flex-shrink-0 z-40">
             <div>
                 <div class="flex items-center space-x-2 mb-6">
-                    <span class="text-xl">📊</span>
+                    <span class="text-xl">⚡</span>
                     <div>
-                        <h2 class="text-lg font-bold text-white tracking-wide">Webinar Ops</h2>
-                        <p class="text-[10px] text-emerald-400 font-mono tracking-wider uppercase">Secure Firewall Active</p>
+                        <h2 class="text-sm font-bold text-white tracking-wide uppercase">Lightning CRM</h2>
+                        <p class="text-[10px] text-emerald-400 font-mono tracking-wider uppercase">Cluster Active</p>
                     </div>
                 </div>
-                <nav class="space-y-1.5">
-                    <button onclick="switchTab('log-tab')" id="btn-log-tab" class="w-full text-left px-4 py-3 rounded-xl bg-blue-600 text-white font-medium transition duration-150 flex items-center space-x-3">
-                        <span>📝</span> <span>Pipeline Register</span>
+                <nav class="space-y-1">
+                    <button onclick="switchTab('log-tab')" id="btn-log-tab" class="w-full text-left px-3 py-2.5 rounded-lg bg-blue-600 text-white font-medium text-xs transition flex items-center space-x-3">
+                        <span>📝</span> <span>Accounts Console</span>
                     </button>
-                    <button onclick="switchTab('audit-tab')" id="btn-audit-tab" class="w-full text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-900 hover:text-slate-200 font-medium transition duration-150 flex items-center space-x-3">
-                        <span>📜</span> <span>System Audit Logs</span>
+                    <button onclick="switchTab('audit-tab')" id="btn-audit-tab" class="w-full text-left px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-900 hover:text-slate-200 font-medium text-xs transition flex items-center space-x-3">
+                        <span>📜</span> <span>Audit Stream</span>
                     </button>
-                    <button onclick="switchTab('analytics-tab')" id="btn-analytics-tab" class="w-full text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-900 hover:text-slate-200 font-medium transition duration-150 flex items-center space-x-3">
-                        <span>📈</span> <span>Live Analytics</span>
+                    <button onclick="switchTab('analytics-tab')" id="btn-analytics-tab" class="w-full text-left px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-900 hover:text-slate-200 font-medium text-xs transition flex items-center space-x-3">
+                        <span>📈</span> <span>Data Modeling</span>
                     </button>
                 </nav>
             </div>
             <div class="pt-4 border-t border-slate-800">
                 <div class="flex items-center space-x-3 mb-3">
-                    <div class="h-9 w-9 rounded-full bg-slate-800 flex items-center justify-center font-bold text-blue-400" id="userInitial">U</div>
+                    <div class="h-8 w-8 rounded-full bg-slate-800 flex items-center justify-center font-bold text-blue-400 text-xs shadow-inner" id="userInitial">U</div>
                     <div class="truncate">
                         <p class="text-xs font-semibold text-white truncate" id="userNameProfile">Authorized User</p>
                         <p class="text-[10px] text-slate-500 truncate" id="userEmailProfile">email@brightchamps.com</p>
                     </div>
                 </div>
-                <button id="signOutBtn" class="w-full bg-slate-900 hover:bg-red-950 hover:text-red-400 text-slate-400 font-medium py-2 px-3 rounded-xl border border-slate-800 hover:border-red-900/50 transition duration-150 text-xs active:scale-[0.98]">
+                <button id="signOutBtn" class="w-full bg-slate-900 hover:bg-red-950 hover:text-red-400 text-slate-400 font-medium py-2 rounded-lg border border-slate-800 hover:border-red-900/50 transition text-[11px] active:scale-[0.98]">
                     Disconnect Session
                 </button>
             </div>
         </aside>
 
-        <main class="flex-1 ml-64 p-8 bg-slate-900 min-h-screen">
+        <!-- DASHBOARD CONTAINER PANEL -->
+        <main class="flex-1 bg-slate-900 h-full overflow-hidden relative flex flex-col">
             
-            <div id="log-tab" class="tab-content space-y-6">
-                <div class="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-xl">
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Initialize Next-Gen School Pipeline Entry</h3>
-                    <form id="outreachForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-400 mb-1.5">School Name *</label>
-                                <input type="text" id="schoolName" required placeholder="Oakridge High" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 transition">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-400 mb-1.5">Main Contact Number *</label>
-                                <input type="text" id="mainContactNo" required placeholder="+91 XXXXX XXXXX" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 transition">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-400 mb-1.5">Main Email ID *</label>
-                                <input type="email" id="mainEmailId" required placeholder="info@school.edu" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 transition">
-                            </div>
-                        </div>
+            <!-- ACCOUNTS DASHBOARD TAB CONSOLE -->
+            <div id="log-tab" class="tab-content flex-1 flex overflow-hidden h-full">
+                
+                <!-- LEFT SIDEBAR SECTION WORKSPACE: GRID CONTROL BAR AND TABLE RECORD LIST -->
+                <div class="flex-1 flex flex-col p-6 overflow-y-auto space-y-4 h-full">
+                    
+                    <!-- HIGH-SPEED SALESFORCE DESIGN DATA CREATION LAYER -->
+                    <div class="bg-slate-950 border border-slate-800 p-5 rounded-xl shadow-lg">
+                        <details class="group">
+                            <summary class="list-none flex items-center justify-between cursor-pointer select-none text-xs font-bold text-slate-400 uppercase tracking-widest">
+                                <span class="flex items-center space-x-2">
+                                    <span class="text-blue-400 transition group-open:rotate-90">▶</span>
+                                    <span>Create New School Account Entry</span>
+                                </span>
+                                <span class="text-[10px] text-blue-500 underline group-open:hidden">Expand Creation Panel</span>
+                                <span class="text-[10px] text-slate-500 underline hidden group-open:inline">Collapse Panel</span>
+                            </summary>
+                            
+                            <form id="outreachForm" onsubmit="handleFormSubmit(event)" class="space-y-4 mt-4 pt-4 border-t border-slate-800/60">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">School Name *</label>
+                                        <input type="text" id="schoolName" required placeholder="Oakridge High" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Main Contact Number *</label>
+                                        <input type="text" id="mainContactNo" required placeholder="+91 XXXXX XXXXX" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Main Email ID *</label>
+                                        <input type="email" id="mainEmailId" required placeholder="info@school.edu" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Main Contact Name</label>
+                                        <input type="text" id="mainContactName" placeholder="Dr. Jane Doe" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Main Contact Designation</label>
+                                        <input type="text" id="mainContactDesignation" placeholder="Principal / Coordinator" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Scouted For Program Track *</label>
+                                        <select id="scoutedFor" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition">
+                                            <option value="Math">Math</option>
+                                            <option value="Code">Code</option>
+                                            <option value="Fin">Fin</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Secondary Contact Number</label>
+                                        <input type="text" id="contactNo2" placeholder="Backup contact" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Secondary Email ID</label>
+                                        <input type="email" id="emailId2" placeholder="backup@school.edu" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Related Referral Links</label>
+                                        <input type="url" id="anyRelatedLinks" placeholder="https://linkedin.com/school" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-slate-800/60 items-end">
+                                    <div>
+                                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Initial Status Stage</label>
+                                        <select id="status" onchange="toggleWebinarDateConstraint(this.value, 'formWebinarDateWrapper')" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition">
+                                            <option value="New Lead">New Lead</option>
+                                            <option value="Contacted">Contacted</option>
+                                            <option value="Webinar Agreed">Webinar Agreed</option>
+                                            <option value="Not Interested">Not Interested</option>
+                                        </select>
+                                    </div>
+                                    <div id="formWebinarDateWrapper" class="hidden">
+                                        <label class="block text-[11px] font-semibold text-emerald-400 mb-1">Webinar Target Date *</label>
+                                        <input type="date" id="webinarDate" class="w-full bg-slate-900 border border-emerald-900/40 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-emerald-500 transition">
+                                    </div>
+                                    <div class="md:col-start-3">
+                                        <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold p-2.5 rounded-lg transition text-xs shadow-md shadow-blue-600/10 active:scale-[0.98]">
+                                            Commit Account Record
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </details>
+                    </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-400 mb-1.5">Main Contact Name</label>
-                                <input type="text" id="mainContactName" placeholder="Dr. Jane Doe" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 transition">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-400 mb-1.5">Main Contact Designation</label>
-                                <input type="text" id="mainContactDesignation" placeholder="Principal / Coordinator" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 transition">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-400 mb-1.5">Scouted For Program *</label>
-                                <select id="scoutedFor" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 transition">
-                                    <option value="Math">Math</option>
-                                    <option value="Code">Code</option>
-                                    <option value="Fin">Fin</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            </div>
+                    <!-- CONTROL UTILITY BAR PANEL FOR SEARCH AND MULTI-FILTER CRITERIA -->
+                    <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex flex-wrap gap-2 items-center justify-between">
+                        <div class="flex flex-wrap gap-2 flex-1 max-w-4xl">
+                            <input type="text" id="filterSearch" oninput="executeDataGridFilters()" placeholder="🔍 Quick Find by Name or Email..." class="bg-slate-900 border border-slate-800 text-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500 w-48 flex-shrink-0">
+                            <select id="filterStage" onchange="executeDataGridFilters()" class="bg-slate-900 border border-slate-800 text-slate-300 rounded-lg p-1.5 text-xs focus:outline-none">
+                                <option value="">All Stages</option>
+                                <option value="New Lead">New Lead</option>
+                                <option value="Contacted">Contacted</option>
+                                <option value="Webinar Agreed">Webinar Agreed</option>
+                                <option value="Not Interested">Not Interested</option>
+                            </select>
+                            <select id="filterProgram" onchange="executeDataGridFilters()" class="bg-slate-900 border border-slate-800 text-slate-300 rounded-lg p-1.5 text-xs focus:outline-none">
+                                <option value="">All Program Tracks</option>
+                                <option value="Math">Math</option>
+                                <option value="Code">Code</option>
+                                <option value="Fin">Fin</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <select id="filterScouter" onchange="executeDataGridFilters()" class="bg-slate-900 border border-slate-800 text-slate-300 rounded-lg p-1.5 text-xs focus:outline-none">
+                                <option value="">All Scouters</option>
+                            </select>
+                            <select id="filterDateSort" onchange="executeDataGridFilters()" class="bg-slate-900 border border-slate-800 text-slate-300 rounded-lg p-1.5 text-xs focus:outline-none">
+                                <option value="desc">Newest Created</option>
+                                <option value="asc">Oldest Created</option>
+                            </select>
                         </div>
+                        <button id="adminExportBtn" onclick="exportDatabaseToCSV()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition flex items-center space-x-1">
+                            <span>📥</span> <span>Export Master CSV</span>
+                        </button>
+                    </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-400 mb-1.5">Secondary Contact Number</label>
-                                <input type="text" id="contactNo2" placeholder="Optional backup number" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 transition">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-400 mb-1.5">Secondary Email ID</label>
-                                <input type="email" id="emailId2" placeholder="backup@school.edu" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 transition">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-400 mb-1.5">Related Referral Links</label>
-                                <input type="url" id="anyRelatedLinks" placeholder="https://linkedin.com/school" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 transition">
-                            </div>
+                    <!-- CENTRAL CONSOLE COMPACT DATA GRID VIEW TABLE -->
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl shadow-xl overflow-hidden flex-1 min-h-[300px]">
+                        <div class="h-full overflow-y-auto">
+                            <table class="w-full text-left border-collapse table-fixed">
+                                <thead class="sticky top-0 bg-slate-950 z-10 border-b border-slate-800">
+                                    <tr class="text-slate-400 text-[10px] uppercase tracking-wider font-bold">
+                                        <th class="p-3 pl-4 w-1/3">Target Institution Profile</th>
+                                        <th class="p-3 w-1/4">Primary Identifier No</th>
+                                        <th class="p-3 w-1/6">Track Allocation</th>
+                                        <th class="p-3 w-1/4 pr-4">Pipeline Stage Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dataTableBody" class="text-xs divide-y divide-slate-800/60 font-medium">
+                                    <tr>
+                                        <td colspan="4" class="p-8 text-center text-slate-500">Establishing safe connections to global clusters...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
+                    </div>
+                </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-slate-800/60">
+                <!-- CONTEXTUAL CONSOLE SLIDE DRAWER (SALESFORCE SIDEBAR VIEW MODULE) -->
+                <div id="contextDrawer" class="w-96 bg-slate-950 border-l border-slate-800 h-full flex flex-col transform translate-x-0 transition-transform duration-200 shadow-2xl flex-shrink-0">
+                    <div id="drawerEmptyState" class="flex-1 flex flex-col items-center justify-center p-6 text-center text-slate-500">
+                        <span class="text-3xl mb-2">👈</span>
+                        <p class="text-xs font-semibold">Select an Institutional Account Row</p>
+                        <p class="text-[11px] text-slate-600 mt-1">Review complex records, tracking parameters, and modify operational pipelines directly inside this workspace interface block.</p>
+                    </div>
+                    <div id="drawerActiveState" class="hidden flex-1 flex flex-col h-full overflow-hidden">
+                        <div class="p-4 border-b border-slate-800 bg-slate-900/40 flex items-center justify-between">
                             <div>
-                                <label class="block text-xs font-semibold text-slate-400 mb-1.5">Initial Funnel Stage</label>
-                                <select id="status" onchange="toggleWebinarDateConstraint(this.value, 'formWebinarDateWrapper')" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 transition">
+                                <span class="text-[9px] text-blue-400 font-mono tracking-wider uppercase" id="drawerSchoolId">BC-SCH-UNKNOWN</span>
+                                <h3 class="text-sm font-bold text-white truncate max-w-[220px]" id="drawerSchoolName">School Context Profile</h3>
+                            </div>
+                            <button onclick="closeWorkspaceDrawer()" class="text-slate-500 hover:text-slate-300 font-bold p-1 text-sm">✕</button>
+                        </div>
+                        <div class="flex-1 overflow-y-auto p-4 space-y-4">
+                            <!-- Block 1: Status Processing Action Layer -->
+                            <div class="bg-slate-900/60 border border-slate-800/80 p-3 rounded-lg space-y-2">
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Modify Record Status</label>
+                                <select id="drawerStatusSelect" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-white focus:outline-none focus:border-blue-500">
                                     <option value="New Lead">New Lead</option>
                                     <option value="Contacted">Contacted</option>
                                     <option value="Webinar Agreed">Webinar Agreed</option>
                                     <option value="Not Interested">Not Interested</option>
                                 </select>
-                            </div>
-                            <div id="formWebinarDateWrapper" class="hidden">
-                                <label class="block text-xs font-semibold text-emerald-400 mb-1.5">Webinar Schedule Date *</label>
-                                <input type="date" id="webinarDate" class="w-full bg-slate-900 border border-emerald-900/50 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-emerald-500 transition">
-                            </div>
-                            <div class="flex items-end md:col-start-3">
-                                <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium p-3 rounded-xl transition duration-150 shadow-lg shadow-blue-600/10 active:scale-[0.98] text-sm">
-                                    Append Pipeline Record
+                                <div id="drawerWebinarDateWrapper" class="hidden space-y-1">
+                                    <label class="block text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Confirmed Webinar Date *</label>
+                                    <input type="date" id="drawerWebinarDateInput" class="w-full bg-slate-950 border border-emerald-900/50 rounded p-2 text-xs text-white">
+                                </div>
+                                <button id="drawerSaveBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-1.5 rounded text-xs transition">
+                                    Save Operational Stage Change
                                 </button>
                             </div>
+                            <!-- Block 2: Complete Metadata Matrix Info -->
+                            <div class="space-y-3">
+                                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-1">Primary Contacts</h4>
+                                <div class="grid grid-cols-2 gap-2 text-[11px]">
+                                    <div><span class="text-slate-500 block">POC Name:</span><span class="text-white font-medium truncate block" id="dContactName">N/A</span></div>
+                                    <div><span class="text-slate-500 block">Designation:</span><span class="text-white font-medium truncate block" id="dContactDesignation">N/A</span></div>
+                                    <div class="col-span-2"><span class="text-slate-500 block">Primary Mobile:</span><span class="text-slate-200 font-mono block" id="dContactNo">N/A</span></div>
+                                    <div class="col-span-2"><span class="text-slate-500 block">Primary Email:</span><span class="text-slate-200 font-mono block truncate" id="dEmailId">N/A</span></div>
+                                </div>
+                                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-1 pt-2">Secondary Contacts</h4>
+                                <div class="grid grid-cols-1 gap-2 text-[11px]">
+                                    <div><span class="text-slate-500 block">Secondary Phone:</span><span class="text-slate-300 font-mono block" id="dContactNo2">N/A</span></div>
+                                    <div><span class="text-slate-500 block">Secondary Email:</span><span class="text-slate-300 font-mono block truncate" id="dEmailId2">N/A</span></div>
+                                </div>
+                                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-1 pt-2">System Tracking Audit Fields</h4>
+                                <div class="grid grid-cols-1 gap-2 text-[11px]">
+                                    <div><span class="text-slate-500 block">Allocated Track:</span><span class="text-blue-400 font-semibold block" id="dProgram">Math</span></div>
+                                    <div><span class="text-slate-500 block">Account Scouter:</span><span class="text-slate-300 block truncate" id="dScouter">N/A</span></div>
+                                    <div><span class="text-slate-500 block">Creation Timestamp:</span><span class="text-slate-400 font-mono block text-[10px]" id="dCreatedTime">N/A</span></div>
+                                    <div>
+                                        <span class="text-slate-500 block mb-0.5">Referral Links:</span>
+                                        <a id="dLinks" href="#" target="_blank" class="text-blue-400 hover:underline font-medium text-xs hidden">Open Reference Link External URL</a>
+                                        <span id="dLinksNone" class="text-slate-600 italic block">No related link logs found.</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </form>
-                </div>
-
-                <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl grid grid-cols-1 md:grid-cols-5 gap-3">
-                    <div>
-                        <input type="text" id="filterSearch" oninput="executeDataGridFilters()" placeholder="Search Name/Email..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-blue-500">
-                    </div>
-                    <div>
-                        <select id="filterStage" onchange="executeDataGridFilters()" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none">
-                            <option value="">All Stages</option>
-                            <option value="New Lead">New Lead</option>
-                            <option value="Contacted">Contacted</option>
-                            <option value="Webinar Agreed">Webinar Agreed</option>
-                            <option value="Not Interested">Not Interested</option>
-                        </select>
-                    </div>
-                    <div>
-                        <select id="filterProgram" onchange="executeDataGridFilters()" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none">
-                            <option value="">All Programs</option>
-                            <option value="Math">Math</option>
-                            <option value="Code">Code</option>
-                            <option value="Fin">Fin</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-                    <div>
-                        <select id="filterScouter" onchange="executeDataGridFilters()" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none">
-                            <option value="">All Scouters</option>
-                        </select>
-                    </div>
-                    <div>
-                        <select id="filterDateSort" onchange="executeDataGridFilters()" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-slate-300 focus:outline-none">
-                            <option value="desc">Newest Added</option>
-                            <option value="asc">Oldest Added</option>
-                        </select>
                     </div>
                 </div>
 
-                <div class="bg-slate-950 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
-                    <div class="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div>
-                            <h3 class="text-base font-bold text-white">Active Institutional Accounts</h3>
-                            <p class="text-xs text-slate-500">Live records streaming directly from cluster database storage</p>
-                        </div>
-                        <button id="adminExportBtn" onclick="exportDatabaseToCSV()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs py-2.5 px-4 rounded-xl transition duration-150 flex items-center space-x-1.5">
-                            <span>📥</span> <span>Export Master Database to CSV</span>
-                        </button>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-slate-950/50 text-slate-400 text-xs uppercase tracking-wider font-semibold border-b border-slate-800">
-                                    <th class="p-4 pl-6">ID & School Parameters</th>
-                                    <th class="p-4">Contact Logic</th>
-                                    <th class="p-4">Track Parameters</th>
-                                    <th class="p-4">Verification Status</th>
-                                    <th class="p-4 pr-6 text-right">Stage Override</th>
-                                </tr>
-                            </thead>
-                            <tbody id="dataTableBody" class="text-xs divide-y divide-slate-800/60">
-                                <tr>
-                                    <td colspan="5" class="p-8 text-center text-slate-500 font-medium">Establishing secure handshakes with data clusters...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
             </div>
 
-            <div id="audit-tab" class="tab-content hidden space-y-4">
+            <!-- AUDIT TAB CONTAINER -->
+            <div id="audit-tab" class="tab-content hidden flex-1 flex flex-col p-6 overflow-hidden h-full">
+                <div class="mb-3">
+                    <h2 class="text-base font-bold text-white">Cloud Node System Log Trail</h2>
+                    <p class="text-slate-400 text-xs">Chronological stream tracking unalterable pipeline modification events</p>
+                </div>
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-[11px] text-emerald-400 space-y-1.5 flex-1 overflow-y-auto shadow-inner" id="auditTerminal"></div>
+            </div>
+
+            <!-- ANALYTICS TAB CONTAINER -->
+            <div id="analytics-tab" class="tab-content hidden flex-1 flex flex-col p-6 overflow-y-auto space-y-4 h-full">
                 <div>
-                    <h2 class="text-xl font-bold text-white">Cloud Node System Log Trail</h2>
-                    <p class="text-slate-400 text-sm">Chronological stream tracking unalterable pipeline mutations</p>
+                    <h2 class="text-base font-bold text-white">Live Funnel Data Modeling</h2>
+                    <p class="text-slate-400 text-xs">Real-time pipeline volume allocation metric mapping infrastructure</p>
                 </div>
-                <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 font-mono text-xs text-emerald-400 space-y-2 h-[550px] overflow-y-auto" id="auditTerminal"></div>
+                <div class="bg-slate-950 border border-slate-800 p-5 rounded-xl shadow-xl max-w-sm">
+                    <h3 class="text-xs font-bold text-slate-300 mb-3">Pipeline Status Volume Weight</h3>
+                    <div class="h-48"><canvas id="pipelineChart"></canvas></div>
+                </div>
             </div>
 
-            <div id="analytics-tab" class="tab-content hidden space-y-4">
-                <div>
-                    <h2 class="text-xl font-bold text-white">Live Funnel Data Modeling</h2>
-                    <p class="text-slate-400 text-sm">Real-time pipeline volume allocation metric mapping</p>
-                </div>
-                <div class="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-xl max-w-md">
-                    <h3 class="text-sm font-bold text-slate-300 mb-4">Pipeline Status Volume Weight</h3>
-                    <div class="h-64"><canvas id="pipelineChart"></canvas></div>
-                </div>
-            </div>
         </main>
     </div>
 
+    <!-- MAIN APP CONTROLLER MODULE ENGINE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -251,6 +323,7 @@
         provider.setCustomParameters({ prompt: 'select_account' });
 
         let localLeadsArray = [];
+        let selectedRecordId = null;
         let pipelineChartInstance = null;
         let unsubscribeLeads = null;
         let unsubscribeLogs = null;
@@ -329,6 +402,7 @@
                 localLeadsArray = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
                 populateScouterFilterOptions();
                 executeDataGridFilters();
+                if(selectedRecordId) loadWorkspaceDrawerRecord(selectedRecordId);
             }, err => console.error("Pipeline Sync Error:", err));
 
             unsubscribeLogs = onSnapshot(query(collection(db, "audit_logs"), orderBy("timestamp", "desc")), (snapshot) => {
@@ -348,7 +422,7 @@
             
             scouterDropdown.innerHTML = '<option value="">All Scouters</option>';
             uniqueScouters.forEach(scouter => {
-                scouterDropdown.innerHTML += `<option value="${scouter}">${scouter}</option>`;
+                scouterDropdown.innerHTML += `<option value="${scouter}">${scouter.split('@')[0]}</option>`;
             });
             scouterDropdown.value = savedValue;
         }
@@ -384,7 +458,7 @@
             tbody.innerHTML = '';
 
             if (dataSubset.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-500 font-medium">No accounts found matching active filters.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-500">No accounts found matching active criteria.</td></tr>';
                 return;
             }
 
@@ -396,66 +470,102 @@
 
                 let inlineWebinarPayload = "";
                 if(lead.status === 'Webinar Agreed' && lead.webinarDate) {
-                    inlineWebinarPayload = `<div class="text-[10px] text-emerald-500 font-mono mt-0.5">Date: ${lead.webinarDate}</div>`;
+                    inlineWebinarPayload = `<span class="text-[10px] text-emerald-500 font-mono ml-2">(${lead.webinarDate})</span>`;
                 }
 
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-900/40 transition border-b border-slate-800/40";
+                tr.className = `cursor-pointer transition border-b border-slate-800/40 hover:bg-slate-900/60 ${selectedRecordId === lead.id ? 'bg-slate-900/80 border-l-2 border-l-blue-500' : ''}`;
+                tr.onclick = () => selectRecordWorkspaceRow(lead.id);
+                
                 tr.innerHTML = `
-                    <td class="p-4 pl-6 max-w-xs">
+                    <td class="p-3 pl-4 max-w-xs truncate">
                         <div class="font-bold text-white truncate">${lead.school || 'Unnamed'}</div>
-                        <div class="text-[10px] text-slate-500 font-mono tracking-tight">${lead.uniqueSchoolId || 'N/A'}</div>
+                        <div class="text-[10px] text-slate-500 font-mono tracking-tight">${lead.mainContactName || 'N/A'}</div>
                     </td>
-                    <td class="p-4 text-slate-300">
-                        <div class="font-medium text-slate-200 truncate">${lead.mainContactName || 'N/A'} (${lead.mainContactDesignation || 'POC'})</div>
-                        <div class="text-[11px] text-slate-400 font-mono">${lead.mainEmailId || 'N/A'} | ${lead.mainContactNo || 'N/A'}</div>
-                    </td>
-                    <td class="p-4">
-                        <div class="font-semibold text-slate-200">${lead.scoutedFor || 'Other'}</div>
-                        <div class="text-[10px] text-slate-500 truncate">By: ${lead.operator?.split('@')[0]}</div>
-                    </td>
-                    <td class="p-4">
-                        <span class="inline-block px-2 py-0.5 text-[11px] font-semibold rounded-md border ${statusBadge}">${lead.status || 'New Lead'}</span>
+                    <td class="p-3 text-slate-400 font-mono truncate">${lead.mainContactNo || 'N/A'}</td>
+                    <td class="p-3 font-semibold text-slate-300">${lead.scoutedFor || 'Other'}</td>
+                    <td class="p-3 pr-4">
+                        <span class="inline-block px-2 py-0.5 text-[10px] font-bold rounded border ${statusBadge}">${lead.status || 'New Lead'}</span>
                         ${inlineWebinarPayload}
-                    </td>
-                    <td class="p-4 pr-6 text-right">
-                        <div class="flex items-center justify-end space-x-1">
-                            <input type="date" value="${lead.webinarDate || ''}" id="inlineDate-${lead.id}" class="${lead.status === 'Webinar Agreed' ? '' : 'hidden'} bg-slate-900 border border-slate-800 rounded p-1 text-[10px] text-white">
-                            <select class="status-select bg-slate-900 border border-slate-800 text-[11px] rounded-lg p-1.5 focus:outline-none focus:border-blue-500 text-slate-200" data-id="${lead.id}" data-school="${lead.school}" data-status="${lead.status}">
-                                <option value="New Lead" ${lead.status === 'New Lead' ? 'selected' : ''}>New Lead</option>
-                                <option value="Contacted" ${lead.status === 'Contacted' ? 'selected' : ''}>Contacted</option>
-                                <option value="Webinar Agreed" ${lead.status === 'Webinar Agreed' ? 'selected' : ''}>Webinar Agreed</option>
-                                <option value="Not Interested" ${lead.status === 'Not Interested' ? 'selected' : ''}>Not Interested</option>
-                            </select>
-                        </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
-
-            document.querySelectorAll('.status-select').forEach(select => {
-                select.onchange = (e) => {
-                    const el = e.target;
-                    const docId = el.getAttribute('data-id');
-                    const inlineDateInput = document.getElementById(`inlineDate-${docId}`);
-                    const selectedStatus = el.value;
-                    
-                    let targetWebinarDate = "";
-                    if(selectedStatus === 'Webinar Agreed') {
-                        inlineDateInput.classList.remove('hidden');
-                        if(!inlineDateInput.value) {
-                            alert("Please select the Webinar Schedule Date using the inline date input.");
-                            el.value = el.getAttribute('data-status'); // Reset selection
-                            return;
-                        }
-                        targetWebinarDate = inlineDateInput.value;
-                    } else {
-                        inlineDateInput.classList.add('hidden');
-                    }
-                    executeStatusUpdate(docId, el.getAttribute('data-school'), el.getAttribute('data-status'), selectedStatus, targetWebinarDate);
-                };
-            });
         }
+
+        window.selectRecordWorkspaceRow = function(recordId) {
+            selectedRecordId = recordId;
+            executeDataGridFilters(); // Re-render to show active borders
+            loadWorkspaceDrawerRecord(recordId);
+        };
+
+        function loadWorkspaceDrawerRecord(id) {
+            const lead = localLeadsArray.find(l => l.id === id);
+            if(!lead) {
+                closeWorkspaceDrawer();
+                return;
+            }
+
+            document.getElementById('drawerEmptyState').classList.add('hidden');
+            document.getElementById('drawerActiveState').classList.remove('hidden');
+
+            document.getElementById('drawerSchoolId').innerText = lead.uniqueSchoolId || 'N/A';
+            document.getElementById('drawerSchoolName').innerText = lead.school || 'Unnamed';
+            document.getElementById('drawerStatusSelect').value = lead.status || 'New Lead';
+
+            document.getElementById('dContactName').innerText = lead.mainContactName || 'N/A';
+            document.getElementById('dContactDesignation').innerText = lead.mainContactDesignation || 'N/A';
+            document.getElementById('dContactNo').innerText = lead.mainContactNo || 'N/A';
+            document.getElementById('dEmailId').innerText = lead.mainEmailId || 'N/A';
+            document.getElementById('dContactNo2').innerText = lead.contactNo2 || 'N/A';
+            document.getElementById('dEmailId2').innerText = lead.emailId2 || 'N/A';
+            document.getElementById('dProgram').innerText = lead.scoutedFor || 'Other';
+            document.getElementById('dScouter').innerText = lead.operator || 'System Log';
+            document.getElementById('dCreatedTime').innerText = lead.addedDateTimeString || 'N/A';
+
+            const linkElement = document.getElementById('dLinks');
+            const linkNoneElement = document.getElementById('dLinksNone');
+            if (lead.anyRelatedLinks) {
+                linkElement.href = lead.anyRelatedLinks;
+                linkElement.classList.remove('hidden');
+                linkNoneElement.classList.add('hidden');
+            } else {
+                linkElement.classList.add('hidden');
+                linkNoneElement.classList.remove('hidden');
+            }
+
+            const wrapper = document.getElementById('drawerWebinarDateWrapper');
+            const dateInput = document.getElementById('drawerWebinarDateInput');
+            if(lead.status === 'Webinar Agreed') {
+                wrapper.classList.remove('hidden');
+                dateInput.value = lead.webinarDate || '';
+            } else {
+                wrapper.classList.add('hidden');
+                dateInput.value = '';
+            }
+
+            document.getElementById('drawerStatusSelect').onchange = (e) => {
+                toggleWebinarDateConstraint(e.target.value, 'drawerWebinarDateWrapper');
+            };
+
+            document.getElementById('drawerSaveBtn').onclick = () => {
+                const updatedStatus = document.getElementById('drawerStatusSelect').value;
+                const updatedDate = document.getElementById('drawerWebinarDateInput').value;
+
+                if (updatedStatus === 'Webinar Agreed' && !updatedDate) {
+                    alert("Please log the Confirmed Webinar Date inside the dynamic fields input container before executing changes.");
+                    return;
+                }
+                executeStatusUpdate(lead.id, lead.school, lead.status, updatedStatus, updatedDate);
+            };
+        }
+
+        window.closeWorkspaceDrawer = function() {
+            selectedRecordId = null;
+            document.getElementById('drawerActiveState').classList.add('hidden');
+            document.getElementById('drawerEmptyState').classList.remove('hidden');
+            executeDataGridFilters();
+        };
 
         window.handleFormSubmit = function(e) {
             e.preventDefault();
@@ -464,7 +574,6 @@
             const mainContactNo = document.getElementById('mainContactNo').value.trim();
             const mainEmailId = document.getElementById('mainEmailId').value.trim();
 
-            // REAL-TIME DUPLICATE INTERCEPTION RULES MATRIX
             const isDuplicate = localLeadsArray.some(lead => 
                 (lead.school || '').toLowerCase() === schoolName.toLowerCase() ||
                 (lead.mainEmailId || '').toLowerCase() === mainEmailId.toLowerCase() ||
@@ -472,7 +581,7 @@
             );
 
             if (isDuplicate) {
-                alert(`Data Conflict Aborted:\nAn entry matching either this School Name, Main Email ID, or Contact Number already exists in the master matrix database.`);
+                alert(`Conflict Warning:\nAn entry tracking this School Name, Main Email, or Contact Number already exists in the database.`);
                 return;
             }
 
@@ -511,6 +620,7 @@
                 document.getElementById('outreachForm').reset();
                 document.getElementById('formWebinarDateWrapper').classList.add('hidden');
                 btn.disabled = false;
+                document.querySelector('details').open = false; // Collapse panel
             }).catch(err => {
                 alert("Write Failed: " + err.message);
                 btn.disabled = false;
@@ -523,7 +633,7 @@
 
             updateDoc(doc(db, "leads", id), updates).then(() => {
                 return addDoc(collection(db, "audit_logs"), {
-                    logText: `Operator [${operator}] updated stage of '${schoolName || 'Institution'}' from [${oldStatus}] to [${newStatus}] ${targetWebinarDate ? 'scheduled for ' + targetWebinarDate : ''}`,
+                    logText: `Operator [${operator}] modified pipeline stage of '${schoolName || 'Institution'}' from [${oldStatus}] to [${newStatus}] ${targetWebinarDate ? '(Webinar: ' + targetWebinarDate + ')' : ''}`,
                     timestamp: serverTimestamp()
                 });
             }).catch(err => alert("Mutation Interrupted: " + err.message));
@@ -549,8 +659,8 @@
         window.switchTab = function(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(tabId).classList.remove('hidden');
-            document.querySelectorAll('nav button').forEach(btn => btn.className = "w-full text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-900 hover:text-slate-200 font-medium transition duration-150 flex items-center space-x-3");
-            document.getElementById(`btn-${tabId}`).className = "w-full text-left px-4 py-3 rounded-xl bg-blue-600 text-white font-medium transition duration-150 flex items-center space-x-3";
+            document.querySelectorAll('nav button').forEach(btn => btn.className = "w-full text-left px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-900 hover:text-slate-200 font-medium text-xs transition flex items-center space-x-3");
+            document.getElementById(`btn-${tabId}`).className = "w-full text-left px-3 py-2.5 rounded-lg bg-blue-600 text-white font-medium text-xs transition flex items-center space-x-3";
             if (tabId === 'analytics-tab') generateChartAnalytics();
         };
 
@@ -573,7 +683,7 @@
                     }]
                 },
                 options: {
-                    plugins: { legend: { labels: { color: '#94a3b8', font: { family: 'sans-serif', size: 11 } } } },
+                    plugins: { legend: { labels: { color: '#94a3b8', font: { family: 'sans-serif', size: 10 } } } },
                     responsive: true,
                     maintainAspectRatio: false
                 }
