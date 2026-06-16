@@ -7,157 +7,56 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-gray-900 text-slate-100 min-h-screen font-sans selection:bg-blue-500 selection:text-white">
+<body class="bg-gray-900 text-slate-100 min-h-screen">
 
-    <div id="authScreen" class="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center z-50 p-4 transition-all duration-300">
-        <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl max-w-md w-full shadow-2xl text-center">
-            <div class="h-12 w-12 rounded-xl bg-blue-600/10 flex items-center justify-center mx-auto mb-4 border border-blue-500/20">
-                <span class="text-2xl text-blue-400">🔒</span>
-            </div>
-            <h1 class="text-2xl font-bold tracking-tight text-white mb-2">Webinar Ops CRM Portal</h1>
-            <p class="text-sm text-slate-400 mb-6">Internal execution dashboard. Authorized access checkpoints enabled.</p>
-            
-            <div id="authMessage" class="hidden text-xs font-semibold p-3 rounded-lg mb-4 text-center"></div>
-
-            <button id="signInBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 px-4 rounded-xl transition duration-150 flex items-center justify-center space-x-2 shadow-lg shadow-blue-600/20 active:scale-[0.98]">
-                <span>Sign In with BrightChamps Account</span>
-            </button>
+    <div id="authScreen" class="fixed inset-0 bg-slate-950 flex items-center justify-center z-50">
+        <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl w-full max-w-sm text-center">
+            <h1 class="text-xl font-bold mb-6">Webinar Ops Portal</h1>
+            <button id="signInBtn" class="bg-blue-600 hover:bg-blue-500 w-full py-3 rounded-xl font-medium">Sign In with BrightChamps</button>
+            <div id="authMessage" class="mt-4 text-xs text-red-400"></div>
         </div>
     </div>
 
     <div id="mainDashboard" class="hidden flex min-h-screen">
-        
-        <aside class="w-64 bg-slate-950 border-r border-slate-800 p-6 flex flex-col justify-between fixed h-full z-40">
-            <div>
-                <div class="flex items-center space-x-2 mb-6">
-                    <span class="text-xl">📊</span>
-                    <div>
-                        <h2 class="text-lg font-bold text-white tracking-wide">Webinar Ops</h2>
-                        <p class="text-[10px] text-emerald-400 font-mono tracking-wider uppercase">Secure Firewall Active</p>
-                    </div>
-                </div>
-                
-                <nav class="space-y-1.5">
-                    <button onclick="switchTab('log-tab')" id="btn-log-tab" class="w-full text-left px-4 py-3 rounded-xl bg-blue-600 text-white font-medium transition duration-150 flex items-center space-x-3">
-                        <span>📝</span> <span>Pipeline Register</span>
-                    </button>
-                    <button onclick="switchTab('audit-tab')" id="btn-audit-tab" class="w-full text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-900 hover:text-slate-200 font-medium transition duration-150 flex items-center space-x-3">
-                        <span>📜</span> <span>System Audit Logs</span>
-                    </button>
-                    <button onclick="switchTab('analytics-tab')" id="btn-analytics-tab" class="w-full text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-900 hover:text-slate-200 font-medium transition duration-150 flex items-center space-x-3">
-                        <span>📈</span> <span>Live Analytics</span>
-                    </button>
-                </nav>
-            </div>
-
-            <div class="pt-4 border-t border-slate-800">
-                <div class="flex items-center space-x-3 mb-3">
-                    <div class="h-9 w-9 rounded-full bg-slate-800 flex items-center justify-center font-bold text-blue-400" id="userInitial">U</div>
-                    <div class="truncate">
-                        <p class="text-xs font-semibold text-white truncate" id="userNameProfile">Authorized User</p>
-                        <p class="text-[10px] text-slate-500 truncate" id="userEmailProfile">email@brightchamps.com</p>
-                    </div>
-                </div>
-                <button id="signOutBtn" class="w-full bg-slate-900 hover:bg-red-950 hover:text-red-400 text-slate-400 font-medium py-2 px-3 rounded-xl border border-slate-800 hover:border-red-900/50 transition duration-150 text-xs active:scale-[0.98]">
-                    Disconnect Session
-                </button>
-            </div>
+        <aside class="w-64 bg-slate-950 border-r border-slate-800 p-6">
+            <nav class="space-y-2">
+                <button onclick="switchTab('log-tab')" class="w-full text-left p-3 bg-blue-600 rounded-xl">Pipeline Register</button>
+                <button onclick="switchTab('audit-tab')" class="w-full text-left p-3 hover:bg-slate-900 rounded-xl">System Audit Logs</button>
+                <button onclick="switchTab('analytics-tab')" class="w-full text-left p-3 hover:bg-slate-900 rounded-xl">Analytics</button>
+            </nav>
         </aside>
-
-        <main class="flex-1 ml-64 p-8 bg-slate-900 min-h-screen">
-            
+        
+        <main class="flex-1 p-8">
             <div id="log-tab" class="tab-content space-y-6">
-                <div class="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-xl">
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Initialize New School Pipeline Entry</h3>
-                    <form id="outreachForm" onsubmit="handleFormSubmit(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-400 mb-1.5">School Name</label>
-                            <input type="text" id="schoolName" required placeholder="Oakridge High" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 transition">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-400 mb-1.5">Point of Contact Details</label>
-                            <input type="text" id="contactInfo" required placeholder="Principal Jane (jane@school.edu)" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 transition">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-400 mb-1.5">Funnel Allocation Stage</label>
-                            <select id="status" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 transition appearance-none">
-                                <option value="New Lead">New Lead</option>
-                                <option value="Contacted">Contacted</option>
-                                <option value="Webinar Agreed">Webinar Agreed</option>
-                                <option value="Not Interested">Not Interested</option>
-                            </select>
-                        </div>
-                        <div>
-                            <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium p-3 rounded-xl transition duration-150 shadow-lg shadow-blue-600/10 active:scale-[0.98] text-sm">
-                                Append Pipeline Record
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="bg-slate-950 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
-                    <div class="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div>
-                            <h3 class="text-base font-bold text-white">Active Institutional Accounts</h3>
-                            <p class="text-xs text-slate-500">Live system readouts streaming directly from Mumbai Node cluster storage</p>
-                        </div>
-                        
-                        <button id="adminExportBtn" onclick="exportDatabaseToCSV()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs py-2.5 px-4 rounded-xl transition duration-150 shadow-md shadow-emerald-600/10 active:scale-[0.98] flex items-center space-x-1.5">
-                            <span>📥</span> <span>Export Master Database to CSV</span>
-                        </button>
-                    </div>
-                    
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-slate-950/50 text-slate-400 text-xs uppercase tracking-wider font-semibold border-b border-slate-800">
-                                    <th class="p-4 pl-6">Target Institution</th>
-                                    <th class="p-4">Contact Parameters</th>
-                                    <th class="p-4">Verification Stage Status</th>
-                                    <th class="p-4 pr-6 text-right">State Manipulation Override</th>
-                                </tr>
-                            </thead>
-                            <tbody id="dataTableBody" class="text-sm divide-y divide-slate-800/60">
-                                <tr>
-                                    <td colspan="4" class="p-8 text-center text-slate-500 font-medium">Establishing handshakes with database streams...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                <form id="outreachForm" onsubmit="handleFormSubmit(event)" class="grid grid-cols-4 gap-4">
+                    <input type="text" id="schoolName" placeholder="School Name" class="bg-slate-900 border border-slate-800 p-3 rounded-xl" required>
+                    <input type="text" id="contactInfo" placeholder="Contact" class="bg-slate-900 border border-slate-800 p-3 rounded-xl" required>
+                    <select id="status" class="bg-slate-900 border border-slate-800 p-3 rounded-xl">
+                        <option value="New Lead">New Lead</option>
+                        <option value="Contacted">Contacted</option>
+                        <option value="Webinar Agreed">Webinar Agreed</option>
+                    </select>
+                    <button type="submit" id="submitBtn" class="bg-blue-600 p-3 rounded-xl">Append Record</button>
+                </form>
+                <table class="w-full bg-slate-950 border border-slate-800 rounded-xl">
+                    <tbody id="dataTableBody"></tbody>
+                </table>
             </div>
 
-            <div id="audit-tab" class="tab-content hidden space-y-4">
-                <div>
-                    <h2 class="text-xl font-bold text-white">Cloud Node System Log Trail</h2>
-                    <p class="text-slate-400 text-sm">Unalterable chronological stream tracking pipeline mutation triggers</p>
-                </div>
-                <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 shadow-inner font-mono text-xs text-emerald-400 space-y-2 h-[550px] overflow-y-auto" id="auditTerminal"></div>
+            <div id="audit-tab" class="tab-content hidden">
+                <div id="auditTerminal" class="bg-slate-950 border border-slate-800 p-6 rounded-2xl font-mono text-xs text-emerald-400 h-[500px] overflow-y-auto"></div>
             </div>
 
-            <div id="analytics-tab" class="tab-content hidden space-y-4">
-                <div>
-                    <h2 class="text-xl font-bold text-white">Live Funnel Data Modeling</h2>
-                    <p class="text-slate-400 text-sm">Real-time pipeline volume allocation arrays</p>
-                </div>
-                <div class="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-xl max-w-md">
-                    <h3 class="text-sm font-bold text-slate-300 mb-4">Pipeline Status Volume Weight</h3>
-                    <div class="h-64">
-                        <canvas id="pipelineChart"></canvas>
-                    </div>
-                </div>
+            <div id="analytics-tab" class="tab-content hidden">
+                <div class="h-64"><canvas id="pipelineChart"></canvas></div>
             </div>
-
         </main>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, doc, updateDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        const ALLOWED_DOMAIN = 'brightchamps.com'; 
-        const SUPER_ADMIN_EMAIL = 'kiran.aluvara@brightchamps.com'; 
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAYpGUhW9CDWLwuj7ZHVRYFAq-37uS0flU",
@@ -171,270 +70,53 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const provider = new GoogleAuthProvider();
-        provider.setCustomParameters({ prompt: 'select_account' });
 
-        let localLeadsArray = [];
-        let pipelineChartInstance = null;
-        let unsubscribeLeads = null;
-        let unsubscribeLogs = null;
+        let localLeads = [];
 
         onAuthStateChanged(auth, (user) => {
-            const authScreen = document.getElementById('authScreen');
-            const mainDashboard = document.getElementById('mainDashboard');
-            const authMessage = document.getElementById('authMessage');
-
             if (user) {
-                const email = user.email || '';
-                const domain = email.split('@')[1];
-
-                if (domain !== ALLOWED_DOMAIN) {
-                    authMessage.className = "text-xs font-semibold p-3 rounded-lg mb-4 text-center bg-red-950/50 text-red-400 border border-red-900/30";
-                    authMessage.innerText = `Access Denied: ${email} is not authorized.`;
-                    authMessage.classList.remove('hidden');
-                    signOut(auth);
-                    return;
-                }
-
-                if (email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()) {
-                    document.getElementById('adminExportBtn').classList.remove('hidden');
-                } else {
-                    document.getElementById('adminExportBtn').classList.add('hidden');
-                }
-
-                authScreen.classList.add('opacity-0', 'pointer-events-none');
-                mainDashboard.classList.remove('hidden');
-                
-                document.getElementById('userNameProfile').innerText = user.displayName || 'Agent';
-                document.getElementById('userEmailProfile').innerText = email;
-                document.getElementById('userInitial').innerText = (user.displayName || 'A').charAt(0);
-
+                document.getElementById('authScreen').classList.add('hidden');
+                document.getElementById('mainDashboard').classList.remove('hidden');
                 initializeDataStreams();
-            } else {
-                if (unsubscribeLeads) unsubscribeLeads();
-                if (unsubscribeLogs) unsubscribeLogs();
-                mainDashboard.classList.add('hidden');
-                authScreen.classList.remove('opacity-0', 'pointer-events-none');
             }
         });
 
-        document.getElementById('signInBtn').onclick = () => {
-            signInWithPopup(auth, provider).catch(error => {
-                const msg = document.getElementById('authMessage');
-                msg.className = "text-xs font-semibold p-3 rounded-lg mb-4 text-center bg-red-950/50 text-red-400 border border-red-900/30";
-                msg.innerText = "Connection Failed: " + error.message;
-                msg.classList.remove('hidden');
-            });
-        };
+        function initializeDataStreams() {
+            const terminal = document.getElementById('auditTerminal');
+            const formatTs = (ts) => (ts && ts.toDate ? ts.toDate().toLocaleTimeString() : new Date().toLocaleTimeString());
 
-        document.getElementById('signOutBtn').onclick = () => signOut(auth);
-
-        async function initializeDataStreams() {
-            if (unsubscribeLeads) unsubscribeLeads();
-            if (unsubscribeLogs) unsubscribeLogs();
-
-            const leadsQuery = query(collection(db, "leads"), orderBy("timestamp", "desc"));
-            const logsQuery = query(collection(db, "audit_logs"), orderBy("timestamp", "desc"));
-
-            // SECURE FORCED COLD-START FETCH: Bypasses initial rule propagation lag
-            try {
-                const leadsInitial = await getDocs(leadsQuery);
-                localLeadsArray = [];
-                leadsInitial.forEach((docSnapshot) => {
-                    let data = docSnapshot.data();
-                    data.id = docSnapshot.id;
-                    localLeadsArray.push(data);
-                });
-                renderDataTable();
-
-                const logsInitial = await getDocs(logsQuery);
-                const terminal = document.getElementById('auditTerminal');
-                if (terminal) {
-                    terminal.innerHTML = '';
-                    logsInitial.forEach((docSnapshot) => {
-                        const log = docSnapshot.data();
-                        let timeString = log.timestamp ? new Date(log.timestamp.toDate()).toLocaleTimeString() : new Date().toLocaleTimeString();
-                        terminal.innerHTML += `<p class="py-0.5 font-mono"><span class="text-slate-600">[${timeString}]</span> <span class="text-emerald-400">${log.logText || 'System Check'}</span></p>`;
-                    });
-                }
-            } catch (initialFetchErr) {
-                console.warn("Initial payload sync queued, moving to streaming channel...", initialFetchErr);
-            }
-
-            // BACKUP DEPLOYMENT LAYER: Establish active listening hooks
-            unsubscribeLeads = onSnapshot(leadsQuery, (snapshot) => {
-                localLeadsArray = [];
-                snapshot.docs.forEach((docSnapshot) => {
-                    let data = docSnapshot.data();
-                    data.id = docSnapshot.id;
-                    localLeadsArray.push(data);
-                });
-                renderDataTable();
-            });
-
-            unsubscribeLogs = onSnapshot(logsQuery, (snapshot) => {
-                const terminal = document.getElementById('auditTerminal');
-                if (!terminal) return;
+            onSnapshot(query(collection(db, "audit_logs"), orderBy("timestamp", "desc")), (snapshot) => {
                 terminal.innerHTML = '';
-                snapshot.docs.forEach((docSnapshot) => {
-                    const log = docSnapshot.data();
-                    let timeString = log.timestamp ? new Date(log.timestamp.toDate()).toLocaleTimeString() : new Date().toLocaleTimeString();
-                    terminal.innerHTML += `<p class="py-0.5 font-mono"><span class="text-slate-600">[${timeString}]</span> <span class="text-emerald-400">${log.logText || 'Mutation logged'}</span></p>`;
+                snapshot.docs.forEach(doc => {
+                    const log = doc.data();
+                    terminal.innerHTML += `<p>[${formatTs(log.timestamp)}] ${log.logText || 'Action Recorded'}</p>`;
+                });
+            });
+
+            onSnapshot(query(collection(db, "leads"), orderBy("timestamp", "desc")), (snapshot) => {
+                localLeads = snapshot.docs.map(d => d.data());
+                const tbody = document.getElementById('dataTableBody');
+                tbody.innerHTML = '';
+                localLeads.forEach(lead => {
+                    tbody.innerHTML += `<tr class="border-b border-slate-800"><td class="p-4">${lead.school}</td><td class="p-4">${lead.status}</td></tr>`;
                 });
             });
         }
 
-        function renderDataTable() {
-            const tbody = document.getElementById('dataTableBody');
-            tbody.innerHTML = '';
-
-            if (localLeadsArray.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-500 font-medium">No records logged. Index clean.</td></tr>';
-                return;
-            }
-
-            localLeadsArray.forEach(lead => {
-                let badgeStyle = "bg-slate-900 text-slate-400 border-slate-800";
-                if(lead.status === 'Webinar Agreed') badgeStyle = "bg-emerald-950/40 text-emerald-400 border-emerald-900/30";
-                if(lead.status === 'Contacted') badgeStyle = "bg-blue-950/40 text-blue-400 border-blue-900/30";
-                if(lead.status === 'New Lead') badgeStyle = "bg-amber-950/40 text-amber-400 border-amber-900/30";
-
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-900/40 transition duration-150 border-b border-slate-900/60";
-                tr.innerHTML = `
-                    <td class="p-4 pl-6 font-bold text-white max-w-xs truncate">${lead.school || 'Unnamed'}</td>
-                    <td class="p-4 text-slate-300 max-w-xs truncate">${lead.contact || 'N/A'}</td>
-                    <td class="p-4"><span class="px-2.5 py-1 text-xs font-semibold rounded-lg border ${badgeStyle}">${lead.status || 'New Lead'}</span></td>
-                    <td class="p-4 pr-6 text-right">
-                        <select class="status-select bg-slate-900 border border-slate-800 text-xs rounded-lg p-1.5 focus:outline-none focus:border-blue-500 transition text-slate-200" data-id="${lead.id}" data-school="${lead.school}" data-status="${lead.status}">
-                            <option value="New Lead" ${lead.status === 'New Lead' ? 'selected' : ''}>New Lead</option>
-                            <option value="Contacted" ${lead.status === 'Contacted' ? 'selected' : ''}>Contacted</option>
-                            <option value="Webinar Agreed" ${lead.status === 'Webinar Agreed' ? 'selected' : ''}>Webinar Agreed</option>
-                            <option value="Not Interested" ${lead.status === 'Not Interested' ? 'selected' : ''}>Not Interested</option>
-                        </select>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            document.querySelectorAll('.status-select').forEach(select => {
-                select.onchange = (e) => {
-                    const el = e.target;
-                    executeStatusUpdate(el.getAttribute('data-id'), el.getAttribute('data-school'), el.getAttribute('data-status'), el.value);
-                };
-            });
-        }
-
-        window.handleFormSubmit = function(e) {
+        window.handleFormSubmit = async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            btn.disabled = true;
-            btn.innerText = "Appending Data Array...";
-
             const school = document.getElementById('schoolName').value;
-            const contact = document.getElementById('contactInfo').value;
-            const status = document.getElementById('status').value;
-            const operator = auth.currentUser.email;
-
-            addDoc(collection(db, "leads"), {
-                school: school,
-                contact: contact,
-                status: status,
-                operator: operator,
-                timestamp: serverTimestamp()
-            }).then(() => {
-                return addDoc(collection(db, "audit_logs"), {
-                    logText: `Operator [${operator}] initialized entry: '${school}' to stage [${status}]`,
-                    timestamp: serverTimestamp()
-                });
-            }).then(() => {
-                document.getElementById('outreachForm').reset();
-                btn.disabled = false;
-                btn.innerText = "Append Pipeline Record";
-            }).catch(err => {
-                alert("Write Aborted: " + err.message);
-                btn.disabled = false;
-                btn.innerText = "Append Pipeline Record";
-            });
+            await addDoc(collection(db, "leads"), { school, status: 'New Lead', timestamp: serverTimestamp() });
+            await addDoc(collection(db, "audit_logs"), { logText: `Added: ${school}`, timestamp: serverTimestamp() });
+            document.getElementById('outreachForm').reset();
         };
 
-        function executeStatusUpdate(id, schoolName, oldStatus, newStatus) {
-            if (oldStatus === newStatus) return;
-            const operator = auth.currentUser.email;
-
-            updateDoc(doc(db, "leads", id), { status: newStatus })
-            .then(() => {
-                return addDoc(collection(db, "audit_logs"), {
-                    logText: `Operator [${operator}] shifted '${schoolName}' from [${oldStatus}] to [${newStatus}]`,
-                    timestamp: serverTimestamp()
-                });
-            }).catch(err => alert("Mutation Interrupted: " + err.message));
-        }
-
-        window.exportDatabaseToCSV = function() {
-            if (auth.currentUser.email.toLowerCase() !== SUPER_ADMIN_EMAIL.toLowerCase()) {
-                alert("Security Rejection: Download privilege validation failed.");
-                return;
-            }
-
-            if (localLeadsArray.length === 0) {
-                alert("Index empty.");
-                return;
-            }
-
-            let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "School Name,Contact Info,Status,Logging Operator\n";
-
-            localLeadsArray.forEach(lead => {
-                let row = `"${(lead.school || '').replace(/"/g, '""')}"` + ',' + 
-                          `"${(lead.contact || '').replace(/"/g, '""')}"` + ',' + 
-                          `"${(lead.status || '').replace(/"/g, '""')}"` + ',' + 
-                          `"${(lead.operator || 'System Log').replace(/"/g, '""')}"`;
-                csvContent += row + "\n";
-            });
-
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `BrightChamps_Pipeline_Export_${new Date().toISOString().slice(0,10)}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        };
-
-        window.switchTab = function(tabId) {
+        window.switchTab = (id) => {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById(tabId).classList.remove('hidden');
-            document.querySelectorAll('nav button').forEach(btn => btn.className = "w-full text-left px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-900 hover:text-slate-200 font-medium transition duration-150 flex items-center space-x-3");
-            document.getElementById(`btn-${tabId}`).className = "w-full text-left px-4 py-3 rounded-xl bg-blue-600 text-white font-medium transition duration-150 flex items-center space-x-3";
-            if (tabId === 'analytics-tab') generateChartAnalytics();
+            document.getElementById(id).classList.remove('hidden');
         };
 
-        function generateChartAnalytics() {
-            const metrics = { 'New Lead': 0, 'Contacted': 0, 'Webinar Agreed': 0, 'Not Interested': 0 };
-            localLeadsArray.forEach(l => metrics[l.status] = (metrics[l.status] || 0) + 1);
-            
-            const ctx = document.getElementById('pipelineChart').getContext('2d');
-            if (pipelineChartInstance) pipelineChartInstance.destroy();
-            
-            pipelineChartInstance = new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: Object.keys(metrics),
-                    datasets: [{
-                        data: Object.values(metrics),
-                        backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#475569'],
-                        borderWidth: 2,
-                        borderColor: '#0f172a'
-                    }]
-                },
-                options: {
-                    plugins: { legend: { labels: { color: '#94a3b8', font: { family: 'sans-serif', size: 11 } } } },
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-        }
+        document.getElementById('signInBtn').onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
     </script>
 </body>
 </html>
