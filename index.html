@@ -158,9 +158,9 @@
 
         // DOM INTEGRITY PROTOCOLS
         const ALLOWED_DOMAIN = 'brightchamps.com'; 
-        const SUPER_ADMIN_EMAIL = 'kiran.aluvara@brightchamps.com'; // 👈 ADJUST THIS TO YOUR PERSONAL EMAIL
+        const SUPER_ADMIN_EMAIL = 'kiran.aluvara@brightchamps.com'; // 👈 Synchronized to match profile metadata perfectly
 
-        // Core Infrastructure Credentials Linking (Filled with your active project credentials)
+        // Core Infrastructure Credentials Linking
         const firebaseConfig = {
             apiKey: "AIzaSyAYpGUhW9CDWLwuj7ZHVRYFAq-37uS0flU",
             authDomain: "partnership-outreach-crm.firebaseapp.com",
@@ -228,27 +228,45 @@
 
         document.getElementById('signOutBtn').onclick = () => signOut(auth);
 
+        // RE-ENGINEERED STRUCTURAL SYNC LISTENER LOOP
         function initializeDataStreams() {
+            // 1. Live Leads Register Synchronization Stream
             const leadsQuery = query(collection(db, "leads"), orderBy("timestamp", "desc"));
             onSnapshot(leadsQuery, (snapshot) => {
                 localLeadsArray = [];
-                snapshot.forEach((doc) => {
-                    let data = doc.data();
-                    data.id = doc.id;
+                snapshot.docs.forEach((docSnapshot) => {
+                    let data = docSnapshot.data();
+                    data.id = docSnapshot.id;
                     localLeadsArray.push(data);
                 });
                 renderDataTable();
+            }, (error) => {
+                console.error("Leads Sync Failure:", error);
             });
 
+            // 2. Fixed System Audit Log Live Rendering Engine
             const logsQuery = query(collection(db, "audit_logs"), orderBy("timestamp", "desc"));
             onSnapshot(logsQuery, (snapshot) => {
                 const terminal = document.getElementById('auditTerminal');
+                if (!terminal) return;
+                
                 terminal.innerHTML = '';
-                snapshot.forEach((doc) => {
-                    const log = doc.data();
-                    const timeString = log.timestamp ? new Date(log.timestamp.toDate()).toLocaleTimeString() : '';
-                    terminal.innerHTML += `<p class="py-0.5"><span class="text-slate-600">[${timeString}]</span> ${log.logText}</p>`;
+                
+                snapshot.docs.forEach((docSnapshot) => {
+                    const log = docSnapshot.data();
+                    
+                    let timeString = "Syncing...";
+                    if (log.timestamp) {
+                        timeString = new Date(log.timestamp.toDate()).toLocaleTimeString();
+                    } else {
+                        timeString = new Date().toLocaleTimeString();
+                    }
+                    
+                    const systemMessage = log.logText || "Unknown data mutation recorded.";
+                    terminal.innerHTML += `<p class="py-0.5 tracking-wide"><span class="text-slate-600">[${timeString}]</span> <span class="text-emerald-400">${systemMessage}</span></p>`;
                 });
+            }, (error) => {
+                console.error("Audit Logs Sync Failure:", error);
             });
         }
 
