@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Webinar Ops CRM Portal</title>
-    <!-- Core UI Framework & Fonts -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,7 +21,6 @@
 </head>
 <body class="bg-[#030712] text-slate-200 min-h-screen select-none antialiased">
 
-    <!-- 1. AUTH GATEWAY VIEW CONTAINER -->
     <div id="authScreen" class="fixed inset-0 bg-[#030712]/95 backdrop-blur-md flex items-center justify-center z-50 p-4 transition-opacity duration-500">
         <div class="bg-[#090d16] border border-slate-800/80 p-8 rounded-2xl w-full max-w-md shadow-2xl relative">
             <div class="w-12 h-12 bg-indigo-600/10 border border-indigo-500/30 text-indigo-400 rounded-xl flex items-center justify-center mx-auto mb-5 text-xl">
@@ -39,10 +37,8 @@
         </div>
     </div>
 
-    <!-- 2. CORE WORKSPACE APPLICATION INTERFACE -->
     <div id="mainDashboard" class="hidden flex h-screen overflow-hidden">
         
-        <!-- SIDEBAR MAIN NAVIGATION SYSTEM -->
         <aside class="w-64 bg-[#090d16] border-r border-slate-800/80 p-4 flex flex-col justify-between shrink-0">
             <div>
                 <div class="flex items-center space-x-3 px-2 py-3 mb-6">
@@ -53,7 +49,6 @@
                     </div>
                 </div>
 
-                <!-- REAL-TIME VELOCITY COUNTER SYSTEM -->
                 <div class="mb-6 p-3 rounded-xl bg-slate-900/40 border border-slate-800/60 space-y-3">
                     <div class="text-[9px] font-bold tracking-wider text-slate-400 uppercase">Live Metrics Matrix</div>
                     <div class="grid grid-cols-2 gap-2 text-center">
@@ -84,7 +79,6 @@
                 </nav>
             </div>
 
-            <!-- SECURITY SIGN OUT CONTROL FOOTER -->
             <div class="border-t border-slate-800/60 pt-4 px-1">
                 <div class="flex items-center space-x-3 mb-3">
                     <div id="userInitial" class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-xs text-indigo-400 font-code">U</div>
@@ -99,14 +93,11 @@
             </div>
         </aside>
 
-        <!-- CONTENT VIEW ROUTER ATTACHMENT AREA -->
         <main class="flex-1 bg-[#030712] flex flex-col overflow-hidden relative">
             
-            <!-- VIEW A: ACCOUNTS LOG & WRAPPER SYSTEM -->
             <div id="log-tab" class="tab-content flex flex-1 overflow-hidden">
                 <div class="flex-1 flex flex-col min-w-0 border-r border-slate-800/60">
                     
-                    <!-- Search Parameters & Operational Filters Header Area -->
                     <header class="p-4 bg-[#090d16]/40 border-b border-slate-800/60 flex flex-wrap gap-3 items-center justify-between">
                         <div class="flex items-center space-x-3 flex-1 min-w-[280px]">
                             <input id="filterSearch" oninput="executeDataGridFilters()" type="text" placeholder="Search school profiles..." class="bg-[#090d16] border border-slate-800/80 text-xs px-3.5 py-2 rounded-lg focus:outline-none focus:border-indigo-500 text-slate-200 placeholder-slate-500 w-full max-w-sm font-medium transition">
@@ -123,7 +114,6 @@
                             </select>
                         </div>
 
-                        <!-- Data Ingestion Modal Toggle -->
                         <details class="relative">
                             <summary class="bg-indigo-600 hover:bg-indigo-500 list-none text-white text-xs font-semibold px-4 py-2 rounded-lg cursor-pointer transition shadow-lg shadow-indigo-600/5 select-none">
                                 ➕ Scout New School
@@ -134,7 +124,6 @@
                                     <span class="text-[9px] font-code text-slate-500 uppercase">Automation Engine Build</span>
                                 </div>
                                 
-                                <!-- Core School Attributes -->
                                 <div class="space-y-3">
                                     <div class="text-[9px] font-bold tracking-wider text-indigo-400 uppercase">School Information</div>
                                     <div>
@@ -176,7 +165,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Contact Information -->
                                 <div class="space-y-3 pt-2 border-t border-slate-800/60">
                                     <div class="text-[9px] font-bold tracking-wider text-amber-500 uppercase">Primary Contact Lines</div>
                                     <div class="grid grid-cols-2 gap-2">
@@ -185,7 +173,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Geographical Parameters -->
                                 <div class="space-y-3 pt-2 border-t border-slate-800/60">
                                     <div class="text-[9px] font-bold tracking-wider text-emerald-500 uppercase">Geographical Data</div>
                                     <div><label class="text-slate-400 block mb-1">Address</label><input type="text" id="address" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
@@ -199,7 +186,6 @@
                                     </div>
                                 </div>
 
-                                <!-- POC 1 Stack -->
                                 <div class="space-y-3 pt-2 border-t border-slate-800/60">
                                     <div class="text-[9px] font-bold tracking-wider text-indigo-400 uppercase">Point of Contact 1</div>
                                     <div class="grid grid-cols-2 gap-2">
@@ -212,7 +198,6 @@
                                     </div>
                                 </div>
 
-                                <!-- POC 2 Stack -->
                                 <div class="space-y-3 pt-2 border-t border-slate-800/60">
                                     <div class="text-[9px] font-bold tracking-wider text-purple-400 uppercase">Point of Contact 2</div>
                                     <div class="grid grid-cols-2 gap-2">
@@ -241,7 +226,6 @@
                         </details>
                     </header>
 
-                    <!-- Scrollable Grid Table -->
                     <div class="flex-1 overflow-y-auto">
                         <table class="w-full text-left text-xs border-collapse">
                             <thead>
@@ -257,16 +241,13 @@
                     </div>
                 </div>
 
-                <!-- CALL DESK PANEL WORKSPACE SLIDEOUT DRAWER -->
                 <div class="w-96 bg-[#090d16]/40 flex flex-col shrink-0 overflow-hidden border-l border-slate-800/60">
-                    <!-- Target Empty Activation Default State View -->
                     <div id="drawerEmptyState" class="flex-1 flex flex-col items-center justify-center p-6 text-center">
                         <span class="text-2xl mb-2 opacity-20">📞</span>
                         <h4 class="text-xs font-semibold text-slate-400 mb-1">Workspace Console Ready</h4>
                         <p class="text-[11px] text-slate-500 max-w-[200px] leading-relaxed">Select an active school item from the index matrix to access actions.</p>
                     </div>
 
-                    <!-- Focused Functional Account Active Execution Form Layout -->
                     <div id="drawerActiveState" class="hidden flex-1 flex flex-col overflow-hidden">
                         <header class="p-4 border-b border-slate-800/60 bg-[#090d16]/80 flex items-center justify-between">
                             <div>
@@ -276,10 +257,8 @@
                             <button onclick="closeWorkspaceDrawer()" class="text-slate-500 hover:text-slate-300 transition text-sm p-1">✕</button>
                         </header>
 
-                        <!-- Interactive Content Blocks Inside Slideout Panel -->
                         <div class="flex-1 overflow-y-auto p-4 space-y-4">
                             
-                            <!-- SCREEN PARAMETERS PROFILE MATRIX -->
                             <div class="bg-[#090d16]/90 rounded-xl border border-slate-800/60 p-4 space-y-3 text-[11px]">
                                 <div>
                                     <span class="text-slate-500 block font-bold uppercase text-[9px] tracking-wider">Demographic Matrix</span>
@@ -294,7 +273,6 @@
                                     <div id="dFullAddress" class="text-slate-400 text-[10px] leading-relaxed mt-1">No metadata address recorded.</div>
                                 </div>
                                 
-                                <!-- POC 1 Display Block -->
                                 <div class="border-t border-slate-800/40 pt-2.5 space-y-1">
                                     <span class="text-slate-400 block font-bold uppercase text-[9px] tracking-wider">Point of Contact 1</span>
                                     <div class="bg-[#030712]/50 border border-slate-800/50 p-2.5 rounded-lg space-y-0.5">
@@ -304,7 +282,6 @@
                                     </div>
                                 </div>
 
-                                <!-- POC 2 Display Block -->
                                 <div class="border-t border-slate-800/40 pt-2.5 space-y-1">
                                     <span class="text-slate-400 block font-bold uppercase text-[9px] tracking-wider">Point of Contact 2</span>
                                     <div class="bg-[#030712]/50 border border-slate-800/50 p-2.5 rounded-lg space-y-0.5">
@@ -321,7 +298,6 @@
                                 </div>
                             </div>
 
-                            <!-- Execution Transaction Notes Entry Fields -->
                             <div class="space-y-3.5 border-t border-slate-800/60 pt-4">
                                 <div>
                                     <label class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1.5">Action Logging Status Disposition</label>
@@ -337,7 +313,6 @@
                                     <textarea id="drawerCallNotesInput" rows="3" placeholder="Document conversational metrics, stakeholder responses, custom objectives, etc..." class="w-full bg-[#090d16] border border-slate-800 text-xs p-2.5 rounded-lg text-slate-200 focus:outline-none focus:border-indigo-500 placeholder-slate-600 font-medium leading-relaxed"></textarea>
                                 </div>
 
-                                <!-- Conditional Deadline Input Selectors -->
                                 <div id="drawerCallFollowUpWrapper" class="transition-all duration-200">
                                     <label class="block text-[10px] text-amber-400 font-bold uppercase tracking-wider mb-1.5">📅 Next Task Pipeline Deadline</label>
                                     <input type="date" id="drawerCallFollowUpInput" class="w-full bg-[#090d16] border border-slate-800 text-xs p-2.5 rounded-lg text-slate-200 focus:outline-none focus:border-indigo-500 font-code font-semibold">
@@ -353,7 +328,6 @@
                                 </button>
                             </div>
 
-                            <!-- Historical Interaction Tracking Component -->
                             <div class="border-t border-slate-800/60 pt-4">
                                 <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2.5 flex items-center justify-between">
                                     <span>Historical Log Matrix</span>
@@ -366,13 +340,11 @@
                 </div>
             </div>
 
-            <!-- VIEW B: TASK MANAGEMENT CONTROL CENTER -->
             <div id="tasks-tab" class="tab-content hidden flex-1 flex flex-col overflow-hidden">
                 <header class="p-6 bg-[#090d16]/20 border-b border-slate-800/60 shrink-0">
                     <h2 class="text-lg font-bold text-white tracking-tight mb-0.5">Task Operational Center</h2>
                     <p class="text-xs text-slate-500 font-medium">Pipeline execution engine and responsive workflow controls.</p>
                     
-                    <!-- KPI Counter Cards Grid -->
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-5">
                         <div onclick="setUrgencyQuickFilter('OVERDUE')" class="bg-[#090d16] border border-slate-800/80 p-3.5 rounded-xl cursor-pointer hover:border-rose-900/40 group transition flex items-center justify-between shadow-xl">
                             <div><span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">🚨 Overdue</span><strong id="metricOverdue" class="text-lg font-bold text-rose-500 font-code">0</strong></div>
@@ -392,7 +364,6 @@
                         </div>
                     </div>
 
-                    <!-- Scope Filtering Controls Layout Row -->
                     <div class="flex flex-wrap items-center gap-2.5 mt-5 pt-4 border-t border-slate-800/60 text-xs">
                         <div class="bg-[#090d16] p-1 rounded-lg border border-slate-800/60 inline-flex items-center">
                             <button id="taskTabPending" onclick="setTaskViewTab('Pending')" class="px-4 py-1.5 rounded-md text-[11px] font-semibold transition bg-indigo-600 text-white shadow-md">Pending Actions</button>
@@ -427,7 +398,6 @@
                 </div>
             </div>
 
-            <!-- VIEW C: DATA ANALYTICS & PERFORMANCE MODELING -->
             <div id="analytics-tab" class="tab-content hidden flex-1 flex flex-col overflow-hidden p-6 space-y-6">
                 <header class="flex flex-wrap items-center justify-between gap-4 bg-[#090d16]/20 border border-slate-800/60 p-4 rounded-xl shrink-0 shadow-lg">
                     <div>
@@ -448,7 +418,6 @@
                     </div>
                 </header>
 
-                <!-- Analytics High Metrics Widget Row -->
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 shrink-0">
                     <div class="bg-[#090d16]/40 border border-slate-800/50 p-4 rounded-xl shadow-lg">
                         <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider block mb-0.5">Pipeline Inflow</span>
@@ -468,7 +437,6 @@
                     </div>
                 </div>
 
-                <!-- Live Visual Analytics Charts Row Container -->
                 <div class="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-0">
                     <div class="lg:col-span-2 bg-[#090d16]/20 border border-slate-800/50 rounded-xl p-4 flex flex-col shadow-lg">
                         <h4 class="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-4">Pipeline Interaction Engine Delta Over Time</h4>
@@ -483,7 +451,6 @@
         </main>
     </div>
 
-    <!-- 3. CONTROLLER SYSTEM INGESTION ENGINE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -546,22 +513,19 @@
             let calculatedRangeStr = "";
 
             if (numericalFee <= 5000) {
-                calculatedRangeStr = "<= 5k";
+                calculatedRangeStr = "5k and 5k+ till 1 lakh";
             } 
             else if (numericalFee <= 100000) {
-                let lowerStep = Math.floor((numericalFee - 1) / 5000) * 5;
-                let upperStep = lowerStep + 5;
-                calculatedRangeStr = `${lowerStep}k - ${upperStep}k`;
+                calculatedRangeStr = "5k and 5k+ till 1 lakh";
             } 
+            else if (numericalFee <= 200000) {
+                calculatedRangeStr = "10k till 2 lakh";
+            }
+            else if (numericalFee <= 2000000) {
+                calculatedRangeStr = "add 1 lakh till 20 lakh";
+            }
             else {
-                let totalThousands = Math.floor(numericalFee / 1000);
-                let lowerStepThousands = Math.floor((totalThousands - 100) / 10) * 10 + 100;
-                let upperStepThousands = lowerStepThousands + 10;
-
-                let lowerLakh = (lowerStepThousands / 100).toFixed(2);
-                let upperLakh = (upperStepThousands / 100).toFixed(2);
-
-                calculatedRangeStr = `${lowerLakh} Lakh - ${upperLakh} Lakh`;
+                calculatedRangeStr = "20l +";
             }
 
             rangeSelect.innerHTML = `<option value="${calculatedRangeStr}">${calculatedRangeStr}</option>`;
@@ -777,18 +741,25 @@
                 }
 
                 const tr = document.createElement('tr');
-                tr.className = `cursor-pointer border-b border-slate-900/30 hover:bg-[#090d16]/30 transition text-slate-300 ${selectedRecordId === lead.id ? 'bg-slate-900/40 border-l-2 border-l-indigo-500' : ''} ${isStaleDroppedBall ? 'bg-rose-950/5 border-l-2 border-l-rose-600' : ''}`;
+                
+                // FIXED: Embedded high-contrast selection highlights (bg-indigo-500/15 + clear left border indicator + white text focus layout block)
+                tr.className = `cursor-pointer border-b border-slate-900/30 transition text-slate-300 ${
+                    selectedRecordId === lead.id 
+                    ? 'bg-indigo-500/15 border-l-2 border-l-indigo-500 text-white' 
+                    : 'hover:bg-slate-800/40'
+                } ${isStaleDroppedBall ? 'bg-rose-950/5 border-l-2 border-l-rose-600' : ''}`;
+                
                 tr.onclick = () => { selectedRecordId = lead.id; executeDataGridFilters(); loadWorkspaceDrawerRecord(lead.id); };
                 
                 tr.innerHTML = `
                     <td class="p-4 pl-6 max-w-xs truncate">
-                        <div class="font-semibold text-slate-200 flex items-center space-x-2">
+                        <div class="font-semibold flex items-center space-x-2 ${selectedRecordId === lead.id ? 'text-white' : 'text-slate-200'}">
                             <span>${lead.school || 'Unnamed Account'}</span>
                             ${isStaleDroppedBall ? `<span class="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[8px] font-bold tracking-wider px-1.5 py-0.5 rounded uppercase font-code" title="${staleReason}">STALE</span>` : ''}
                         </div>
                     </td>
                     <td class="p-4">
-                        <div class="font-medium text-slate-300">${lead.scoutedFor || 'Outreach Metric'}</div>
+                        <div class="font-medium ${selectedRecordId === lead.id ? 'text-slate-200' : 'text-slate-300'}">${lead.scoutedFor || 'Outreach Metric'}</div>
                         <div class="text-[10px] text-slate-500 font-code truncate mt-0.5">👤 ${lead.operator ? lead.operator.split('@')[0] : 'System'}</div>
                     </td>
                     <td class="p-4"><span class="font-code text-slate-400 bg-slate-900/60 px-2 py-0.5 rounded border border-slate-800/80">${totalCalls} Calls</span></td>
