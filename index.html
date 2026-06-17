@@ -115,13 +115,90 @@
                             <summary class="bg-blue-600 hover:bg-blue-500 list-none text-white text-xs font-bold px-4 py-2 rounded-lg cursor-pointer transition shadow-md shadow-blue-600/10 select-none">
                                 ➕ Scout New School
                             </summary>
-                            <form id="outreachForm" onsubmit="handleFormSubmit(event)" class="absolute right-0 mt-2 p-4 bg-[#111c30] border border-slate-800 rounded-xl shadow-2xl w-80 z-20 space-y-3 text-xs">
-                                <h3 class="font-bold text-white text-sm mb-1">Ingest Lead Asset</h3>
-                                <div><label class="text-slate-400 block mb-1">School Name*</label><input type="text" id="schoolName" required class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
-                                <div><label class="text-slate-400 block mb-1">Contact Phone Number*</label><input type="text" id="mainContactNo" required class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
-                                <div><label class="text-slate-400 block mb-1">Primary Email Address</label><input type="email" id="mainEmailId" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
-                                <div><label class="text-slate-400 block mb-1">Decision Maker Name</label><input type="text" id="mainContactName" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
-                                <div><label class="text-slate-400 block mb-1">Designation Role</label><input type="text" id="mainContactDesignation" placeholder="e.g. Principal / Coordinator" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                            <form id="outreachForm" onsubmit="handleFormSubmit(event)" class="absolute right-0 mt-2 p-4 bg-[#111c30] border border-slate-800 rounded-xl shadow-2xl w-[26rem] max-h-[80vh] overflow-y-auto z-20 space-y-3.5 text-xs text-left">
+                                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                                    <h3 class="font-bold text-white text-sm">Ingest Lead Asset</h3>
+                                    <span class="text-[9px] font-mono text-slate-500 uppercase">Screen Ref: 2.17.20 PM</span>
+                                </div>
+                                
+                                <!-- Core School Attributes -->
+                                <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800/50 space-y-2.5">
+                                    <div class="text-[9px] font-black tracking-widest text-blue-400 uppercase">School Information</div>
+                                    <div><label class="text-slate-400 block mb-1">School Profile: School Name*</label><input type="text" id="schoolName" required class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <label class="text-slate-400 block mb-1">School Type</label>
+                                            <select id="schoolType" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-300 focus:outline-none focus:border-blue-500">
+                                                <option value="Day">Day</option>
+                                                <option value="Boarding">Boarding</option>
+                                                <option value="D+B SCHOOL">D+B SCHOOL</option>
+                                            </select>
+                                        </div>
+                                        <div><label class="text-slate-400 block mb-1">Curriculum Followed</label><input type="text" id="curriculum" placeholder="CBSE, ICSE, IB, etc." class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div><label class="text-slate-400 block mb-1">School Fees</label><input type="text" id="schoolFees" placeholder="Exact fee or base" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                        <div>
+                                            <label class="text-slate-400 block mb-1">School Fees Range</label>
+                                            <select id="schoolFeesRange" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-300 focus:outline-none focus:border-blue-500 text-[11px]">
+                                                <option value="5k and 5k+ till 1 lakh">5k & 5k+ till 1 Lakh</option>
+                                                <option value="10k till 2 lakh">10k till 2 Lakh</option>
+                                                <option value="add 1 lakh till 20 lakh">Add 1 Lakh till 20 Lakh</option>
+                                                <option value="20l +">20L +</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Contact Information -->
+                                <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800/50 space-y-2.5">
+                                    <div class="text-[9px] font-black tracking-widest text-amber-500 uppercase">Primary Contact Lines</div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div><label class="text-slate-400 block mb-1">Phone No*</label><input type="text" id="mainContactNo" required class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                        <div><label class="text-slate-400 block mb-1">Email Address</label><input type="email" id="mainEmailId" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Geographical Parameters -->
+                                <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800/50 space-y-2.5">
+                                    <div class="text-[9px] font-black tracking-widest text-emerald-500 uppercase">Geographical Data</div>
+                                    <div><label class="text-slate-400 block mb-1">Address</label><input type="text" id="address" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div><label class="text-slate-400 block mb-1">Pin Code</label><input type="text" id="pinCode" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                        <div><label class="text-slate-400 block mb-1">City</label><input type="text" id="city" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div><label class="text-slate-400 block mb-1">State</label><input type="text" id="state" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                        <div><label class="text-slate-400 block mb-1">Country</label><input type="text" id="country" value="India" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                    </div>
+                                </div>
+
+                                <!-- POC 1 Stack -->
+                                <div class="bg-yellow-600/5 p-3 rounded-lg border border-yellow-600/20 space-y-2.5">
+                                    <div class="text-[9px] font-black tracking-widest text-yellow-500 uppercase">Contact Matrix: POC 1</div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div><label class="text-slate-400 block mb-1">Contact Name POC 1</label><input type="text" id="poc1Name" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                        <div><label class="text-slate-400 block mb-1">Contact Designation POC 1</label><input type="text" id="poc1Designation" placeholder="e.g. Principal" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div><label class="text-slate-400 block mb-1">Contact Number POC 1</label><input type="text" id="poc1Number" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                        <div><label class="text-slate-400 block mb-1">Contact Email POC 1</label><input type="email" id="poc1Email" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                    </div>
+                                </div>
+
+                                <!-- POC 2 Stack -->
+                                <div class="bg-purple-600/5 p-3 rounded-lg border border-purple-600/20 space-y-2.5">
+                                    <div class="text-[9px] font-black tracking-widest text-purple-400 uppercase">Contact Matrix: POC 2</div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div><label class="text-slate-400 block mb-1">Contact Name POC 2</label><input type="text" id="poc2Name" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                        <div><label class="text-slate-400 block mb-1">Contact Designation POC 2</label><input type="text" id="poc2Designation" placeholder="e.g. Coordinator" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div><label class="text-slate-400 block mb-1">Contact Number POC 2</label><input type="text" id="poc2Number" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                        <div><label class="text-slate-400 block mb-1">Contact Email POC 2</label><input type="email" id="poc2Email" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                    </div>
+                                </div>
+
                                 <div>
                                     <label class="text-slate-400 block mb-1">Scouted Campaign Goal</label>
                                     <select id="scoutedFor" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-300">
@@ -130,7 +207,7 @@
                                         <option value="AI Literacy Seminar">AI Literacy Seminar</option>
                                     </select>
                                 </div>
-                                <div class="flex items-center space-x-2 pt-2">
+                                <div class="flex items-center space-x-2 pt-2 border-t border-slate-800">
                                     <button type="submit" id="submitBtn" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded transition">Save Record</button>
                                     <button type="button" onclick="this.closest('details').open = false" class="bg-slate-800 text-slate-400 px-3 py-2 rounded hover:bg-slate-700">Cancel</button>
                                 </div>
@@ -176,27 +253,41 @@
                         <!-- Interactive Content Blocks Inside Slideout Panel -->
                         <div class="flex-1 overflow-y-auto p-4 space-y-4">
                             
-                            <!-- COMPLETE COLLECTION MATRIX: Shows everything safely -->
-                            <div class="bg-[#111c30] rounded-xl border border-slate-800/80 p-3 grid grid-cols-2 gap-3 text-[11px]">
+                            <!-- SCREEN PARAMETERS PROFILE MATRIX -->
+                            <div class="bg-[#111c30] rounded-xl border border-slate-800/80 p-3 space-y-3.5 text-[11px]">
                                 <div>
-                                    <span class="text-slate-500 block font-semibold uppercase text-[9px] tracking-wider">Decision Maker</span>
-                                    <strong id="dContactName" class="text-slate-200 font-semibold truncate block">N/A</strong>
+                                    <span class="text-slate-500 block font-semibold uppercase text-[9px] tracking-wider">Demographic Class & Params</span>
+                                    <div class="text-slate-300 font-semibold mt-1 space-y-0.5">
+                                        <div>Type: <span id="dSchoolType" class="text-white font-bold">N/A</span> | Fees: <span id="dSchoolFees" class="text-white">N/A</span></div>
+                                        <div class="text-[10px] text-slate-400">Range: <span id="dSchoolFeesRange" class="text-amber-400">N/A</span></div>
+                                        <div class="text-[10px] text-slate-400">Curriculum: <span id="dCurriculum" class="text-sky-400">N/A</span></div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <span class="text-slate-500 block font-semibold uppercase text-[9px] tracking-wider">Designation Role</span>
-                                    <strong id="dContactDesignation" class="text-slate-200 font-semibold truncate block">N/A</strong>
+                                <div class="border-t border-slate-800/40 pt-2">
+                                    <span class="text-slate-500 block font-semibold uppercase text-[9px] tracking-wider">Geographic Mapping</span>
+                                    <div id="dFullAddress" class="text-slate-300 text-[10px] leading-relaxed mt-0.5">N/A</div>
                                 </div>
-                                <div class="col-span-2 border-t border-slate-800/40 pt-1.5">
-                                    <span class="text-slate-500 block font-semibold uppercase text-[9px] tracking-wider">Phone Target Line</span>
-                                    <strong id="dContactNo" class="text-blue-400 font-mono tracking-wide font-bold block">N/A</strong>
+                                
+                                <!-- POC 1 Display Block -->
+                                <div class="border-t border-slate-800/40 pt-2 bg-yellow-600/5 p-2 rounded border border-yellow-600/10">
+                                    <span class="text-yellow-500 block font-black uppercase text-[9px] tracking-wider">Point of Contact 1</span>
+                                    <strong id="dPoc1Name" class="text-slate-200 font-bold block mt-0.5">N/A</strong>
+                                    <div class="text-[10px] text-slate-400 font-medium"><span id="dPoc1Designation">N/A</span></div>
+                                    <div class="text-[10px] font-mono text-blue-400 mt-0.5"><span id="dPoc1Number">N/A</span> | <span id="dPoc1Email" class="text-slate-400">N/A</span></div>
                                 </div>
-                                <div class="col-span-2 border-t border-slate-800/40 pt-1.5">
-                                    <span class="text-slate-500 block font-semibold uppercase text-[9px] tracking-wider">Primary Email Address</span>
-                                    <strong id="dContactEmail" class="text-slate-300 font-medium truncate block">N/A</strong>
+
+                                <!-- POC 2 Display Block -->
+                                <div class="border-t border-slate-800/40 pt-2 bg-purple-600/5 p-2 rounded border border-purple-600/10">
+                                    <span class="text-purple-400 block font-black uppercase text-[9px] tracking-wider">Point of Contact 2</span>
+                                    <strong id="dPoc2Name" class="text-slate-200 font-bold block mt-0.5">N/A</strong>
+                                    <div class="text-[10px] text-slate-400 font-medium"><span id="dPoc2Designation">N/A</span></div>
+                                    <div class="text-[10px] font-mono text-blue-400 mt-0.5"><span id="dPoc2Number">N/A</span> | <span id="dPoc2Email" class="text-slate-400">N/A</span></div>
                                 </div>
-                                <div class="col-span-2 border-t border-slate-800/40 pt-1.5">
-                                    <span class="text-slate-500 block font-semibold uppercase text-[9px] tracking-wider">Active Campaign Context</span>
-                                    <span id="dScoutedCampaign" class="inline-block mt-1 px-2 py-0.5 rounded font-bold text-[10px] bg-slate-900 border border-slate-800 text-amber-500">N/A</span>
+
+                                <div class="border-t border-slate-800/40 pt-2">
+                                    <span class="text-slate-500 block font-semibold uppercase text-[9px] tracking-wider">Base Channels</span>
+                                    <div class="text-slate-300 font-mono text-[10px] mt-0.5">Line: <span id="dContactNo" class="text-blue-400 font-bold">N/A</span></div>
+                                    <div class="text-slate-400 font-mono text-[10px] truncate">Mail: <span id="dContactEmail" class="text-slate-300">N/A</span></div>
                                 </div>
                             </div>
 
@@ -494,13 +585,11 @@
             return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         }
 
-        // DYNAMIC VELOCITY TRACKING LOOKUPS
         function calculateVelocityDifferentials() {
             const todayStr = getNormalizedTodayString();
             const ydayStr = getNormalizedYesterdayString();
             const userEmail = auth.currentUser ? auth.currentUser.email : '';
 
-            // Filter sets to current user only
             const myLeads = localLeadsArray.filter(l => l.operator === userEmail);
             const myCalls = localInteractionLogsArray.filter(c => c.agent === userEmail);
 
@@ -636,7 +725,6 @@
             document.getElementById('drawerCallWebinarWrapper').classList.toggle('hidden', status !== 'Webinar Agreed');
         };
 
-        // Complete Workspace Collector Data Pipeline
         function loadWorkspaceDrawerRecord(id) {
             const lead = localLeadsArray.find(l => l.id === id);
             if(!lead) return;
@@ -647,12 +735,29 @@
             document.getElementById('drawerSchoolId').innerText = lead.uniqueSchoolId || 'BC-SCH-LEGACY';
             document.getElementById('drawerSchoolName').innerText = lead.school;
             
-            // Dynamic Workspace Collector Layout Injection Mapping
-            document.getElementById('dContactName').innerText = lead.mainContactName || 'Not Specified';
-            document.getElementById('dContactDesignation').innerText = lead.mainContactDesignation || 'Not Specified';
-            document.getElementById('dContactNo').innerText = lead.mainContactNo || 'Not Specified';
-            document.getElementById('dContactEmail').innerText = lead.mainEmailId || 'No Email Registered';
-            document.getElementById('dScoutedCampaign').innerText = lead.scoutedFor || 'General Outreach Campaign';
+            // Dynamic Workspace Collector Layout Injection Mapping from Ref 2.17.20 PM
+            document.getElementById('dSchoolType').innerText = lead.schoolType || 'Not Specified';
+            document.getElementById('dSchoolFees').innerText = lead.schoolFees || 'Not Specified';
+            document.getElementById('dSchoolFeesRange').innerText = lead.schoolFeesRange || 'Not Specified';
+            document.getElementById('dCurriculum').innerText = lead.curriculum || 'Not Specified';
+            
+            const fullAddr = [lead.address, lead.city, lead.state, lead.pinCode, lead.country].filter(Boolean).join(', ');
+            document.getElementById('dFullAddress').innerText = fullAddr || 'No Address Logged';
+
+            // POC 1
+            document.getElementById('dPoc1Name').innerText = lead.poc1Name || 'Not Specified';
+            document.getElementById('dPoc1Designation').innerText = lead.poc1Designation || 'Not Specified';
+            document.getElementById('dPoc1Number').innerText = lead.poc1Number || 'No Phone';
+            document.getElementById('dPoc1Email').innerText = lead.poc1Email || 'No Email';
+
+            // POC 2
+            document.getElementById('dPoc2Name').innerText = lead.poc2Name || 'Not Specified';
+            document.getElementById('dPoc2Designation').innerText = lead.poc2Designation || 'Not Specified';
+            document.getElementById('dPoc2Number').innerText = lead.poc2Number || 'No Phone';
+            document.getElementById('dPoc2Email').innerText = lead.poc2Email || 'No Email';
+
+            document.getElementById('dContactNo').innerText = lead.mainContactNo || 'N/A';
+            document.getElementById('dContactEmail').innerText = lead.mainEmailId || 'N/A';
 
             document.getElementById('drawerCallNotesInput').value = '';
             document.getElementById('drawerCallFollowUpInput').value = '';
@@ -761,10 +866,30 @@
             addDoc(collection(db, "leads"), {
                 uniqueSchoolId: "BC-SCH-" + Math.random().toString(36).substr(2, 8).toUpperCase(),
                 school: schoolName,
-                mainContactNo: document.getElementById('mainContactNo').value.trim(),
+                schoolType: document.getElementById('schoolType').value,
+                address: document.getElementById('address').value.trim(),
+                pinCode: document.getElementById('pinCode').value.trim(),
+                city: document.getElementById('city').value.trim(),
+                state: document.getElementById('state').value.trim(),
+                country: document.getElementById('country').value.trim(),
                 mainEmailId: document.getElementById('mainEmailId').value.trim(),
-                mainContactName: document.getElementById('mainContactName').value.trim(),
-                mainContactDesignation: document.getElementById('mainContactDesignation').value.trim(),
+                mainContactNo: document.getElementById('mainContactNo').value.trim(),
+                curriculum: document.getElementById('curriculum').value.trim(),
+                schoolFees: document.getElementById('schoolFees').value.trim(),
+                schoolFeesRange: document.getElementById('schoolFeesRange').value,
+                
+                // POC 1
+                poc1Designation: document.getElementById('poc1Designation').value.trim(),
+                poc1Email: document.getElementById('poc1Email').value.trim(),
+                poc1Name: document.getElementById('poc1Name').value.trim(),
+                poc1Number: document.getElementById('poc1Number').value.trim(),
+                
+                // POC 2
+                poc2Designation: document.getElementById('poc2Designation').value.trim(),
+                poc2Email: document.getElementById('poc2Email').value.trim(),
+                poc2Name: document.getElementById('poc2Name').value.trim(),
+                poc2Number: document.getElementById('poc2Number').value.trim(),
+
                 scoutedFor: document.getElementById('scoutedFor').value,
                 status: "New Lead", operator: auth.currentUser.email, dateStr: getNormalizedTodayString(), addedDateTimeString: new Date().toLocaleString(), timestamp: serverTimestamp()
             }).then(() => { document.getElementById('outreachForm').reset(); btn.disabled = false; document.querySelector('details').open = false; }).catch(err => { alert("Write failed: " + err.message); btn.disabled = false; });
