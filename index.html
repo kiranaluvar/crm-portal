@@ -628,6 +628,27 @@
             executeDataGridFilters();
         };
 
+        // FIXED ACTION ROUTER ENGINE: Synchronizes search filters prior to layout construction
+        window.routeToCallDeskAccount = function(leadId, schoolName) {
+            // 1. Force navigation tab swap
+            switchTab('log-tab');
+            
+            // 2. Set globally active tracking points
+            selectedRecordId = leadId;
+            
+            // 3. Pin down the target by overriding search fields to prevent list positioning drift
+            const searchField = document.getElementById('filterSearch');
+            if (searchField) {
+                searchField.value = schoolName;
+            }
+            
+            // 4. Force list refresh to prioritize this record
+            executeDataGridFilters();
+            
+            // 5. Open right contextual profile panel cleanly
+            loadWorkspaceDrawerRecord(leadId);
+        };
+
         window.renderTaskCenterConsole = function() {
             const tbody = document.getElementById('taskTableBody');
             if(!tbody) return;
@@ -686,7 +707,9 @@
 
                 const displayOwner = task.operator ? task.operator.split('@')[0] : 'System';
 
-                // FIXED: Sequence optimization on the onclick action gateway to prevent view-state overrides
+                // Escaped string values to prevent breakdown on complex titles
+                const cleanSchoolName = (task.schoolName || '').replace(/'/g, "\\'");
+
                 tr.innerHTML = `
                     <td class="p-3 pl-4 font-bold text-white">
                         <div>${task.schoolName}</div>
@@ -701,7 +724,7 @@
                     </td>
                     <td class="p-3 pr-4 text-right">
                         ${task.taskStatus !== 'Completed' 
-                            ? `<button onclick="switchTab('log-tab'); selectedRecordId='${task.leadId}'; executeDataGridFilters(); loadWorkspaceDrawerRecord('${task.leadId}');" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-1.5 rounded text-[10px] transition shadow-md shadow-blue-600/10">Open Call Desk</button>`
+                            ? `<button onclick="routeToCallDeskAccount('${task.leadId}', '${cleanSchoolName}')" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-1.5 rounded text-[10px] transition shadow-md shadow-blue-600/10">Open Call Desk</button>`
                             : `<span class="text-[11px] text-slate-500 font-mono">Archive Verified</span>`
                         }
                     </td>
