@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webinar Ops CRM Portal (Salesforce Engine Edition)</title>
+    <title>Webinar Ops CRM Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -31,9 +31,9 @@
         <aside class="w-64 bg-slate-950 border-r border-slate-800 p-5 flex flex-col justify-between h-full flex-shrink-0 z-40">
             <div>
                 <div class="flex items-center space-x-2 mb-6">
-                    <span class="text-xl">⚡</span>
+                    <span class="text-xl">🚀</span>
                     <div>
-                        <h2 class="text-sm font-bold text-white tracking-wide uppercase">Lightning CRM</h2>
+                        <h2 class="text-sm font-bold text-white tracking-wide uppercase">Webinar Ops CRM</h2>
                         <p class="text-[10px] text-emerald-400 font-mono tracking-wider uppercase">Cluster Active</p>
                     </div>
                 </div>
@@ -141,8 +141,6 @@
                                 <option value="Webinar Agreed">Webinar Agreed</option>
                                 <option value="Not Interested">Not Interested</option>
                             </select>
-                            
-                            <!-- Team Filter Option for Main Data Stream -->
                             <select id="filterAccountOwner" onchange="executeDataGridFilters()" class="bg-slate-900 border border-slate-800 text-blue-400 font-semibold rounded-lg p-1.5 text-xs focus:outline-none">
                                 <option value="MINE">Show My Accounts Only</option>
                                 <option value="ALL">Show All Shared Accounts</option>
@@ -247,7 +245,7 @@
                     <p class="text-slate-400 text-xs">Looping pipeline engine. Complete a task instantly by launching the Call Desk panel below.</p>
                 </div>
                 
-                <!-- NEW USER METRIC COUNTER ROW (Now functions as direct interactive filtering buttons) -->
+                <!-- METRIC COUNTER ROW -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <button onclick="setUrgencyQuickFilter('OVERDUE')" class="bg-slate-950 hover:bg-slate-900 border border-slate-800/80 rounded-xl p-4 flex items-center justify-between text-left transition focus:ring-1 focus:ring-rose-500/50">
                         <div>
@@ -291,7 +289,6 @@
                             </button>
                         </div>
 
-                        <!-- Team isolation Dropdown for high-concurrency environments -->
                         <select id="taskTeamFilterSelect" onchange="renderTaskCenterConsole()" class="bg-slate-900 border border-slate-800 text-blue-400 font-bold rounded-lg p-2 text-xs focus:outline-none">
                             <option value="MINE">Show My Personal Tasks</option>
                             <option value="ALL">Show Entire Team's Board</option>
@@ -368,8 +365,8 @@
         let selectedRecordId = null;
         let pipelineChartInstance = null;
         
-        let currentTaskScopeTab = 'Pending'; // 'Pending' or 'Completed'
-        let urgencyQuickFilterState = null;  // null, 'OVERDUE', 'TODAY', 'UPCOMING', 'COMPLETED'
+        let currentTaskScopeTab = 'Pending'; 
+        let urgencyQuickFilterState = null;  
         
         let unsubscribeLeads = null;
         let unsubscribeTasks = null;
@@ -418,8 +415,16 @@
             });
         }
 
+        function getNormalizedTodayString() {
+            const d = new Date();
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
         function calculateActiveTaskWorkflowCounters() {
-            const todayStr = new Date().toLocaleDateString('en-CA');
+            const todayStr = getNormalizedTodayString();
             const userEmail = auth.currentUser ? auth.currentUser.email : '';
             
             let overdue = 0;
@@ -445,7 +450,6 @@
                 }
             });
 
-            // Update user interface metric blocks dynamically
             document.getElementById('metricOverdue').innerText = overdue;
             document.getElementById('metricToday').innerText = today;
             document.getElementById('metricUpcoming').innerText = upcoming;
@@ -631,17 +635,14 @@
             const nameQuery = document.getElementById('taskFilterName').value.toLowerCase().trim();
             const teamScope = document.getElementById('taskTeamFilterSelect').value;
             const currentUserEmail = auth.currentUser ? auth.currentUser.email : '';
-            const todayStr = new Date().toLocaleDateString('en-CA');
+            const todayStr = getNormalizedTodayString();
 
-            // 1. Initial State Filter (Pending vs Completed)
             let filtered = localTasksArray.filter(t => t.taskStatus === currentTaskScopeTab);
 
-            // 2. Concurrency Isolation Filter (My Tasks vs All)
             if (teamScope === 'MINE') {
                 filtered = filtered.filter(t => t.operator === currentUserEmail);
             }
 
-            // 3. Metric Block Click Sub-Filtering
             if (urgencyQuickFilterState) {
                 if (urgencyQuickFilterState === 'OVERDUE') {
                     filtered = filtered.filter(t => t.dueDate < todayStr);
@@ -652,10 +653,16 @@
                 }
             }
 
-            // 4. Text Search Input Filter
             if(nameQuery) {
                 filtered = filtered.filter(t => (t.schoolName || '').toLowerCase().includes(nameQuery));
             }
+
+            // High priority sorting engine: pushes Overdue items straight to the top of your layout
+            filtered.sort((a, b) => {
+                if (a.dueDate < todayStr && b.dueDate >= todayStr) return -1;
+                if (a.dueDate >= todayStr && b.dueDate < todayStr) return 1;
+                return a.dueDate.localeCompare(b.dueDate);
+            });
 
             tbody.innerHTML = filtered.length === 0 ? `<tr><td colspan="4" class="p-8 text-center text-slate-500">No task loops match your selected team workspace scope.</td></tr>` : '';
 
