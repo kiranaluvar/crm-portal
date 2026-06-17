@@ -131,15 +131,21 @@
                         </details>
                     </div>
 
-                    <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex flex-wrap gap-2 items-center justify-between">
-                        <div class="flex flex-wrap gap-2 flex-1 max-w-5xl">
-                            <input type="text" id="filterSearch" oninput="executeDataGridFilters()" placeholder="🔍 Quick Find by Name..." class="bg-slate-900 border border-slate-800 text-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500 w-48 flex-shrink-0">
+                    <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex flex-wrap gap-3 items-center justify-between">
+                        <div class="flex flex-wrap gap-2 items-center flex-1">
+                            <input type="text" id="filterSearch" oninput="executeDataGridFilters()" placeholder="🔍 Quick Find by Name..." class="bg-slate-900 border border-slate-800 text-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500 w-48">
                             <select id="filterStage" onchange="executeDataGridFilters()" class="bg-slate-900 border border-slate-800 text-slate-300 rounded-lg p-1.5 text-xs focus:outline-none">
                                 <option value="">All Stages</option>
                                 <option value="New Lead">New Lead</option>
                                 <option value="Contacted">Contacted</option>
                                 <option value="Webinar Agreed">Webinar Agreed</option>
                                 <option value="Not Interested">Not Interested</option>
+                            </select>
+                            
+                            <!-- Team Filter Option for Main Data Stream -->
+                            <select id="filterAccountOwner" onchange="executeDataGridFilters()" class="bg-slate-900 border border-slate-800 text-blue-400 font-semibold rounded-lg p-1.5 text-xs focus:outline-none">
+                                <option value="MINE">Show My Accounts Only</option>
+                                <option value="ALL">Show All Shared Accounts</option>
                             </select>
                         </div>
                     </div>
@@ -241,46 +247,58 @@
                     <p class="text-slate-400 text-xs">Looping pipeline engine. Complete a task instantly by launching the Call Desk panel below.</p>
                 </div>
                 
-                <!-- NEW USER METRIC COUNTER ROW -->
+                <!-- NEW USER METRIC COUNTER ROW (Now functions as direct interactive filtering buttons) -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="bg-slate-950 border border-slate-800/80 rounded-xl p-4 flex items-center justify-between">
+                    <button onclick="setUrgencyQuickFilter('OVERDUE')" class="bg-slate-950 hover:bg-slate-900 border border-slate-800/80 rounded-xl p-4 flex items-center justify-between text-left transition focus:ring-1 focus:ring-rose-500/50">
                         <div>
                             <span class="text-slate-400 text-[10px] font-bold uppercase tracking-wider block">🚨 Overdue Tasks</span>
                             <span id="metricOverdue" class="text-2xl font-black text-rose-500 font-mono">0</span>
                         </div>
                         <span class="text-2xl opacity-40">⚠️</span>
-                    </div>
-                    <div class="bg-slate-950 border border-slate-800/80 rounded-xl p-4 flex items-center justify-between">
+                    </button>
+                    <button onclick="setUrgencyQuickFilter('TODAY')" class="bg-slate-950 hover:bg-slate-900 border border-slate-800/80 rounded-xl p-4 flex items-center justify-between text-left transition focus:ring-1 focus:ring-amber-500/50">
                         <div>
                             <span class="text-slate-400 text-[10px] font-bold uppercase tracking-wider block">📅 Due Today</span>
                             <span id="metricToday" class="text-2xl font-black text-amber-400 font-mono">0</span>
                         </div>
                         <span class="text-2xl opacity-40">🔔</span>
-                    </div>
-                    <div class="bg-slate-950 border border-slate-800/80 rounded-xl p-4 flex items-center justify-between">
+                    </button>
+                    <button onclick="setUrgencyQuickFilter('UPCOMING')" class="bg-slate-950 hover:bg-slate-900 border border-slate-800/80 rounded-xl p-4 flex items-center justify-between text-left transition focus:ring-1 focus:ring-sky-500/50">
                         <div>
                             <span class="text-slate-400 text-[10px] font-bold uppercase tracking-wider block">⏳ Upcoming</span>
                             <span id="metricUpcoming" class="text-2xl font-black text-sky-400 font-mono">0</span>
                         </div>
                         <span class="text-2xl opacity-40">🗓️</span>
-                    </div>
-                    <div class="bg-slate-950 border border-slate-800/80 rounded-xl p-4 flex items-center justify-between">
+                    </button>
+                    <button onclick="setUrgencyQuickFilter('COMPLETED')" class="bg-slate-950 hover:bg-slate-900 border border-slate-800/80 rounded-xl p-4 flex items-center justify-between text-left transition focus:ring-1 focus:ring-emerald-500/50">
                         <div>
                             <span class="text-slate-400 text-[10px] font-bold uppercase tracking-wider block">✅ Closed/Completed</span>
                             <span id="metricCompleted" class="text-2xl font-black text-emerald-400 font-mono">0</span>
                         </div>
                         <span class="text-2xl opacity-40">🎉</span>
-                    </div>
+                    </button>
                 </div>
 
                 <!-- WORKSPACE FILTER & TAB CONTROL BAR -->
                 <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex flex-wrap gap-4 items-center justify-between">
-                    <div class="flex items-center space-x-2 bg-slate-900 p-1 rounded-lg border border-slate-800">
-                        <button onclick="setTaskViewTab('Pending')" id="taskTabPending" class="px-4 py-1.5 rounded-md text-xs font-bold transition bg-blue-600 text-white shadow-md">
-                            Pending Actions
-                        </button>
-                        <button onclick="setTaskViewTab('Completed')" id="taskTabCompleted" class="px-4 py-1.5 rounded-md text-xs font-bold transition text-slate-400 hover:text-slate-200">
-                            Completed Logs
+                    <div class="flex flex-wrap items-center gap-3">
+                        <div class="flex items-center space-x-2 bg-slate-900 p-1 rounded-lg border border-slate-800">
+                            <button onclick="setTaskViewTab('Pending')" id="taskTabPending" class="px-4 py-1.5 rounded-md text-xs font-bold transition bg-blue-600 text-white shadow-md">
+                                Pending Actions
+                            </button>
+                            <button onclick="setTaskViewTab('Completed')" id="taskTabCompleted" class="px-4 py-1.5 rounded-md text-xs font-bold transition text-slate-400 hover:text-slate-200">
+                                Completed Logs
+                            </button>
+                        </div>
+
+                        <!-- Team isolation Dropdown for high-concurrency environments -->
+                        <select id="taskTeamFilterSelect" onchange="renderTaskCenterConsole()" class="bg-slate-900 border border-slate-800 text-blue-400 font-bold rounded-lg p-2 text-xs focus:outline-none">
+                            <option value="MINE">Show My Personal Tasks</option>
+                            <option value="ALL">Show Entire Team's Board</option>
+                        </select>
+                        
+                        <button id="clearUrgencyFilterBtn" onclick="clearUrgencyQuickFilter()" class="hidden bg-slate-900 hover:bg-slate-800 text-slate-400 border border-slate-800 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg transition">
+                            Clear Sub-Filter ✕
                         </button>
                     </div>
                     
@@ -328,7 +346,6 @@
         import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const ALLOWED_DOMAIN = 'brightchamps.com'; 
-        const SUPER_ADMIN_EMAIL = 'kiran.aluvara@brightchamps.com'; 
 
         const firebaseConfig = {
             apiKey: "AIzaSyAYpGUhW9CDWLwuj7ZHVRYFAq-37uS0flU",
@@ -350,7 +367,9 @@
         let localInteractionLogsArray = [];
         let selectedRecordId = null;
         let pipelineChartInstance = null;
+        
         let currentTaskScopeTab = 'Pending'; // 'Pending' or 'Completed'
+        let urgencyQuickFilterState = null;  // null, 'OVERDUE', 'TODAY', 'UPCOMING', 'COMPLETED'
         
         let unsubscribeLeads = null;
         let unsubscribeTasks = null;
@@ -400,29 +419,38 @@
         }
 
         function calculateActiveTaskWorkflowCounters() {
-            const todayStr = new Date().toLocaleDateString('en-CA'); // "YYYY-MM-DD"
+            const todayStr = new Date().toLocaleDateString('en-CA');
+            const userEmail = auth.currentUser ? auth.currentUser.email : '';
             
             let overdue = 0;
             let today = 0;
             let upcoming = 0;
             let completed = 0;
+            let sidebarTodayCount = 0;
 
             localTasksArray.forEach(t => {
+                const isMyTask = (t.operator === userEmail);
+                
                 if (t.taskStatus === 'Completed') {
-                    completed++;
+                    if (isMyTask) completed++;
                 } else {
-                    if (t.dueDate < todayStr) overdue++;
-                    else if (t.dueDate === todayStr) today++;
-                    else upcoming++;
+                    if (t.dueDate < todayStr) {
+                        if (isMyTask) overdue++;
+                    } else if (t.dueDate === todayStr) {
+                        if (isMyTask) today++;
+                        if (isMyTask) sidebarTodayCount++;
+                    } else {
+                        if (isMyTask) upcoming++;
+                    }
                 }
             });
 
-            // Update UI elements
+            // Update user interface metric blocks dynamically
             document.getElementById('metricOverdue').innerText = overdue;
             document.getElementById('metricToday').innerText = today;
             document.getElementById('metricUpcoming').innerText = upcoming;
             document.getElementById('metricCompleted').innerText = completed;
-            document.getElementById('sidebarTaskCount').innerText = today;
+            document.getElementById('sidebarTaskCount').innerText = sidebarTodayCount;
         }
 
         window.setTaskViewTab = function(tabScope) {
@@ -433,19 +461,43 @@
             if(tabScope === 'Pending') {
                 pendingBtn.className = "px-4 py-1.5 rounded-md text-xs font-bold transition bg-blue-600 text-white shadow-md";
                 completedBtn.className = "px-4 py-1.5 rounded-md text-xs font-bold transition text-slate-400 hover:text-slate-200";
+                if(urgencyQuickFilterState === 'COMPLETED') urgencyQuickFilterState = null;
             } else {
                 completedBtn.className = "px-4 py-1.5 rounded-md text-xs font-bold transition bg-emerald-600 text-white shadow-md";
                 pendingBtn.className = "px-4 py-1.5 rounded-md text-xs font-bold transition text-slate-400 hover:text-slate-200";
+                urgencyQuickFilterState = 'COMPLETED';
             }
+            renderTaskCenterConsole();
+        };
+
+        window.setUrgencyQuickFilter = function(filterType) {
+            urgencyQuickFilterState = filterType;
+            if(filterType === 'COMPLETED') {
+                setTaskViewTab('Completed');
+            } else {
+                setTaskViewTab('Pending');
+            }
+            document.getElementById('clearUrgencyFilterBtn').classList.remove('hidden');
+            renderTaskCenterConsole();
+        };
+
+        window.clearUrgencyQuickFilter = function() {
+            urgencyQuickFilterState = null;
+            document.getElementById('clearUrgencyFilterBtn').classList.add('hidden');
             renderTaskCenterConsole();
         };
 
         window.executeDataGridFilters = function() {
             const search = document.getElementById('filterSearch').value.toLowerCase().trim();
             const stage = document.getElementById('filterStage').value;
+            const ownerScope = document.getElementById('filterAccountOwner').value;
+            const currentUserEmail = auth.currentUser ? auth.currentUser.email : '';
 
             let filtered = localLeadsArray.filter(l => {
-                return (!search || (l.school || '').toLowerCase().includes(search)) && (!stage || l.status === stage);
+                const matchesSearch = !search || (l.school || '').toLowerCase().includes(search);
+                const matchesStage = !stage || l.status === stage;
+                const matchesOwnership = (ownerScope === 'ALL' || l.operator === currentUserEmail);
+                return matchesSearch && matchesStage && matchesOwnership;
             });
             renderDataTable(filtered);
         };
@@ -460,9 +512,14 @@
                 tr.className = `cursor-pointer transition border-b border-slate-800/40 hover:bg-slate-900/60 ${selectedRecordId === lead.id ? 'bg-slate-900/80 border-l-2 border-l-blue-500' : ''}`;
                 tr.onclick = () => { selectedRecordId = lead.id; executeDataGridFilters(); loadWorkspaceDrawerRecord(lead.id); };
                 
+                const shortOwner = lead.operator ? lead.operator.split('@')[0] : 'System';
+
                 tr.innerHTML = `
                     <td class="p-3 pl-4 max-w-xs truncate"><div class="font-bold text-white">${lead.school || 'Unnamed'}</div></td>
-                    <td class="p-3"><div class="font-semibold text-slate-300">${lead.scoutedFor}</div></td>
+                    <td class="p-3">
+                        <div class="font-semibold text-slate-300">${lead.scoutedFor}</div>
+                        <div class="text-[10px] text-slate-500 truncate">👤 ${shortOwner}</div>
+                    </td>
                     <td class="p-3"><span class="font-mono bg-slate-900 text-slate-300 px-2 py-0.5 rounded border border-slate-800">${totalCalls} Calls</span></td>
                     <td class="p-3 pr-4"><span class="px-2 py-0.5 text-[10px] font-bold rounded border bg-blue-950/40 text-blue-400 border-blue-900/30">${lead.status}</span></td>
                 `;
@@ -572,24 +629,43 @@
             if(!tbody) return;
 
             const nameQuery = document.getElementById('taskFilterName').value.toLowerCase().trim();
+            const teamScope = document.getElementById('taskTeamFilterSelect').value;
+            const currentUserEmail = auth.currentUser ? auth.currentUser.email : '';
             const todayStr = new Date().toLocaleDateString('en-CA');
 
+            // 1. Initial State Filter (Pending vs Completed)
             let filtered = localTasksArray.filter(t => t.taskStatus === currentTaskScopeTab);
 
+            // 2. Concurrency Isolation Filter (My Tasks vs All)
+            if (teamScope === 'MINE') {
+                filtered = filtered.filter(t => t.operator === currentUserEmail);
+            }
+
+            // 3. Metric Block Click Sub-Filtering
+            if (urgencyQuickFilterState) {
+                if (urgencyQuickFilterState === 'OVERDUE') {
+                    filtered = filtered.filter(t => t.dueDate < todayStr);
+                } else if (urgencyQuickFilterState === 'TODAY') {
+                    filtered = filtered.filter(t => t.dueDate === todayStr);
+                } else if (urgencyQuickFilterState === 'UPCOMING') {
+                    filtered = filtered.filter(t => t.dueDate > todayStr);
+                }
+            }
+
+            // 4. Text Search Input Filter
             if(nameQuery) {
                 filtered = filtered.filter(t => (t.schoolName || '').toLowerCase().includes(nameQuery));
             }
 
-            tbody.innerHTML = filtered.length === 0 ? `<tr><td colspan="4" class="p-8 text-center text-slate-500">No profiles currently marked as ${currentTaskScopeTab.toLowerCase()}.</td></tr>` : '';
+            tbody.innerHTML = filtered.length === 0 ? `<tr><td colspan="4" class="p-8 text-center text-slate-500">No task loops match your selected team workspace scope.</td></tr>` : '';
 
             filtered.forEach(task => {
                 const tr = document.createElement('tr');
                 tr.className = "border-b border-slate-800/40 hover:bg-slate-900/40 transition font-medium";
                 
-                // Urgency Pill Builder Logic
                 let urgencyBadge = '';
                 if (task.taskStatus === 'Completed') {
-                    urgencyBadge = `<span class="bg-emerald-950/40 border border-emerald-900/40 text-emerald-400 text-[10px] px-2 py-0.5 rounded font-bold">🟢 Completed / Closed</span>`;
+                    urgencyBadge = `<span class="bg-emerald-950/40 border border-emerald-900/40 text-emerald-400 text-[10px] px-2 py-0.5 rounded font-bold">🟢 Completed</span>`;
                 } else if (task.dueDate < todayStr) {
                     urgencyBadge = `<span class="bg-rose-950/40 border border-rose-900/40 text-rose-400 text-[10px] px-2 py-0.5 rounded font-bold animate-pulse">🚨 Overdue</span>`;
                 } else if (task.dueDate === todayStr) {
@@ -598,8 +674,13 @@
                     urgencyBadge = `<span class="bg-sky-950/40 border border-sky-900/40 text-sky-400 text-[10px] px-2 py-0.5 rounded font-bold">📅 Upcoming</span>`;
                 }
 
+                const displayOwner = task.operator ? task.operator.split('@')[0] : 'System';
+
                 tr.innerHTML = `
-                    <td class="p-3 pl-4 font-bold text-white">${task.schoolName}</td>
+                    <td class="p-3 pl-4 font-bold text-white">
+                        <div>${task.schoolName}</div>
+                        <div class="text-[10px] text-slate-500 font-normal">Assigned to: ${displayOwner}</div>
+                    </td>
                     <td class="p-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-900 border border-slate-800 text-slate-400">${task.currentStage}</span></td>
                     <td class="p-3">
                         <div class="flex items-center space-x-3">
