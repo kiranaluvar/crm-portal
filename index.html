@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,32 +6,18 @@
     <title>Webinar Ops CRM Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .font-code { font-family: 'JetBrains Mono', monospace; }
-        /* Smooth custom scrollbar for enterprise feel */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #030712; }
-        ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #374151; }
-    </style>
 </head>
-<body class="bg-[#030712] text-slate-200 min-h-screen select-none antialiased">
+<body class="bg-[#0b111e] text-slate-100 min-h-screen font-sans select-none antialiased">
 
-    <div id="authScreen" class="fixed inset-0 bg-[#030712]/95 backdrop-blur-md flex items-center justify-center z-50 p-4 transition-opacity duration-500">
-        <div class="bg-[#090d16] border border-slate-800/80 p-8 rounded-2xl w-full max-w-md shadow-2xl relative">
-            <div class="w-12 h-12 bg-indigo-600/10 border border-indigo-500/30 text-indigo-400 rounded-xl flex items-center justify-center mx-auto mb-5 text-xl">
-                🔒
-            </div>
-            <h1 class="text-xl font-bold text-white tracking-tight text-center mb-1">Webinar Ops CRM Portal</h1>
-            <p class="text-xs text-slate-400 text-center mb-6 font-medium">Internal platform access. Authentication required.</p>
+    <div id="authScreen" class="fixed inset-0 bg-[#070b12] flex items-center justify-center z-50 p-4 transition-opacity duration-500">
+        <div class="bg-[#111827] border border-slate-800 p-8 rounded-2xl w-full max-w-md text-center shadow-2xl relative">
+            <div class="w-16 h-16 bg-blue-600/10 border border-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center mx-auto mb-5 text-2xl shadow-inner">🔒</div>
+            <h1 class="text-2xl font-black text-white tracking-tight mb-2">Webinar Ops CRM Portal</h1>
+            <p class="text-xs text-slate-400 mb-6 font-medium">Internal execution dashboard. Authorized access checkpoints enabled.</p>
             
             <div id="authMessage" class="hidden p-3 rounded-xl mb-5 text-left text-xs font-semibold border transition-all duration-300"></div>
             
-            <button id="signInBtn" class="w-full bg-indigo-600 hover:bg-indigo-500 active:scale-[0.99] text-white py-3 rounded-xl font-semibold tracking-wide transition shadow-lg shadow-indigo-600/10 text-xs">
+            <button id="signInBtn" class="w-full bg-blue-600 hover:bg-blue-500 active:scale-[0.99] text-white py-3.5 rounded-xl font-bold tracking-wide transition shadow-lg shadow-blue-600/20">
                 Sign In with BrightChamps Account
             </button>
         </div>
@@ -40,101 +25,98 @@
 
     <div id="mainDashboard" class="hidden flex h-screen overflow-hidden">
         
-        <aside class="w-64 bg-[#090d16] border-r border-slate-800/80 p-4 flex flex-col justify-between shrink-0">
+        <aside class="w-64 bg-[#070b12] border-r border-slate-800/60 p-4 flex flex-col justify-between shrink-0">
             <div>
-                <div class="flex items-center space-x-3 px-2 py-3 mb-6">
-                    <div class="w-7 h-7 bg-indigo-600/20 border border-indigo-500/30 rounded-lg flex items-center justify-center text-xs">⚡</div>
+                <div class="flex items-center space-x-2.5 px-2 py-4 mb-4">
+                    <span class="text-xl">🚀</span>
                     <div>
-                        <h2 class="text-xs font-bold tracking-wider text-white uppercase">Webinar Ops</h2>
-                        <span class="text-[9px] font-semibold text-emerald-400 font-code tracking-wider block mt-0.5">CLUSTER ACTIVE</span>
+                        <h2 class="text-xs font-black tracking-wider text-white uppercase">Webinar Ops CRM</h2>
+                        <span class="text-[9px] font-bold text-emerald-500 font-mono tracking-widest uppercase block mt-0.5">CLUSTER ACTIVE</span>
                     </div>
                 </div>
 
-                <div class="mb-6 p-3 rounded-xl bg-slate-900/40 border border-slate-800/60 space-y-3">
-                    <div class="text-[9px] font-bold tracking-wider text-slate-400 uppercase">Live Metrics Matrix</div>
+                <div class="mb-5 p-3 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-2.5">
+                    <div class="text-[9px] font-black tracking-widest text-slate-500 uppercase">Live Velocity Matrix</div>
                     <div class="grid grid-cols-2 gap-2 text-center">
-                        <div class="bg-[#030712]/60 p-2 rounded-lg border border-slate-800/40">
-                            <span class="text-[9px] block text-slate-400 font-medium uppercase">Today Inflow</span>
-                            <strong id="sidebarTodayReachouts" class="text-sm font-bold text-indigo-400 font-code">0</strong>
-                            <span class="text-[8px] block text-slate-500 mt-0.5">Ytd: <span id="sidebarYdayReachouts" class="font-code">0</span></span>
+                        <div class="bg-[#0b111e] p-2 rounded-lg border border-slate-800/40">
+                            <span class="text-[9px] block text-slate-400 font-semibold uppercase">Today Inflow</span>
+                            <strong id="sidebarTodayReachouts" class="text-sm font-black text-blue-400 font-mono">0</strong>
+                            <span class="text-[8px] block text-slate-500 mt-0.5 font-medium">Ytd: <span id="sidebarYdayReachouts" class="font-mono">0</span></span>
                         </div>
-                        <div class="bg-[#030712]/60 p-2 rounded-lg border border-slate-800/40">
-                            <span class="text-[9px] block text-slate-400 font-medium uppercase">Today Calls</span>
-                            <strong id="sidebarTodayCalls" class="text-sm font-bold text-amber-500 font-code">0</strong>
-                            <span class="text-[8px] block text-slate-500 mt-0.5">Ytd: <span id="sidebarYdayCalls" class="font-code">0</span></span>
+                        <div class="bg-[#0b111e] p-2 rounded-lg border border-slate-800/40">
+                            <span class="text-[9px] block text-slate-400 font-semibold uppercase">Today Calls</span>
+                            <strong id="sidebarTodayCalls" class="text-sm font-black text-amber-500 font-mono">0</strong>
+                            <span class="text-[8px] block text-slate-500 mt-0.5 font-medium">Ytd: <span id="sidebarYdayCalls" class="font-mono">0</span></span>
                         </div>
                     </div>
                 </div>
 
-                <nav class="space-y-1">
-                    <button id="btn-log-tab" onclick="switchTab('log-tab')" class="w-full text-left px-3 py-2 rounded-lg bg-indigo-600 text-white font-medium text-xs transition flex items-center space-x-3">
-                        <span class="text-sm">📋</span> <span>Accounts Console</span>
+                <nav class="space-y-1.5">
+                    <button id="btn-log-tab" onclick="switchTab('log-tab')" class="w-full text-left px-3 py-2.5 rounded-lg bg-blue-600 text-white font-medium text-xs transition flex items-center space-x-3">
+                        <span>📋</span> <span>Accounts Console</span>
                     </button>
-                    <button id="btn-tasks-tab" onclick="switchTab('tasks-tab')" class="w-full text-left px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-900/60 hover:text-slate-200 font-medium text-xs transition flex items-center space-x-3">
-                        <span class="text-sm">📅</span> <span>Task Center Loop</span>
-                        <span id="sidebarTaskCount" class="ml-auto bg-slate-800 text-[10px] px-1.5 py-0.5 rounded text-slate-300 font-code">0</span>
+                    <button id="btn-tasks-tab" onclick="switchTab('tasks-tab')" class="w-full text-left px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-900/60 hover:text-slate-200 font-medium text-xs transition flex items-center space-x-3">
+                        <span>📅</span> <span>Task Center Loop</span>
+                        <span id="sidebarTaskCount" class="ml-auto bg-slate-800 text-[10px] px-1.5 py-0.5 rounded text-slate-300 font-mono">0</span>
                     </button>
-                    <button id="btn-analytics-tab" onclick="switchTab('analytics-tab')" class="w-full text-left px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-900/60 hover:text-slate-200 font-medium text-xs transition flex items-center space-x-3">
-                        <span class="text-sm">📊</span> <span>Data Modeling & Insights</span>
+                    <button id="btn-analytics-tab" onclick="switchTab('analytics-tab')" class="w-full text-left px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-900/60 hover:text-slate-200 font-medium text-xs transition flex items-center space-x-3">
+                        <span>📊</span> <span>Data Modeling & Insights</span>
                     </button>
                 </nav>
             </div>
 
-            <div class="border-t border-slate-800/60 pt-4 px-1">
+            <div class="border-t border-slate-800/80 pt-4 px-1">
                 <div class="flex items-center space-x-3 mb-3">
-                    <div id="userInitial" class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-xs text-indigo-400 font-code">U</div>
+                    <div id="userInitial" class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-xs text-blue-400 font-mono">U</div>
                     <div class="truncate">
-                        <div id="userNameProfile" class="text-xs font-semibold text-slate-200 truncate">Agent User</div>
-                        <div id="userEmailProfile" class="text-[10px] text-slate-500 truncate font-code">user@domain.com</div>
+                        <div id="userNameProfile" class="text-xs font-bold text-slate-200 truncate">Agent User</div>
+                        <div id="userEmailProfile" class="text-[10px] text-slate-500 truncate">user@domain.com</div>
                     </div>
                 </div>
-                <button id="signOutBtn" class="w-full bg-[#030712] hover:bg-rose-950/20 hover:text-rose-400 hover:border-rose-900/40 border border-slate-800/80 text-slate-400 text-[10px] font-semibold py-2 rounded-lg transition tracking-wide uppercase font-code">
+                <button id="signOutBtn" class="w-full bg-slate-900 hover:bg-rose-950/40 hover:text-rose-400 hover:border-rose-900/40 border border-slate-800 text-slate-400 text-[11px] font-bold py-2 rounded-lg transition font-mono">
                     Disconnect Session
                 </button>
             </div>
         </aside>
 
-        <main class="flex-1 bg-[#030712] flex flex-col overflow-hidden relative">
+        <main class="flex-1 bg-[#0b111e] flex flex-col overflow-hidden relative">
             
             <div id="log-tab" class="tab-content flex flex-1 overflow-hidden">
-                <div class="flex-1 flex flex-col min-w-0 border-r border-slate-800/60">
+                <div class="flex-1 flex flex-col min-w-0 border-r border-slate-800/40">
                     
-                    <header class="p-4 bg-[#090d16]/40 border-b border-slate-800/60 flex flex-wrap gap-3 items-center justify-between">
+                    <header class="p-4 bg-[#0c1424] border-b border-slate-800/40 flex flex-wrap gap-3 items-center justify-between">
                         <div class="flex items-center space-x-3 flex-1 min-w-[280px]">
-                            <input id="filterSearch" oninput="executeDataGridFilters()" type="text" placeholder="Search school profiles..." class="bg-[#090d16] border border-slate-800/80 text-xs px-3.5 py-2 rounded-lg focus:outline-none focus:border-indigo-500 text-slate-200 placeholder-slate-500 w-full max-w-sm font-medium transition">
-                            <select id="filterStage" onchange="executeDataGridFilters()" class="bg-[#090d16] border border-slate-800/80 text-xs px-2.5 py-2 rounded-lg focus:outline-none focus:border-indigo-500 text-slate-300 font-medium cursor-pointer transition">
+                            <input id="filterSearch" oninput="executeDataGridFilters()" type="text" placeholder="🔍 Quick Search Target School Profiles..." class="bg-[#111c30] border border-slate-800/80 text-xs px-3.5 py-2 rounded-lg focus:outline-none focus:border-blue-500 text-slate-200 placeholder-slate-500 w-full max-w-sm font-medium">
+                            <select id="filterStage" onchange="executeDataGridFilters()" class="bg-[#111c30] border border-slate-800/80 text-xs px-2.5 py-2 rounded-lg focus:outline-none focus:border-blue-500 text-slate-300 font-medium">
                                 <option value="">All Pipelines</option>
                                 <option value="New Lead">New Lead</option>
                                 <option value="Contacted">Contacted</option>
                                 <option value="Webinar Agreed">Webinar Agreed</option>
                                 <option value="Not Interested">Not Interested</option>
                             </select>
-                            <select id="filterAccountOwner" onchange="executeDataGridFilters()" class="bg-[#090d16] border border-slate-800/80 text-xs px-2.5 py-2 rounded-lg focus:outline-none focus:border-indigo-500 text-slate-300 font-medium cursor-pointer transition">
+                            <select id="filterAccountOwner" onchange="executeDataGridFilters()" class="bg-[#111c30] border border-slate-800/80 text-xs px-2.5 py-2 rounded-lg focus:outline-none focus:border-blue-500 text-slate-300 font-medium">
                                 <option value="ALL">Entire Board</option>
                                 <option value="MINE">My Accounts</option>
                             </select>
                         </div>
 
                         <details class="relative">
-                            <summary class="bg-indigo-600 hover:bg-indigo-500 list-none text-white text-xs font-semibold px-4 py-2 rounded-lg cursor-pointer transition shadow-lg shadow-indigo-600/5 select-none">
+                            <summary class="bg-blue-600 hover:bg-blue-500 list-none text-white text-xs font-bold px-4 py-2 rounded-lg cursor-pointer transition shadow-md shadow-blue-600/10 select-none">
                                 ➕ Scout New School
                             </summary>
-                            <form id="outreachForm" onsubmit="handleFormSubmit(event)" class="absolute right-0 mt-2 p-5 bg-[#090d16] border border-slate-800 rounded-xl shadow-2xl w-[26rem] max-h-[85vh] overflow-y-auto z-20 space-y-4 text-xs text-left">
-                                <div class="flex items-center justify-between border-b border-slate-800/80 pb-2">
-                                    <h3 class="font-semibold text-white text-sm">Ingest Lead Asset</h3>
-                                    <span class="text-[9px] font-code text-slate-500 uppercase">Automation Engine Build</span>
+                            <form id="outreachForm" onsubmit="handleFormSubmit(event)" class="absolute right-0 mt-2 p-4 bg-[#111c30] border border-slate-800 rounded-xl shadow-2xl w-[26rem] max-h-[80vh] overflow-y-auto z-20 space-y-3.5 text-xs text-left">
+                                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                                    <h3 class="font-bold text-white text-sm">Ingest Lead Asset</h3>
+                                    <span class="text-[9px] font-mono text-slate-500 uppercase">Dynamic Automation Build</span>
                                 </div>
                                 
-                                <div class="space-y-3">
-                                    <div class="text-[9px] font-bold tracking-wider text-indigo-400 uppercase">School Information</div>
-                                    <div>
-                                        <label class="text-slate-400 block mb-1">School Name*</label>
-                                        <input type="text" id="schoolName" required class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500 transition">
-                                    </div>
+                                <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800/50 space-y-2.5">
+                                    <div class="text-[9px] font-black tracking-widest text-blue-400 uppercase">School Information</div>
+                                    <div><label class="text-slate-400 block mb-1">School Profile: School Name*</label><input type="text" id="schoolName" required class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
                                     <div class="grid grid-cols-2 gap-2">
                                         <div>
                                             <label class="text-slate-400 block mb-1">School Type</label>
-                                            <select id="schoolType" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer">
+                                            <select id="schoolType" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-300 focus:outline-none focus:border-blue-500">
                                                 <option value="Day">Day</option>
                                                 <option value="Boarding">Boarding</option>
                                                 <option value="D+B SCHOOL">D+B SCHOOL</option>
@@ -142,7 +124,7 @@
                                         </div>
                                         <div>
                                             <label class="text-slate-400 block mb-1">Curriculum Followed</label>
-                                            <select id="curriculum" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer">
+                                            <select id="curriculum" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-300 focus:outline-none focus:border-blue-500">
                                                 <option value="CBSE">CBSE</option>
                                                 <option value="ICSE">ICSE</option>
                                                 <option value="IGCSE">IGCSE</option>
@@ -155,73 +137,73 @@
                                     <div class="grid grid-cols-2 gap-2">
                                         <div>
                                             <label class="text-slate-400 block mb-1">School Fees</label>
-                                            <input type="text" id="schoolFees" placeholder="e.g. 6000 or 1.2 lakh" oninput="autoCalculateFeeRange(this.value)" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500 font-code">
+                                            <input type="text" id="schoolFees" placeholder="e.g. 6000 or 1.2 lakh" oninput="autoCalculateFeeRange(this.value)" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500 font-mono">
                                         </div>
                                         <div>
                                             <label class="text-slate-400 block mb-1">School Fees Range</label>
-                                            <select id="schoolFeesRange" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-400 focus:outline-none focus:border-indigo-500 text-[11px] font-code bg-slate-900 pointer-events-none">
+                                            <select id="schoolFeesRange" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-300 focus:outline-none focus:border-blue-500 text-[11px]">
                                                 <option value="">Awaiting Fee Entry...</option>
                                             </select>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="space-y-3 pt-2 border-t border-slate-800/60">
-                                    <div class="text-[9px] font-bold tracking-wider text-amber-500 uppercase">Primary Contact Lines</div>
+                                <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800/50 space-y-2.5">
+                                    <div class="text-[9px] font-black tracking-widest text-amber-500 uppercase">Primary Contact Lines</div>
                                     <div class="grid grid-cols-2 gap-2">
-                                        <div><label class="text-slate-400 block mb-1">Phone No*</label><input type="text" id="mainContactNo" required class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
-                                        <div><label class="text-slate-400 block mb-1">Email Address</label><input type="email" id="mainEmailId" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
+                                        <div><label class="text-slate-400 block mb-1">Phone No*</label><input type="text" id="mainContactNo" required class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                        <div><label class="text-slate-400 block mb-1">Email Address</label><input type="email" id="mainEmailId" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
                                     </div>
                                 </div>
 
-                                <div class="space-y-3 pt-2 border-t border-slate-800/60">
-                                    <div class="text-[9px] font-bold tracking-wider text-emerald-500 uppercase">Geographical Data</div>
-                                    <div><label class="text-slate-400 block mb-1">Address</label><input type="text" id="address" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
+                                <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800/50 space-y-2.5">
+                                    <div class="text-[9px] font-black tracking-widest text-emerald-500 uppercase">Geographical Data</div>
+                                    <div><label class="text-slate-400 block mb-1">Address</label><input type="text" id="address" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
                                     <div class="grid grid-cols-2 gap-2">
-                                        <div><label class="text-slate-400 block mb-1">Pin Code</label><input type="text" id="pinCode" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
-                                        <div><label class="text-slate-400 block mb-1">City</label><input type="text" id="city" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
+                                        <div><label class="text-slate-400 block mb-1">Pin Code</label><input type="text" id="pinCode" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                        <div><label class="text-slate-400 block mb-1">City</label><input type="text" id="city" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
                                     </div>
                                     <div class="grid grid-cols-2 gap-2">
-                                        <div><label class="text-slate-400 block mb-1">State</label><input type="text" id="state" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
-                                        <div><label class="text-slate-400 block mb-1">Country</label><input type="text" id="country" value="India" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
-                                    </div>
-                                </div>
-
-                                <div class="space-y-3 pt-2 border-t border-slate-800/60">
-                                    <div class="text-[9px] font-bold tracking-wider text-indigo-400 uppercase">Point of Contact 1</div>
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <div><label class="text-slate-400 block mb-1">Name</label><input type="text" id="poc1Name" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
-                                        <div><label class="text-slate-400 block mb-1">Designation</label><input type="text" id="poc1Designation" placeholder="e.g. Principal" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
-                                    </div>
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <div><label class="text-slate-400 block mb-1">Number</label><input type="text" id="poc1Number" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
-                                        <div><label class="text-slate-400 block mb-1">Email</label><input type="email" id="poc1Email" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
+                                        <div><label class="text-slate-400 block mb-1">State</label><input type="text" id="state" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                        <div><label class="text-slate-400 block mb-1">Country</label><input type="text" id="country" value="India" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
                                     </div>
                                 </div>
 
-                                <div class="space-y-3 pt-2 border-t border-slate-800/60">
-                                    <div class="text-[9px] font-bold tracking-wider text-purple-400 uppercase">Point of Contact 2</div>
+                                <div class="bg-yellow-600/5 p-3 rounded-lg border border-yellow-600/20 space-y-2.5">
+                                    <div class="text-[9px] font-black tracking-widest text-yellow-500 uppercase">Contact Matrix: POC 1</div>
                                     <div class="grid grid-cols-2 gap-2">
-                                        <div><label class="text-slate-400 block mb-1">Name</label><input type="text" id="poc2Name" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
-                                        <div><label class="text-slate-400 block mb-1">Designation</label><input type="text" id="poc2Designation" placeholder="e.g. Coordinator" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
+                                        <div><label class="text-slate-400 block mb-1">Contact Name POC 1</label><input type="text" id="poc1Name" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                        <div><label class="text-slate-400 block mb-1">Contact Designation POC 1</label><input type="text" id="poc1Designation" placeholder="e.g. Principal" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
                                     </div>
                                     <div class="grid grid-cols-2 gap-2">
-                                        <div><label class="text-slate-400 block mb-1">Number</label><input type="text" id="poc2Number" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
-                                        <div><label class="text-slate-400 block mb-1">Email</label><input type="email" id="poc2Email" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
+                                        <div><label class="text-slate-400 block mb-1">Contact Number POC 1</label><input type="text" id="poc1Number" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                        <div><label class="text-slate-400 block mb-1">Contact Email POC 1</label><input type="email" id="poc1Email" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
                                     </div>
                                 </div>
 
-                                <div class="pt-2 border-t border-slate-800/60">
+                                <div class="bg-purple-600/5 p-3 rounded-lg border border-purple-600/20 space-y-2.5">
+                                    <div class="text-[9px] font-black tracking-widest text-purple-400 uppercase">Contact Matrix: POC 2</div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div><label class="text-slate-400 block mb-1">Contact Name POC 2</label><input type="text" id="poc2Name" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                        <div><label class="text-slate-400 block mb-1">Contact Designation POC 2</label><input type="text" id="poc2Designation" placeholder="e.g. Coordinator" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div><label class="text-slate-400 block mb-1">Contact Number POC 2</label><input type="text" id="poc2Number" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                        <div><label class="text-slate-400 block mb-1">Contact Email POC 2</label><input type="email" id="poc2Email" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                    </div>
+                                </div>
+
+                                <div>
                                     <label class="text-slate-400 block mb-1">Scouted Campaign Goal</label>
-                                    <select id="scoutedFor" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-300">
+                                    <select id="scoutedFor" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-300">
                                         <option value="Free Coding Webinar">Free Coding Webinar</option>
                                         <option value="Math Olympiad Bootcamp">Math Olympiad Bootcamp</option>
                                         <option value="AI Literacy Seminar">AI Literacy Seminar</option>
                                     </select>
                                 </div>
-                                <div class="flex items-center space-x-2 pt-3 border-t border-slate-800/60">
-                                    <button type="submit" id="submitBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 rounded-lg transition text-xs">Save Record</button>
-                                    <button type="button" onclick="this.closest('details').open = false" class="bg-slate-900 border border-slate-800 text-slate-400 px-3 py-2 rounded-lg hover:bg-slate-800 transition text-xs">Cancel</button>
+                                <div class="flex items-center space-x-2 pt-2 border-t border-slate-800">
+                                    <button type="submit" id="submitBtn" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded transition">Save Record</button>
+                                    <button type="button" onclick="this.closest('details').open = false" class="bg-slate-800 text-slate-400 px-3 py-2 rounded hover:bg-slate-700">Cancel</button>
                                 </div>
                             </form>
                         </details>
@@ -230,79 +212,75 @@
                     <div class="flex-1 overflow-y-auto">
                         <table class="w-full text-left text-xs border-collapse">
                             <thead>
-                                <tr class="bg-[#090d16]/30 text-slate-400 font-semibold tracking-wider border-b border-slate-800/60 uppercase text-[10px]">
-                                    <th class="p-4 pl-6">School Profile Target</th>
-                                    <th class="p-4">Campaign Context</th>
-                                    <th class="p-4">Interactions</th>
-                                    <th class="p-4 pr-6">Status Pipeline</th>
+                                <tr class="bg-[#0c1424] text-slate-400 font-semibold tracking-wider border-b border-slate-800/40 uppercase text-[10px]">
+                                    <th class="p-3.5 pl-4">School Target Account</th>
+                                    <th class="p-3.5">Campaign Context & Owner</th>
+                                    <th class="p-3.5">Volume Logs</th>
+                                    <th class="p-3.5 pr-4">Pipeline Status</th>
                                 </tr>
                             </thead>
-                            <tbody id="dataTableBody" class="divide-y divide-slate-900/40 text-slate-300 font-medium"></tbody>
+                            <tbody id="dataTableBody" class="divide-y divide-slate-900/30 font-medium"></tbody>
                         </table>
                     </div>
                 </div>
 
-                <div class="w-96 bg-[#090d16]/40 flex flex-col shrink-0 overflow-hidden border-l border-slate-800/60">
+                <div class="w-96 bg-[#0c1424] flex flex-col shrink-0 overflow-hidden border-l border-slate-800/40">
                     <div id="drawerEmptyState" class="flex-1 flex flex-col items-center justify-center p-6 text-center">
-                        <span class="text-2xl mb-2 opacity-20">📞</span>
-                        <h4 class="text-xs font-semibold text-slate-400 mb-1">Workspace Console Ready</h4>
-                        <p class="text-[11px] text-slate-500 max-w-[200px] leading-relaxed">Select an active school item from the index matrix to access actions.</p>
+                        <span class="text-4xl mb-3 opacity-30 select-none">📞</span>
+                        <h4 class="text-sm font-bold text-slate-400 mb-1">Call Desk Workspace Empty</h4>
+                        <p class="text-[11px] text-slate-600 max-w-[220px]">Select an active account matrix item from the dashboard index to process structural follow-up actions.</p>
                     </div>
 
                     <div id="drawerActiveState" class="hidden flex-1 flex flex-col overflow-hidden">
-                        <header class="p-4 border-b border-slate-800/60 bg-[#090d16]/80 flex items-center justify-between">
+                        <header class="p-4 border-b border-slate-800/40 bg-[#090f1b] flex items-center justify-between">
                             <div>
-                                <span id="drawerSchoolId" class="font-code text-[9px] font-semibold text-indigo-400 tracking-wider bg-indigo-950/40 border border-indigo-900/30 px-1.5 py-0.5 rounded uppercase">BC-SCH-UNKNOWN</span>
-                                <h2 id="drawerSchoolName" class="text-sm font-bold text-white tracking-tight mt-1.5 truncate max-w-[220px]">Sample Academy Complex</h2>
+                                <span id="drawerSchoolId" class="font-mono text-[9px] font-bold text-blue-400 tracking-wider bg-blue-950/40 border border-blue-900/30 px-1.5 py-0.5 rounded uppercase">BC-SCH-UNKNOWN</span>
+                                <h2 id="drawerSchoolName" class="text-sm font-black text-white tracking-tight mt-1 truncate max-w-[220px]">Sample Academy Complex</h2>
                             </div>
-                            <button onclick="closeWorkspaceDrawer()" class="text-slate-500 hover:text-slate-300 transition text-sm p-1">✕</button>
+                            <button onclick="closeWorkspaceDrawer()" class="text-slate-500 hover:text-slate-300 text-lg p-1">✕</button>
                         </header>
 
                         <div class="flex-1 overflow-y-auto p-4 space-y-4">
                             
-                            <div class="bg-[#090d16]/90 rounded-xl border border-slate-800/60 p-4 space-y-3 text-[11px]">
+                            <div class="bg-[#111c30] rounded-xl border border-slate-800/80 p-3 space-y-3.5 text-[11px]">
                                 <div>
-                                    <span class="text-slate-500 block font-bold uppercase text-[9px] tracking-wider">Demographic Matrix</span>
-                                    <div class="text-slate-300 font-medium mt-1 space-y-1">
-                                        <div>Type: <span id="dSchoolType" class="text-slate-200 font-semibold">N/A</span> | Fees: <span id="dSchoolFees" class="text-slate-200 font-semibold">N/A</span></div>
-                                        <div class="text-[10px] text-slate-400">Step Range: <span id="dSchoolFeesRange" class="text-amber-400 font-code font-bold">N/A</span></div>
-                                        <div class="text-[10px] text-slate-400">Curriculum: <span id="dCurriculum" class="text-indigo-400 font-semibold">N/A</span></div>
+                                    <span class="text-slate-500 block font-semibold uppercase text-[9px] tracking-wider">Demographic Class & Params</span>
+                                    <div class="text-slate-300 font-semibold mt-1 space-y-0.5">
+                                        <div>Type: <span id="dSchoolType" class="text-white font-bold">N/A</span> | Fees: <span id="dSchoolFees" class="text-white">N/A</span></div>
+                                        <div class="text-[10px] text-slate-400">Range: <span id="dSchoolFeesRange" class="text-amber-400">N/A</span></div>
+                                        <div class="text-[10px] text-slate-400">Curriculum: <span id="dCurriculum" class="text-sky-400">N/A</span></div>
                                     </div>
                                 </div>
-                                <div class="border-t border-slate-800/40 pt-2.5">
-                                    <span class="text-slate-500 block font-bold uppercase text-[9px] tracking-wider">Geographic Metadata</span>
-                                    <div id="dFullAddress" class="text-slate-400 text-[10px] leading-relaxed mt-1">No metadata address recorded.</div>
+                                <div class="border-t border-slate-800/40 pt-2">
+                                    <span class="text-slate-500 block font-semibold uppercase text-[9px] tracking-wider">Geographic Mapping</span>
+                                    <div id="dFullAddress" class="text-slate-300 text-[10px] leading-relaxed mt-0.5">N/A</div>
                                 </div>
                                 
-                                <div class="border-t border-slate-800/40 pt-2.5 space-y-1">
-                                    <span class="text-slate-400 block font-bold uppercase text-[9px] tracking-wider">Point of Contact 1</span>
-                                    <div class="bg-[#030712]/50 border border-slate-800/50 p-2.5 rounded-lg space-y-0.5">
-                                        <strong id="dPoc1Name" class="text-slate-200 font-semibold block">N/A</strong>
-                                        <div class="text-[10px] text-slate-400 font-medium"><span id="dPoc1Designation">N/A</span></div>
-                                        <div class="text-[10px] font-code text-indigo-400 mt-1"><span id="dPoc1Number">N/A</span> <span class="text-slate-600">|</span> <span id="dPoc1Email" class="text-slate-400">N/A</span></div>
-                                    </div>
+                                <div class="border-t border-slate-800/40 pt-2 bg-yellow-600/5 p-2 rounded border border-yellow-600/10">
+                                    <span class="text-yellow-500 block font-black uppercase text-[9px] tracking-wider">Point of Contact 1</span>
+                                    <strong id="dPoc1Name" class="text-slate-200 font-bold block mt-0.5">N/A</strong>
+                                    <div class="text-[10px] text-slate-400 font-medium"><span id="dPoc1Designation">N/A</span></div>
+                                    <div class="text-[10px] font-mono text-blue-400 mt-0.5"><span id="dPoc1Number">N/A</span> | <span id="dPoc1Email" class="text-slate-400">N/A</span></div>
                                 </div>
 
-                                <div class="border-t border-slate-800/40 pt-2.5 space-y-1">
-                                    <span class="text-slate-400 block font-bold uppercase text-[9px] tracking-wider">Point of Contact 2</span>
-                                    <div class="bg-[#030712]/50 border border-slate-800/50 p-2.5 rounded-lg space-y-0.5">
-                                        <strong id="dPoc2Name" class="text-slate-200 font-semibold block">N/A</strong>
-                                        <div class="text-[10px] text-slate-400 font-medium"><span id="dPoc2Designation">N/A</span></div>
-                                        <div class="text-[10px] font-code text-purple-400 mt-1"><span id="dPoc2Number">N/A</span> <span class="text-slate-600">|</span> <span id="dPoc2Email" class="text-slate-400">N/A</span></div>
-                                    </div>
+                                <div class="border-t border-slate-800/40 pt-2 bg-purple-600/5 p-2 rounded border border-purple-600/10">
+                                    <span class="text-purple-400 block font-black uppercase text-[9px] tracking-wider">Point of Contact 2</span>
+                                    <strong id="dPoc2Name" class="text-slate-200 font-bold block mt-0.5">N/A</strong>
+                                    <div class="text-[10px] text-slate-400 font-medium"><span id="dPoc2Designation">N/A</span></div>
+                                    <div class="text-[10px] font-mono text-blue-400 mt-0.5"><span id="dPoc2Number">N/A</span> | <span id="dPoc2Email" class="text-slate-400">N/A</span></div>
                                 </div>
 
-                                <div class="border-t border-slate-800/40 pt-2.5">
-                                    <span class="text-slate-500 block font-bold uppercase text-[9px] tracking-wider">Base Registry Channels</span>
-                                    <div class="text-slate-300 font-code text-[10px] mt-1">Line: <span id="dContactNo" class="text-indigo-400 font-semibold">N/A</span></div>
-                                    <div class="text-slate-400 font-code text-[10px] truncate">Mail: <span id="dContactEmail" class="text-slate-300">N/A</span></div>
+                                <div class="border-t border-slate-800/40 pt-2">
+                                    <span class="text-slate-500 block font-semibold uppercase text-[9px] tracking-wider">Base Channels</span>
+                                    <div class="text-slate-300 font-mono text-[10px] mt-0.5">Line: <span id="dContactNo" class="text-blue-400 font-bold">N/A</span></div>
+                                    <div class="text-slate-400 font-mono text-[10px] truncate">Mail: <span id="dContactEmail" class="text-slate-300">N/A</span></div>
                                 </div>
                             </div>
 
-                            <div class="space-y-3.5 border-t border-slate-800/60 pt-4">
+                            <div class="space-y-3 border-t border-slate-800/40 pt-3">
                                 <div>
-                                    <label class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1.5">Action Logging Status Disposition</label>
-                                    <select id="drawerCallStatusSelect" onchange="evaluateDrawerCallFields(this.value)" class="w-full bg-[#090d16] border border-slate-800 text-xs px-3 py-2 rounded-lg text-slate-200 focus:outline-none focus:border-indigo-500 font-medium cursor-pointer">
+                                    <label class="block text-[11px] text-slate-400 font-semibold uppercase tracking-wider mb-1.5">Action Logging Status Disposition</label>
+                                    <select id="drawerCallStatusSelect" onchange="evaluateDrawerCallFields(this.value)" class="w-full bg-[#111c30] border border-slate-800 text-xs px-3 py-2 rounded-lg text-slate-200 focus:outline-none focus:border-blue-500 font-medium">
                                         <option value="Contacted">Contacted / Pitch Follow-up Loop</option>
                                         <option value="Webinar Agreed">🎉 Webinar Engagement Agreed</option>
                                         <option value="Not Interested">❌ Not Interested / Rejected</option>
@@ -310,29 +288,29 @@
                                 </div>
 
                                 <div>
-                                    <label class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1.5">Agent Context Interaction Notes</label>
-                                    <textarea id="drawerCallNotesInput" rows="3" placeholder="Document conversational metrics, stakeholder responses, custom objectives, etc..." class="w-full bg-[#090d16] border border-slate-800 text-xs p-2.5 rounded-lg text-slate-200 focus:outline-none focus:border-indigo-500 placeholder-slate-600 font-medium leading-relaxed"></textarea>
+                                    <label class="block text-[11px] text-slate-400 font-semibold uppercase tracking-wider mb-1.5">Agent Raw Context Call Notes Summary</label>
+                                    <textarea id="drawerCallNotesInput" rows="3" placeholder="Document specific operational variables discussed, context tracking details, resistance objections etc..." class="w-full bg-[#111c30] border border-slate-800 text-xs p-2.5 rounded-lg text-slate-200 focus:outline-none focus:border-blue-500 placeholder-slate-600 font-medium leading-relaxed"></textarea>
                                 </div>
 
                                 <div id="drawerCallFollowUpWrapper" class="transition-all duration-200">
-                                    <label class="block text-[10px] text-amber-400 font-bold uppercase tracking-wider mb-1.5">📅 Next Task Pipeline Deadline</label>
-                                    <input type="date" id="drawerCallFollowUpInput" class="w-full bg-[#090d16] border border-slate-800 text-xs p-2.5 rounded-lg text-slate-200 focus:outline-none focus:border-indigo-500 font-code font-semibold">
+                                    <label class="block text-[11px] text-slate-400 font-semibold uppercase tracking-wider mb-1.5 text-amber-400">📅 Set Next Task Loop Deadline</label>
+                                    <input type="date" id="drawerCallFollowUpInput" class="w-full bg-[#111c30] border border-slate-800 text-xs p-2.5 rounded-lg text-slate-200 focus:outline-none focus:border-blue-500 font-mono font-bold">
                                 </div>
 
                                 <div id="drawerCallWebinarWrapper" class="hidden transition-all duration-200">
-                                    <label class="block text-[10px] text-emerald-400 font-bold uppercase tracking-wider mb-1.5">🚀 Scheduled Webinar Execution Date</label>
-                                    <input type="date" id="drawerCallWebinarInput" class="w-full bg-[#090d16] border border-slate-800 text-xs p-2.5 rounded-lg text-slate-200 focus:outline-none focus:border-indigo-500 font-code font-semibold">
+                                    <label class="block text-[11px] text-slate-400 font-semibold uppercase tracking-wider mb-1.5 text-emerald-400">🚀 Target Webinar Execution Date</label>
+                                    <input type="date" id="drawerCallWebinarInput" class="w-full bg-[#111c30] border border-slate-800 text-xs p-2.5 rounded-lg text-slate-200 focus:outline-none focus:border-blue-500 font-mono font-bold">
                                 </div>
 
-                                <button id="drawerLogCallBtn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 rounded-lg transition text-xs shadow-md shadow-indigo-700/5">
+                                <button id="drawerLogCallBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-lg transition text-xs shadow-md shadow-blue-700/10">
                                     Commit Log Entry & Close Loop
                                 </button>
                             </div>
 
-                            <div class="border-t border-slate-800/60 pt-4">
-                                <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2.5 flex items-center justify-between">
-                                    <span>Historical Log Matrix</span>
-                                    <span id="dCallCount" class="bg-[#030712] border border-slate-800/60 px-2 py-0.5 text-slate-400 rounded font-code">0</span>
+                            <div class="border-t border-slate-800/40 pt-3">
+                                <h4 class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2.5 flex items-center justify-between">
+                                    <span>Historical Log Loops Matrix</span>
+                                    <span id="dCallCount" class="bg-slate-900 px-1.5 py-0.5 text-slate-500 rounded font-mono">0</span>
                                 </h4>
                                 <div id="leadSpecificLogsContainer" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
                             </div>
@@ -342,109 +320,109 @@
             </div>
 
             <div id="tasks-tab" class="tab-content hidden flex-1 flex flex-col overflow-hidden">
-                <header class="p-6 bg-[#090d16]/20 border-b border-slate-800/60 shrink-0">
-                    <h2 class="text-lg font-bold text-white tracking-tight mb-0.5">Task Operational Center</h2>
-                    <p class="text-xs text-slate-500 font-medium">Pipeline execution engine and responsive workflow controls.</p>
+                <header class="p-6 bg-[#0c1424] border-b border-slate-800/40 shrink-0">
+                    <h2 class="text-xl font-black text-white tracking-tight mb-1">Task Operational Center</h2>
+                    <p class="text-xs text-slate-500">Looping pipeline engine. Complete a task instantly by launching the Call Desk panel below.</p>
                     
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-5">
-                        <div onclick="setUrgencyQuickFilter('OVERDUE')" class="bg-[#090d16] border border-slate-800/80 p-3.5 rounded-xl cursor-pointer hover:border-rose-900/40 group transition flex items-center justify-between shadow-xl">
-                            <div><span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">🚨 Overdue</span><strong id="metricOverdue" class="text-lg font-bold text-rose-500 font-code">0</strong></div>
-                            <span class="text-sm opacity-40 group-hover:opacity-80 transition">⚠️</span>
+                        <div onclick="setUrgencyQuickFilter('OVERDUE')" class="bg-[#111c30] border border-slate-800/80 p-3.5 rounded-xl cursor-pointer hover:border-rose-900/50 group transition flex items-center justify-between shadow-lg">
+                            <div><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">🚨 Overdue Tasks</span><strong id="metricOverdue" class="text-xl font-black text-rose-500 font-mono">0</strong></div>
+                            <span class="text-lg opacity-40 group-hover:opacity-80 transition">⚠️</span>
                         </div>
-                        <div onclick="setUrgencyQuickFilter('TODAY')" class="bg-[#090d16] border border-slate-800/80 p-3.5 rounded-xl cursor-pointer hover:border-amber-900/40 group transition flex items-center justify-between shadow-xl">
-                            <div><span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">🔔 Due Today</span><strong id="metricToday" class="text-lg font-bold text-amber-500 font-code">0</strong></div>
-                            <span class="text-sm opacity-40 group-hover:opacity-80 transition">🔔</span>
+                        <div onclick="setUrgencyQuickFilter('TODAY')" class="bg-[#111c30] border border-slate-800/80 p-3.5 rounded-xl cursor-pointer hover:border-amber-900/50 group transition flex items-center justify-between shadow-lg">
+                            <div><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">🔔 Due Today</span><strong id="metricToday" class="text-xl font-black text-amber-500 font-mono">0</strong></div>
+                            <span class="text-lg opacity-40 group-hover:opacity-80 transition">🔔</span>
                         </div>
-                        <div onclick="setUrgencyQuickFilter('UPCOMING')" class="bg-[#090d16] border border-slate-800/80 p-3.5 rounded-xl cursor-pointer hover:border-indigo-900/40 group transition flex items-center justify-between shadow-xl">
-                            <div><span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">⏳ Upcoming</span><strong id="metricUpcoming" class="text-lg font-bold text-indigo-400 font-code">0</strong></div>
-                            <span class="text-sm opacity-40 group-hover:opacity-80 transition">📅</span>
+                        <div onclick="setUrgencyQuickFilter('UPCOMING')" class="bg-[#111c30] border border-slate-800/80 p-3.5 rounded-xl cursor-pointer hover:border-blue-900/50 group transition flex items-center justify-between shadow-lg">
+                            <div><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">⏳ Upcoming</span><strong id="metricUpcoming" class="text-xl font-black text-sky-400 font-mono">0</strong></div>
+                            <span class="text-lg opacity-40 group-hover:opacity-80 transition">📅</span>
                         </div>
-                        <div onclick="setUrgencyQuickFilter('COMPLETED')" class="bg-[#090d16] border border-slate-800/80 p-3.5 rounded-xl cursor-pointer hover:border-emerald-900/40 group transition flex items-center justify-between shadow-xl">
-                            <div><span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">✅ Completed</span><strong id="metricCompleted" class="text-lg font-bold text-emerald-400 font-code">0</strong></div>
-                            <span class="text-sm opacity-40 group-hover:opacity-80 transition">🎉</span>
+                        <div onclick="setUrgencyQuickFilter('COMPLETED')" class="bg-[#111c30] border border-slate-800/80 p-3.5 rounded-xl cursor-pointer hover:border-emerald-900/50 group transition flex items-center justify-between shadow-lg">
+                            <div><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">✅ Closed/Completed</span><strong id="metricCompleted" class="text-xl font-black text-emerald-500 font-mono">0</strong></div>
+                            <span class="text-lg opacity-40 group-hover:opacity-80 transition">🎉</span>
                         </div>
                     </div>
 
-                    <div class="flex flex-wrap items-center gap-2.5 mt-5 pt-4 border-t border-slate-800/60 text-xs">
-                        <div class="bg-[#090d16] p-1 rounded-lg border border-slate-800/60 inline-flex items-center">
-                            <button id="taskTabPending" onclick="setTaskViewTab('Pending')" class="px-4 py-1.5 rounded-md text-[11px] font-semibold transition bg-indigo-600 text-white shadow-md">Pending Actions</button>
-                            <button id="taskTabCompleted" onclick="setTaskViewTab('Completed')" class="px-4 py-1.5 rounded-md text-[11px] font-semibold transition text-slate-400 hover:text-slate-200">Completed Logs</button>
+                    <div class="flex flex-wrap items-center gap-2.5 mt-5 pt-4 border-t border-slate-800/40 text-xs">
+                        <div class="bg-[#111c30] p-1 rounded-lg border border-slate-800/60 inline-flex items-center">
+                            <button id="taskTabPending" onclick="setTaskViewTab('Pending')" class="px-4 py-1.5 rounded-md text-xs font-bold transition bg-blue-600 text-white shadow-md">Pending Actions</button>
+                            <button id="taskTabCompleted" onclick="setTaskViewTab('Completed')" class="px-4 py-1.5 rounded-md text-xs font-bold transition text-slate-400 hover:text-slate-200">Completed Logs</button>
                         </div>
 
-                        <select id="taskTeamFilterSelect" onchange="renderTaskCenterConsole()" class="bg-[#090d16] border border-slate-800/80 px-3 py-1.5 rounded-lg font-semibold text-slate-300 cursor-pointer">
-                            <option value="MINE">My Personal Tasks</option>
-                            <option value="ALL">Entire Team Board</option>
+                        <select id="taskTeamFilterSelect" onchange="renderTaskCenterConsole()" class="bg-[#111c30] border border-slate-800/80 px-3 py-1.5 rounded-lg font-semibold text-slate-300">
+                            <option value="MINE">Show My Personal Tasks</option>
+                            <option value="ALL">Show Entire Team's Board</option>
                         </select>
 
-                        <button id="clearUrgencyFilterBtn" onclick="clearUrgencyQuickFilter()" class="hidden bg-slate-900 hover:bg-slate-800 text-slate-400 font-semibold px-3 py-1.5 rounded-lg border border-slate-800/80 transition text-[11px]">
-                            Clear Filter ✕
+                        <button id="clearUrgencyFilterBtn" onclick="clearUrgencyQuickFilter()" class="hidden bg-slate-900 hover:bg-slate-800 text-slate-400 font-bold px-3 py-1.5 rounded-lg border border-slate-800 tracking-wide transition">
+                            Clear Sub-Filter ✕
                         </button>
 
-                        <input id="taskFilterName" oninput="renderTaskCenterConsole()" type="text" placeholder="Search accounts..." class="bg-[#090d16] border border-slate-800/80 px-3 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500 ml-auto w-48 text-slate-300 placeholder-slate-600 transition">
+                        <input id="taskFilterName" oninput="renderTaskCenterConsole()" type="text" placeholder="🔍 Quick Search School..." class="bg-[#111c30] border border-slate-800/80 px-3 py-1.5 rounded-lg focus:outline-none focus:border-blue-500 ml-auto w-48 text-slate-300">
                     </div>
                 </header>
 
                 <div class="flex-1 overflow-y-auto">
                     <table class="w-full text-left text-xs border-collapse">
                         <thead>
-                            <tr class="bg-[#090d16]/30 text-slate-400 font-semibold tracking-wider border-b border-slate-800/60 uppercase text-[10px]">
-                                <th class="p-4 pl-6">School Account Target</th>
-                                <th class="p-4">Context Stage</th>
-                                <th class="p-4">Deadline Schedule</th>
-                                <th class="p-4 pr-6 text-right">Action Interface</th>
+                            <tr class="bg-[#0c1424] text-slate-400 font-semibold tracking-wider border-b border-slate-800/40 uppercase text-[10px]">
+                                <th class="p-3.5 pl-6">School Target Account</th>
+                                <th class="p-3.5">Context Stage</th>
+                                <th class="p-3.5">Urgency Deadline Tracker</th>
+                                <th class="p-3.5 pr-6 text-right">Action Gateway</th>
                             </tr>
                         </thead>
-                        <tbody id="taskTableBody" class="divide-y divide-slate-900/30 text-slate-300 font-medium"></tbody>
+                        <tbody id="taskTableBody" class="divide-y divide-slate-900/20 font-medium"></tbody>
                     </table>
                 </div>
             </div>
 
             <div id="analytics-tab" class="tab-content hidden flex-1 flex flex-col overflow-hidden p-6 space-y-6">
-                <header class="flex flex-wrap items-center justify-between gap-4 bg-[#090d16]/20 border border-slate-800/60 p-4 rounded-xl shrink-0 shadow-lg">
+                <header class="flex flex-wrap items-center justify-between gap-4 bg-[#0c1424] border border-slate-800/60 p-4 rounded-xl shrink-0 shadow-lg">
                     <div>
-                        <h2 class="text-base font-bold text-white tracking-tight">Data Modeling & Performance Metrics</h2>
-                        <p class="text-xs text-slate-500 font-medium">Live pipeline metrics generated from system snapshots.</p>
+                        <h2 class="text-lg font-black text-white tracking-tight">Data Modeling & Performance Metrics</h2>
+                        <p class="text-xs text-slate-500 font-medium">Real-time analysis derived directly from active cluster snapshots.</p>
                     </div>
-                    <div class="flex items-center space-x-2 text-xs">
-                        <select id="analyticsOwnerScope" onchange="generateChartAnalytics()" class="bg-[#090d16] border border-slate-800 text-slate-300 px-3 py-1.5 rounded-lg font-semibold cursor-pointer">
-                            <option value="ALL">Entire Cluster Board</option>
-                            <option value="MINE">My Personal Log Matrix</option>
+                    <div class="flex items-center space-x-2.5 text-xs">
+                        <select id="analyticsOwnerScope" onchange="generateChartAnalytics()" class="bg-[#111c30] border border-slate-800 text-slate-300 px-3 py-2 rounded-lg font-bold">
+                            <option value="ALL">Entire Cluster Snapshot</option>
+                            <option value="MINE">My Personal Performance</option>
                         </select>
-                        <select id="analyticsDateScope" onchange="generateChartAnalytics()" class="bg-[#090d16] border border-slate-800 text-slate-300 px-3 py-1.5 rounded-lg font-semibold font-code cursor-pointer">
+                        <select id="analyticsDateScope" onchange="generateChartAnalytics()" class="bg-[#111c30] border border-slate-800 text-slate-300 px-3 py-2 rounded-lg font-bold font-mono">
                             <option value="7">Last 7 Days</option>
                             <option value="14">Last 14 Days</option>
                             <option value="30">Last 30 Days</option>
-                            <option value="ALL">All Available Metrics</option>
+                            <option value="ALL">All Available Logs</option>
                         </select>
                     </div>
                 </header>
 
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 shrink-0">
-                    <div class="bg-[#090d16]/40 border border-slate-800/50 p-4 rounded-xl shadow-lg">
-                        <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider block mb-0.5">Pipeline Inflow</span>
-                        <div id="statTotalAccounts" class="text-xl font-bold text-white font-code">0</div>
+                    <div class="bg-[#0c1424] border border-slate-800/50 p-4 rounded-xl shadow-lg relative overflow-hidden">
+                        <span class="text-[10px] text-slate-500 font-black uppercase tracking-wider block mb-1">Pipeline Inflow</span>
+                        <div id="statTotalAccounts" class="text-3xl font-black text-white font-mono tracking-tight">0</div>
                     </div>
-                    <div class="bg-[#090d16]/40 border border-slate-800/50 p-4 rounded-xl shadow-lg">
-                        <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider block mb-0.5">Conversion Efficiency</span>
-                        <div id="statConversionRate" class="text-xl font-bold text-emerald-400 font-code">0%</div>
+                    <div class="bg-[#0c1424] border border-slate-800/50 p-4 rounded-xl shadow-lg relative overflow-hidden">
+                        <span class="text-[10px] text-slate-500 font-black uppercase tracking-wider block mb-1">Conversion Success</span>
+                        <div id="statConversionRate" class="text-3xl font-black text-emerald-400 font-mono tracking-tight">0%</div>
                     </div>
-                    <div class="bg-[#090d16]/40 border border-slate-800/50 p-4 rounded-xl shadow-lg">
-                        <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider block mb-0.5">Logged Interactions</span>
-                        <div id="statTotalCalls" class="text-xl font-bold text-indigo-400 font-code">0</div>
+                    <div class="bg-[#0c1424] border border-slate-800/50 p-4 rounded-xl shadow-lg relative overflow-hidden">
+                        <span class="text-[10px] text-slate-500 font-black uppercase tracking-wider block mb-1">Total Interactions</span>
+                        <div id="statTotalCalls" class="text-3xl font-black text-blue-400 font-mono tracking-tight">0</div>
                     </div>
-                    <div class="bg-[#090d16]/40 border border-slate-800/50 p-4 rounded-xl shadow-lg">
-                        <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider block mb-0.5">Webinars Agreed</span>
-                        <div id="statWebinarsAgreed" class="text-xl font-bold text-amber-500 font-code">0</div>
+                    <div class="bg-[#0c1424] border border-slate-800/50 p-4 rounded-xl shadow-lg relative overflow-hidden">
+                        <span class="text-[10px] text-slate-500 font-black uppercase tracking-wider block mb-1">Webinars Agreed</span>
+                        <div id="statWebinarsAgreed" class="text-3xl font-black text-amber-500 font-mono tracking-tight">0</div>
                     </div>
                 </div>
 
                 <div class="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-0">
-                    <div class="lg:col-span-2 bg-[#090d16]/20 border border-slate-800/50 rounded-xl p-4 flex flex-col shadow-lg">
-                        <h4 class="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-4">Pipeline Interaction Engine Delta Over Time</h4>
+                    <div class="lg:col-span-2 bg-[#0c1424] border border-slate-800/50 rounded-xl p-4 flex flex-col shadow-lg shadow-black/10">
+                        <h4 class="text-xs font-black uppercase text-slate-400 tracking-wider mb-3">Activity Volume Over Time (Scouts Inflow vs Calls)</h4>
                         <div class="flex-1 min-h-0 relative"><canvas id="activityChart"></canvas></div>
                     </div>
-                    <div class="bg-[#090d16]/20 border border-slate-800/50 rounded-xl p-4 flex flex-col shadow-lg">
-                        <h4 class="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-4">Stage Volumetric Distribution Matrix</h4>
+                    <div class="bg-[#0c1424] border border-slate-800/50 rounded-xl p-4 flex flex-col shadow-lg shadow-black/10">
+                        <h4 class="text-xs font-black uppercase text-slate-400 tracking-wider mb-3">Pipeline Stage Structural Allocation</h4>
                         <div class="flex-1 min-h-0 relative flex items-center justify-center"><canvas id="pipelineChart"></canvas></div>
                     </div>
                 </div>
@@ -499,6 +477,7 @@
             let cleanInput = inputValue.toLowerCase().replace(/,/g, '').trim();
             let numericalFee = 0;
 
+            // Normalize "lakh" phrases to raw numbers
             if (cleanInput.includes('lakh') || cleanInput.includes('l')) {
                 let parsedNum = parseFloat(cleanInput.replace(/[^\d.]/g, ''));
                 if (!isNaN(parsedNum)) numericalFee = parsedNum * 100000;
@@ -514,19 +493,24 @@
             let calculatedRangeStr = "";
 
             if (numericalFee <= 5000) {
-                calculatedRangeStr = "5k and 5k+ till 1 lakh";
+                calculatedRangeStr = "<= 5k";
             } 
             else if (numericalFee <= 100000) {
-                calculatedRangeStr = "5k and 5k+ till 1 lakh";
+                // Under 1 Lakh -> Steps of 5,000
+                let lowerStep = Math.floor((numericalFee - 1) / 5000) * 5;
+                let upperStep = lowerStep + 5;
+                calculatedRangeStr = `${lowerStep}k - ${upperStep}k`;
             } 
-            else if (numericalFee <= 200000) {
-                calculatedRangeStr = "10k till 2 lakh";
-            }
-            else if (numericalFee <= 2000000) {
-                calculatedRangeStr = "add 1 lakh till 20 lakh";
-            }
             else {
-                calculatedRangeStr = "20l +";
+                // Over 1 Lakh -> Steps of 10,000
+                let totalThousands = Math.floor(numericalFee / 1000);
+                let lowerStepThousands = Math.floor((totalThousands - 100) / 10) * 10 + 100;
+                let upperStepThousands = lowerStepThousands + 10;
+
+                let lowerLakh = (lowerStepThousands / 100).toFixed(2);
+                let upperLakh = (upperStepThousands / 100).toFixed(2);
+
+                calculatedRangeStr = `${lowerLakh} Lakh - ${upperLakh} Lakh`;
             }
 
             rangeSelect.innerHTML = `<option value="${calculatedRangeStr}">${calculatedRangeStr}</option>`;
@@ -536,12 +520,12 @@
         function showAuthMessage(text, type = 'error') {
             const msgEl = document.getElementById('authMessage');
             msgEl.innerText = text;
-            msgEl.classList.remove('hidden', 'bg-rose-950/30', 'text-rose-400', 'border-rose-900/30', 'bg-amber-950/30', 'text-amber-400', 'border-amber-900/30');
+            msgEl.classList.remove('hidden', 'bg-rose-950/50', 'text-rose-400', 'border-rose-900/50', 'bg-amber-950/50', 'text-amber-400', 'border-amber-900/50');
             
             if (type === 'error') {
-                msgEl.classList.add('bg-rose-950/30', 'text-rose-400', 'border', 'border-rose-900/30');
+                msgEl.classList.add('bg-rose-950/50', 'text-rose-400', 'border', 'border-rose-900/50');
             } else {
-                msgEl.classList.add('bg-amber-950/30', 'text-amber-400', 'border', 'border-amber-900/30');
+                msgEl.classList.add('bg-amber-950/50', 'text-amber-400', 'border', 'border-amber-900/50');
             }
             msgEl.classList.remove('hidden');
         }
@@ -558,12 +542,12 @@
                     authScreen.classList.add('opacity-0', 'pointer-events-none');
                     mainDashboard.classList.remove('hidden');
                     
-                    document.getElementById('userNameProfile').innerText = user.displayName || 'Agent User';
+                    document.getElementById('userNameProfile').innerText = user.displayName || 'Agent';
                     document.getElementById('userEmailProfile').innerText = user.email;
                     document.getElementById('userInitial').innerText = (user.displayName || 'A').charAt(0);
                     initializeDataStreams();
                 } else {
-                    showAuthMessage(`Access Denied: Please authorize via a professional @${ALLOWED_DOMAIN} workspace alias profile.`, 'warning');
+                    showAuthMessage(`Access Denied: You must sign in with an official @${ALLOWED_DOMAIN} email account.`, 'warning');
                     killActiveSnapshots();
                     signOut(auth);
                     mainDashboard.classList.add('hidden');
@@ -577,10 +561,10 @@
         });
 
         document.getElementById('signInBtn').onclick = () => {
-            showAuthMessage("Contacting authentication endpoint...", "warning");
+            showAuthMessage("Opening authentication portal...", "warning");
             signInWithPopup(auth, provider).catch(err => {
                 console.error("Firebase Auth Error:", err);
-                showAuthMessage(`Handshake dropped: ${err.message}`);
+                showAuthMessage(`Error processing transaction: ${err.message}`);
             });
         };
 
@@ -681,12 +665,12 @@
             const completedBtn = document.getElementById('taskTabCompleted');
 
             if(tabScope === 'Pending') {
-                pendingBtn.className = "px-4 py-1.5 rounded-md text-[11px] font-semibold transition bg-indigo-600 text-white shadow-md";
-                completedBtn.className = "px-4 py-1.5 rounded-md text-[11px] font-semibold transition text-slate-400 hover:text-slate-200";
+                pendingBtn.className = "px-4 py-1.5 rounded-md text-xs font-bold transition bg-blue-600 text-white shadow-md";
+                completedBtn.className = "px-4 py-1.5 rounded-md text-xs font-bold transition text-slate-400 hover:text-slate-200";
                 if(urgencyQuickFilterState === 'COMPLETED') urgencyQuickFilterState = null;
             } else {
-                completedBtn.className = "px-4 py-1.5 rounded-md text-[11px] font-semibold transition bg-emerald-600 text-white shadow-md";
-                pendingBtn.className = "px-4 py-1.5 rounded-md text-[11px] font-semibold transition text-slate-400 hover:text-slate-200";
+                completedBtn.className = "px-4 py-1.5 rounded-md text-xs font-bold transition bg-emerald-600 text-white shadow-md";
+                pendingBtn.className = "px-4 py-1.5 rounded-md text-xs font-bold transition text-slate-400 hover:text-slate-200";
                 urgencyQuickFilterState = 'COMPLETED';
             }
             renderTaskCenterConsole();
@@ -721,7 +705,7 @@
 
         function renderDataTable(subset) {
             const tbody = document.getElementById('dataTableBody');
-            tbody.innerHTML = subset.length === 0 ? '<tr><td colspan="4" class="p-8 text-center text-slate-500">No active matrix records map to filter rules.</td></tr>' : '';
+            tbody.innerHTML = subset.length === 0 ? '<tr><td colspan="4" class="p-8 text-center text-slate-500">No matching school profiles match parameters.</td></tr>' : '';
             
             const todayStr = getNormalizedTodayString();
             const fortyEightHoursAgo = Date.now() - (48 * 60 * 60 * 1000);
@@ -737,41 +721,27 @@
                     } else {
                         const leadLogs = localInteractionLogsArray.filter(log => log.leadId === lead.id);
                         const checkTime = leadLogs.length > 0 ? (leadLogs[0].timestamp?.seconds * 1000 || leadLogs[0].timestamp?.toMillis?.()) : (lead.timestamp?.seconds * 1000 || lead.timestamp?.toMillis?.());
-                        if (checkTime && checkTime < fortyEightHoursAgo) { isStaleDroppedBall = true; staleReason = "No track loop set"; }
+                        if (checkTime && checkTime < fortyEightHoursAgo) { isStaleDroppedBall = true; staleReason = "No future loop task set"; }
                     }
                 }
 
                 const tr = document.createElement('tr');
-                
-                // FIXED: Embedded high-contrast selection highlights (bg-indigo-500/15 + clear left border indicator + white text focus layout block)
-                tr.className = `cursor-pointer border-b border-slate-900/30 transition text-slate-300 ${
-                    selectedRecordId === lead.id 
-                    ? 'bg-indigo-500/15 border-l-2 border-l-indigo-500 text-white' 
-                    : 'hover:bg-slate-800/40'
-                } ${isStaleDroppedBall ? 'bg-rose-950/5 border-l-2 border-l-rose-600' : ''}`;
-                
+                tr.className = `cursor-pointer border-b border-slate-900/30 hover:bg-slate-900/30 transition ${selectedRecordId === lead.id ? 'bg-slate-900/50 border-l-2 border-l-blue-500' : ''} ${isStaleDroppedBall ? 'bg-rose-950/10 border-l-2 border-l-rose-600' : ''}`;
                 tr.onclick = () => { selectedRecordId = lead.id; executeDataGridFilters(); loadWorkspaceDrawerRecord(lead.id); };
                 
                 tr.innerHTML = `
-                    <td class="p-4 pl-6 max-w-xs truncate">
-                        <div class="font-semibold flex items-center space-x-2 ${selectedRecordId === lead.id ? 'text-white' : 'text-slate-200'}">
-                            <span>${lead.school || 'Unnamed Account'}</span>
-                            ${isStaleDroppedBall ? `<span class="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[8px] font-bold tracking-wider px-1.5 py-0.5 rounded uppercase font-code" title="${staleReason}">STALE</span>` : ''}
+                    <td class="p-3 pl-4 max-w-xs truncate">
+                        <div class="font-bold text-white flex items-center space-x-1.5">
+                            <span>${lead.school || 'Unnamed'}</span>
+                            ${isStaleDroppedBall ? `<span class="bg-rose-500/10 border border-rose-500/30 text-rose-400 text-[9px] px-1.5 py-0.5 rounded font-mono" title="${staleReason}">⚠️ STALE</span>` : ''}
                         </div>
                     </td>
-                    <td class="p-4">
-                        <div class="font-medium ${selectedRecordId === lead.id ? 'text-slate-200' : 'text-slate-300'}">${lead.scoutedFor || 'Outreach Metric'}</div>
-                        <div class="text-[10px] text-slate-500 font-code truncate mt-0.5">👤 ${lead.operator ? lead.operator.split('@')[0] : 'System'}</div>
+                    <td class="p-3">
+                        <div class="font-semibold text-slate-300">${lead.scoutedFor || ' Outreach Program'}</div>
+                        <div class="text-[10px] text-slate-500 truncate">👤 ${lead.operator ? lead.operator.split('@')[0] : 'System'}</div>
                     </td>
-                    <td class="p-4"><span class="font-code text-slate-400 bg-slate-900/60 px-2 py-0.5 rounded border border-slate-800/80">${totalCalls} Calls</span></td>
-                    <td class="p-4 pr-6">
-                        <span class="px-2 py-0.5 text-[9px] font-bold tracking-wider rounded border uppercase font-code ${
-                            lead.status === 'Webinar Agreed' ? 'bg-emerald-950/30 text-emerald-400 border-emerald-900/30' : 
-                            lead.status === 'Not Interested' ? 'bg-slate-900 text-slate-500 border-slate-800' : 
-                            lead.status === 'Contacted' ? 'bg-amber-950/30 text-amber-400 border-amber-900/30' : 
-                            'bg-indigo-950/30 text-indigo-400 border-indigo-900/30'
-                        }">${lead.status}</span>
-                    </td>
+                    <td class="p-3"><span class="font-mono bg-slate-900/80 text-slate-400 px-2 py-0.5 rounded border border-slate-800">${totalCalls} Calls</span></td>
+                    <td class="p-3 pr-4"><span class="px-2 py-0.5 text-[10px] font-bold rounded border ${isStaleDroppedBall ? 'bg-rose-950/40 text-rose-400 border-rose-900/30' : 'bg-blue-950/40 text-blue-400 border-blue-900/30'}">${lead.status}</span></td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -788,22 +758,26 @@
             document.getElementById('drawerEmptyState').classList.add('hidden');
             document.getElementById('drawerActiveState').classList.remove('hidden');
             
+            // Core Identity Fields
             document.getElementById('drawerSchoolId').innerText = lead.uniqueSchoolId || 'BC-SCH-LEGACY';
             document.getElementById('drawerSchoolName').innerText = lead.school;
             
+            // Dynamic Workspace Collector Layout Injection Mapping from Ref 2.17.20 PM
             document.getElementById('dSchoolType').innerText = lead.schoolType || 'Not Specified';
             document.getElementById('dSchoolFees').innerText = lead.schoolFees ? "₹ " + lead.schoolFees : 'Not Specified';
             document.getElementById('dSchoolFeesRange').innerText = lead.schoolFeesRange || 'Not Specified';
             document.getElementById('dCurriculum').innerText = lead.curriculum || 'Not Specified';
             
             const fullAddr = [lead.address, lead.city, lead.state, lead.pinCode, lead.country].filter(Boolean).join(', ');
-            document.getElementById('dFullAddress').innerText = fullAddr || 'No corporate metadata logged.';
+            document.getElementById('dFullAddress').innerText = fullAddr || 'No Address Logged';
 
+            // POC 1
             document.getElementById('dPoc1Name').innerText = lead.poc1Name || 'Not Specified';
             document.getElementById('dPoc1Designation').innerText = lead.poc1Designation || 'Not Specified';
             document.getElementById('dPoc1Number').innerText = lead.poc1Number || 'No Phone';
             document.getElementById('dPoc1Email').innerText = lead.poc1Email || 'No Email';
 
+            // POC 2
             document.getElementById('dPoc2Name').innerText = lead.poc2Name || 'Not Specified';
             document.getElementById('dPoc2Designation').innerText = lead.poc2Designation || 'Not Specified';
             document.getElementById('dPoc2Number').innerText = lead.poc2Number || 'No Phone';
@@ -826,9 +800,9 @@
                 const followUpDate = document.getElementById('drawerCallFollowUpInput').value;
                 const webinarDate = document.getElementById('drawerCallWebinarInput').value;
 
-                if (!notes) return alert("Interaction notes required.");
-                if (nextStage !== 'Not Interested' && !followUpDate) return alert("Pipeline requirements dictate a programmatic follow-up target date.");
-                if (nextStage === 'Webinar Agreed' && !webinarDate) return alert("Webinar operational targets require an activation schedule day.");
+                if (!notes) return alert("Please provide Call Notes.");
+                if (nextStage !== 'Not Interested' && !followUpDate) return alert("System requires choosing a future follow-up loop date.");
+                if (nextStage === 'Webinar Agreed' && !webinarDate) return alert("Please select a valid execution day for the webinar target.");
 
                 addDoc(collection(db, "lead_calls"), {
                     leadId: id, agent: auth.currentUser.email, notes: notes, transitionedTo: nextStage, timestamp: serverTimestamp(), dateString: getNormalizedTodayString()
@@ -839,8 +813,8 @@
                     if (nextStage !== 'Not Interested') {
                         addDoc(collection(db, "crm_tasks"), { leadId: id, schoolName: lead.school, currentStage: nextStage, dueDate: followUpDate, taskStatus: 'Pending', operator: auth.currentUser.email });
                     }
-                    alert(`Action processing sequence updated.`);
-                }).catch(err => alert("Operational sync aborted: " + err.message));
+                    alert(`Action processing workflow finalized.`);
+                }).catch(err => alert("Operational write failure: " + err.message));
             };
         }
 
@@ -850,17 +824,17 @@
             document.getElementById('dCallCount').innerText = filteredLogs.length;
 
             if (filteredLogs.length === 0) {
-                container.innerHTML = `<div class="p-3 border border-dashed border-slate-800 text-center text-slate-500 rounded-xl text-[10px]">No interactions logged in historical index.</div>`;
+                container.innerHTML = `<div class="p-3 border border-dashed border-slate-800 text-center text-slate-500 rounded text-[11px]">No logged calls on file.</div>`;
                 return;
             }
             container.innerHTML = filteredLogs.map(log => `
-                <div class="bg-[#030712]/50 border border-slate-800/80 p-2.5 rounded-lg text-[11px] space-y-1">
-                    <div class="flex items-center justify-between font-code text-[9px] text-slate-500">
+                <div class="bg-slate-900 border border-slate-800/80 p-2 rounded-lg text-[11px]">
+                    <div class="flex items-center justify-between font-mono text-[10px] text-slate-500 mb-1">
                         <span>👤 ${log.agent.split('@')[0]}</span>
-                        <span>${log.dateString || 'Just Now'}</span>
+                        <span>${log.dateString || 'Just now'}</span>
                     </div>
-                    <p class="text-slate-300 font-medium leading-normal">${log.notes}</p>
-                    <span class="inline-block text-[8px] font-bold tracking-wider uppercase font-code bg-indigo-950/40 text-indigo-400 px-1.5 py-0.5 rounded border border-indigo-900/20">Stage: ${log.transitionedTo}</span>
+                    <p class="text-slate-300 mb-1 font-medium">${log.notes}</p>
+                    <span class="inline-block text-[9px] font-bold bg-blue-950/60 text-blue-400 px-1.5 py-0.5 rounded border border-blue-900/30">Result: ${log.transitionedTo}</span>
                 </div>
             `).join('');
         }
@@ -888,21 +862,21 @@
             if(nameQuery) filtered = filtered.filter(t => (t.schoolName || '').toLowerCase().includes(nameQuery));
 
             filtered.sort((a, b) => a.dueDate.localeCompare(b.dueDate));
-            tbody.innerHTML = filtered.length === 0 ? `<tr><td colspan="4" class="p-8 text-center text-slate-500">No active tasks logged.</td></tr>` : '';
+            tbody.innerHTML = filtered.length === 0 ? `<tr><td colspan="4" class="p-8 text-center text-slate-500">No task loops match selection criteria parameters.</td></tr>` : '';
 
             filtered.forEach(task => {
                 const tr = document.createElement('tr');
-                tr.className = "border-b border-slate-900/30 hover:bg-[#090d16]/20 transition text-slate-300 font-medium";
-                let urgencyBadge = task.taskStatus === 'Completed' ? `<span class="bg-emerald-950/20 border border-emerald-900/30 text-emerald-400 text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider font-code">Completed</span>` : (task.dueDate < todayStr ? `<span class="bg-rose-950/20 border border-rose-900/30 text-rose-400 text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider font-code">Overdue</span>` : (task.dueDate === todayStr ? `<span class="bg-amber-950/20 border border-amber-900/30 text-amber-400 text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider font-code">Due Today</span>` : `<span class="bg-indigo-950/20 border border-indigo-900/30 text-indigo-400 text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider font-code">Upcoming</span>`));
+                tr.className = "border-b border-slate-900/20 hover:bg-slate-900/20 transition font-medium";
+                let urgencyBadge = task.taskStatus === 'Completed' ? `<span class="bg-emerald-950/40 border border-emerald-900/40 text-emerald-400 text-[10px] px-2 py-0.5 rounded font-bold">🟢 Completed</span>` : (task.dueDate < todayStr ? `<span class="bg-rose-950/40 border border-rose-900/40 text-rose-400 text-[10px] px-2 py-0.5 rounded font-bold">🚨 Overdue</span>` : (task.dueDate === todayStr ? `<span class="bg-amber-950/40 border border-amber-900/40 text-amber-400 text-[10px] px-2 py-0.5 rounded font-bold">⚠️ Due Today</span>` : `<span class="bg-sky-950/40 border border-sky-900/40 text-sky-400 text-[10px] px-2 py-0.5 rounded font-bold">📅 Upcoming</span>`));
 
                 tr.innerHTML = `
-                    <td class="p-4 pl-6 font-semibold text-slate-200">
+                    <td class="p-3 pl-6 font-bold text-white">
                         <div>${task.schoolName}</div>
-                        <div class="text-[10px] text-slate-500 font-code font-normal mt-0.5">Owner: ${task.operator ? task.operator.split('@')[0] : 'System'}</div>
+                        <div class="text-[10px] text-slate-500 font-normal">Assigned to: ${task.operator ? task.operator.split('@')[0] : 'System'}</div>
                     </td>
-                    <td class="p-4"><span class="px-2 py-0.5 text-[9px] font-bold tracking-wider uppercase font-code bg-slate-900 border border-slate-800 text-slate-400">${task.currentStage || 'Lead Setup'}</span></td>
-                    <td class="p-4"><div class="flex items-center space-x-3"><span class="font-code font-semibold tracking-tight text-slate-200">${task.dueDate}</span>${urgencyBadge}</div></td>
-                    <td class="p-4 pr-6 text-right">${task.taskStatus !== 'Completed' ? `<button onclick="routeToCallDeskAccount('${task.leadId}', '${(task.schoolName || '').replace(/'/g, "\\'")}')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-3 py-1.5 rounded-lg text-[10px] transition shadow-md shadow-indigo-600/5">Execute Loop</button>` : `<span class="text-[10px] text-slate-500 font-code">Record Locked</span>`}</td>
+                    <td class="p-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-900 border border-slate-800 text-slate-400">${task.currentStage || 'New Lead'}</span></td>
+                    <td class="p-3"><div class="flex items-center space-x-3"><span class="font-mono font-bold tracking-tight text-slate-200">${task.dueDate}</span>${urgencyBadge}</div></td>
+                    <td class="p-3 pr-6 text-right">${task.taskStatus !== 'Completed' ? `<button onclick="routeToCallDeskAccount('${task.leadId}', '${(task.schoolName || '').replace(/'/g, "\\'")}')" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-1.5 rounded text-[10px] transition shadow-md shadow-blue-600/10">Open Call Desk</button>` : `<span class="text-[11px] text-slate-500 font-mono">Archive Verified</span>`}</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -911,7 +885,7 @@
         window.handleFormSubmit = function(e) {
             e.preventDefault();
             const schoolName = document.getElementById('schoolName').value.trim();
-            if (localLeadsArray.some(l => (l.school || '').toLowerCase() === schoolName.toLowerCase())) return alert("Operational overlap: Active profile snapshot detected matching this entity title.");
+            if (localLeadsArray.some(l => (l.school || '').toLowerCase() === schoolName.toLowerCase())) return alert("Conflict Warning: School profile configuration already active.");
 
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
@@ -931,11 +905,13 @@
                 schoolFees: document.getElementById('schoolFees').value.trim(),
                 schoolFeesRange: document.getElementById('schoolFeesRange').value,
                 
+                // POC 1
                 poc1Designation: document.getElementById('poc1Designation').value.trim(),
                 poc1Email: document.getElementById('poc1Email').value.trim(),
                 poc1Name: document.getElementById('poc1Name').value.trim(),
                 poc1Number: document.getElementById('poc1Number').value.trim(),
                 
+                // POC 2
                 poc2Designation: document.getElementById('poc2Designation').value.trim(),
                 poc2Email: document.getElementById('poc2Email').value.trim(),
                 poc2Name: document.getElementById('poc2Name').value.trim(),
@@ -949,7 +925,7 @@
                 btn.disabled = false; 
                 document.querySelector('details').open = false; 
             }).catch(err => { 
-                alert("Data mapping write crash: " + err.message); 
+                alert("Write failed: " + err.message); 
                 btn.disabled = false; 
             });
         };
@@ -958,8 +934,8 @@
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(tabId).classList.remove('hidden');
             
-            document.querySelectorAll('nav button').forEach(b => b.className = "w-full text-left px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-900/60 hover:text-slate-200 font-medium text-xs transition flex items-center space-x-3");
-            document.getElementById(`btn-${tabId}`).className = "w-full text-left px-3 py-2 rounded-lg bg-indigo-600 text-white font-medium text-xs transition flex items-center space-x-3";
+            document.querySelectorAll('nav button').forEach(b => b.className = "w-full text-left px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-900/60 hover:text-slate-200 font-medium text-xs transition flex items-center space-x-3");
+            document.getElementById(`btn-${tabId}`).className = "w-full text-left px-3 py-2.5 rounded-lg bg-blue-600 text-white font-medium text-xs transition flex items-center space-x-3";
             
             if (tabId === 'analytics-tab') generateChartAnalytics();
             if (tabId === 'tasks-tab') renderTaskCenterConsole();
@@ -1001,8 +977,8 @@
             if(ctxPie) {
                 pipelineChartInstance = new Chart(ctxPie.getContext('2d'), {
                     type: 'pie',
-                    data: { labels: Object.keys(pipeMetrics), datasets: [{ data: Object.values(pipeMetrics), backgroundColor: ['#ca8a04', '#4f46e5', '#059669', '#374151'], borderWidth: 1, borderColor: '#090d16' }] },
-                    options: { plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10, family: 'Plus Jakarta Sans' } } } }, responsive: true, maintainAspectRatio: false }
+                    data: { labels: Object.keys(pipeMetrics), datasets: [{ data: Object.values(pipeMetrics), backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#475569'], borderWidth: 2, borderColor: '#0c1424' }] },
+                    options: { plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10 } } } }, responsive: true, maintainAspectRatio: false }
                 });
             }
 
@@ -1024,17 +1000,17 @@
                     data: {
                         labels: sortedLabels,
                         datasets: [
-                            { type: 'bar', label: 'New Scouts', data: sortedLabels.map(k => daywiseMap[k].scouts), backgroundColor: '#4f46e5', borderRadius: 4, barPercentage: 0.4 },
-                            { type: 'line', label: 'Call Log Syncs', data: sortedLabels.map(k => daywiseMap[k].followups), borderColor: '#ca8a04', backgroundColor: 'transparent', tension: 0.15, borderWidth: 1.5, pointBackgroundColor: '#ca8a04', pointRadius: 2 }
+                            { type: 'bar', label: 'New Scouts Inflow', data: sortedLabels.map(k => daywiseMap[k].scouts), backgroundColor: '#3b82f6', borderRadius: 4, barPercentage: 0.5 },
+                            { type: 'line', label: 'Follow-up Call Logs', data: sortedLabels.map(k => daywiseMap[k].followups), borderColor: '#f59e0b', backgroundColor: 'transparent', tension: 0.2, borderWidth: 2, pointBackgroundColor: '#f59e0b' }
                         ]
                     },
                     options: {
                         responsive: true, maintainAspectRatio: false,
                         scales: {
-                            x: { grid: { color: '#1f2937/40' }, ticks: { color: '#64748b', font: { size: 9, family: 'JetBrains Mono' } } },
-                            y: { grid: { color: '#1f2937/40' }, ticks: { color: '#64748b', font: { size: 9, family: 'JetBrains Mono' }, stepSize: 1 }, beginAtZero: true }
+                            x: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { size: 9 } } },
+                            y: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { size: 9 }, stepSize: 1 }, beginAtZero: true }
                         },
-                        plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10, family: 'Plus Jakarta Sans' } } } }
+                        plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10 } } } }
                     }
                 });
             }
