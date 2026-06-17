@@ -9,6 +9,7 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased overflow-hidden selection:bg-blue-500 selection:text-white">
 
+    <!-- CLUSTER PROTECTION AUTHENTICATION GATEWAY -->
     <div id="authScreen" class="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center z-50 p-4 transition-all duration-300">
         <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl max-w-md w-full shadow-2xl text-center">
             <div class="h-12 w-12 rounded-xl bg-blue-600/10 flex items-center justify-center mx-auto mb-4 border border-blue-500/20">
@@ -23,8 +24,10 @@
         </div>
     </div>
 
+    <!-- MAIN CRM CORE WRAPPER CONTAINER -->
     <div id="mainDashboard" class="hidden flex h-screen w-screen overflow-hidden">
         
+        <!-- SIDE NAVIGATION BAR PANEL -->
         <aside class="w-64 bg-slate-950 border-r border-slate-800 p-5 flex flex-col justify-between h-full flex-shrink-0 z-40">
             <div>
                 <div class="flex items-center space-x-2 mb-6">
@@ -67,8 +70,10 @@
             </div>
         </aside>
 
+        <!-- DASHBOARD CONTAINER PANEL -->
         <main class="flex-1 bg-slate-900 h-full overflow-hidden relative flex flex-col">
             
+            <!-- ACCOUNTS DASHBOARD TAB CONSOLE -->
             <div id="log-tab" class="tab-content flex-1 flex overflow-hidden h-full">
                 <div class="flex-1 flex flex-col p-6 overflow-y-auto space-y-4 h-full">
                     
@@ -117,20 +122,6 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div>
-                                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Secondary Phone (Optional)</label>
-                                        <input type="text" id="contactNo2" placeholder="Backup phone" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition">
-                                    </div>
-                                    <div>
-                                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Secondary Email (Optional)</label>
-                                        <input type="email" id="emailId2" placeholder="backup@school.edu" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition">
-                                    </div>
-                                    <div>
-                                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Referral Links (Optional)</label>
-                                        <input type="url" id="anyRelatedLinks" placeholder="https://..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition">
-                                    </div>
-                                </div>
                                 <div class="pt-2">
                                     <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold p-2.5 rounded-lg transition text-xs shadow-md shadow-blue-600/10 active:scale-[0.98]">
                                         Commit Account Record
@@ -150,21 +141,7 @@
                                 <option value="Webinar Agreed">Webinar Agreed</option>
                                 <option value="Not Interested">Not Interested</option>
                             </select>
-                            <select id="filterProgram" onchange="executeDataGridFilters()" class="bg-slate-900 border border-slate-800 text-slate-300 rounded-lg p-1.5 text-xs focus:outline-none">
-                                <option value="">All Courses</option>
-                                <option value="Math">Math</option>
-                                <option value="Code">Code</option>
-                                <option value="Fin">Fin</option>
-                                <option value="Other">Other</option>
-                            </select>
-                            <select id="filterDateSort" onchange="executeDataGridFilters()" class="bg-slate-900 border border-slate-800 text-slate-300 rounded-lg p-1.5 text-xs focus:outline-none">
-                                <option value="desc">Newest Connected</option>
-                                <option value="asc">Oldest Connected</option>
-                            </select>
                         </div>
-                        <button id="adminExportBtn" onclick="exportDatabaseToCSV()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs px-3 py-1.5 rounded-lg transition flex items-center space-x-1">
-                            <span>📥</span> <span>Export CSV</span>
-                        </button>
                     </div>
 
                     <div class="bg-slate-950 border border-slate-800 rounded-xl shadow-xl overflow-hidden flex-1 min-h-[300px]">
@@ -188,6 +165,7 @@
                     </div>
                 </div>
 
+                <!-- Drawer Right Side -->
                 <div id="contextDrawer" class="w-[420px] bg-slate-950 border-l border-slate-800 h-full flex flex-col transform translate-x-0 transition-transform duration-200 shadow-2xl flex-shrink-0">
                     <div id="drawerEmptyState" class="flex-1 flex flex-col items-center justify-center p-6 text-center text-slate-500">
                         <span class="text-3xl mb-2">👈</span>
@@ -207,7 +185,6 @@
                             <div class="bg-slate-900/30 border border-slate-800/60 p-3 rounded-lg">
                                 <div class="grid grid-cols-2 gap-2 text-[11px]">
                                     <div><span class="text-slate-500 block">POC Name:</span><span class="text-white font-medium truncate block" id="dContactName">N/A</span></div>
-                                    <div><span class="text-slate-500 block">Designation:</span><span class="text-white font-medium truncate block" id="dContactDesignation">N/A</span></div>
                                     <div><span class="text-slate-500 block">Primary Mobile:</span><span class="text-slate-200 font-mono block" id="dContactNo">N/A</span></div>
                                     <div><span class="text-slate-500 block">Total Calls:</span><span class="text-emerald-400 font-bold font-mono text-xs block" id="dCallCount">0</span></div>
                                     <div class="col-span-2"><span class="text-slate-500 block">Current Stage Tier:</span><span id="dCurrentStageBadge" class="inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-900 border border-slate-800 text-blue-400">New Lead</span></div>
@@ -240,7 +217,7 @@
 
                                 <div>
                                     <label class="block text-[10px] text-slate-400 font-medium mb-1">Call Notes / Discussion Summary *</label>
-                                    <textarea id="drawerCallNotesInput" rows="2" placeholder="Enter full notes here. Stage will not submit without written verification." class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-white focus:outline-none focus:border-blue-500 resize-none"></textarea>
+                                    <textarea id="drawerCallNotesInput" rows="2" placeholder="Enter full notes here..." class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-white focus:outline-none focus:border-blue-500 resize-none"></textarea>
                                 </div>
 
                                 <button id="drawerLogCallBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded text-xs transition shadow-md shadow-blue-600/15">
@@ -250,33 +227,65 @@
 
                             <div class="space-y-2 flex-1 flex flex-col">
                                 <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-1">Call Logs & Activity History</h4>
-                                <div id="leadSpecificLogsContainer" class="space-y-2 max-h-56 overflow-y-auto pr-1">
-                                    </div>
+                                <div id="leadSpecificLogsContainer" class="space-y-2 max-h-56 overflow-y-auto pr-1"></div>
                             </div>
-
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!-- TASK CENTER TAB CONTAINER -->
             <div id="tasks-tab" class="tab-content hidden flex-1 flex flex-col p-6 overflow-hidden h-full space-y-4">
                 <div>
                     <h2 class="text-base font-bold text-white">Task Operational Center</h2>
-                    <p class="text-slate-400 text-xs">Looping workflow panel. Completing a task requires routing into the main console workspace to document the active call metrics.</p>
+                    <p class="text-slate-400 text-xs">Looping pipeline engine. Complete a task instantly by launching the Call Desk panel below.</p>
                 </div>
                 
-                <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex flex-wrap gap-3 items-center">
-                    <div class="flex flex-col">
-                        <label class="text-[10px] font-bold text-slate-400 uppercase mb-1">Filter Institution Name</label>
-                        <input type="text" id="taskFilterName" oninput="renderTaskCenterConsole()" placeholder="🔍 Search School..." class="bg-slate-900 border border-slate-800 text-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500 w-48">
+                <!-- NEW USER METRIC COUNTER ROW -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-slate-950 border border-slate-800/80 rounded-xl p-4 flex items-center justify-between">
+                        <div>
+                            <span class="text-slate-400 text-[10px] font-bold uppercase tracking-wider block">🚨 Overdue Tasks</span>
+                            <span id="metricOverdue" class="text-2xl font-black text-rose-500 font-mono">0</span>
+                        </div>
+                        <span class="text-2xl opacity-40">⚠️</span>
                     </div>
-                    <div class="flex flex-col">
-                        <label class="text-[10px] font-bold text-slate-400 uppercase mb-1">Due Date Range Start</label>
-                        <input type="date" id="taskFilterDateStart" onchange="renderTaskCenterConsole()" class="bg-slate-900 border border-slate-800 text-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none">
+                    <div class="bg-slate-950 border border-slate-800/80 rounded-xl p-4 flex items-center justify-between">
+                        <div>
+                            <span class="text-slate-400 text-[10px] font-bold uppercase tracking-wider block">📅 Due Today</span>
+                            <span id="metricToday" class="text-2xl font-black text-amber-400 font-mono">0</span>
+                        </div>
+                        <span class="text-2xl opacity-40">🔔</span>
                     </div>
-                    <div class="flex flex-col">
-                        <label class="text-[10px] font-bold text-slate-400 uppercase mb-1">Due Date Range End</label>
-                        <input type="date" id="taskFilterDateEnd" onchange="renderTaskCenterConsole()" class="bg-slate-900 border border-slate-800 text-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none">
+                    <div class="bg-slate-950 border border-slate-800/80 rounded-xl p-4 flex items-center justify-between">
+                        <div>
+                            <span class="text-slate-400 text-[10px] font-bold uppercase tracking-wider block">⏳ Upcoming</span>
+                            <span id="metricUpcoming" class="text-2xl font-black text-sky-400 font-mono">0</span>
+                        </div>
+                        <span class="text-2xl opacity-40">🗓️</span>
+                    </div>
+                    <div class="bg-slate-950 border border-slate-800/80 rounded-xl p-4 flex items-center justify-between">
+                        <div>
+                            <span class="text-slate-400 text-[10px] font-bold uppercase tracking-wider block">✅ Closed/Completed</span>
+                            <span id="metricCompleted" class="text-2xl font-black text-emerald-400 font-mono">0</span>
+                        </div>
+                        <span class="text-2xl opacity-40">🎉</span>
+                    </div>
+                </div>
+
+                <!-- WORKSPACE FILTER & TAB CONTROL BAR -->
+                <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex flex-wrap gap-4 items-center justify-between">
+                    <div class="flex items-center space-x-2 bg-slate-900 p-1 rounded-lg border border-slate-800">
+                        <button onclick="setTaskViewTab('Pending')" id="taskTabPending" class="px-4 py-1.5 rounded-md text-xs font-bold transition bg-blue-600 text-white shadow-md">
+                            Pending Actions
+                        </button>
+                        <button onclick="setTaskViewTab('Completed')" id="taskTabCompleted" class="px-4 py-1.5 rounded-md text-xs font-bold transition text-slate-400 hover:text-slate-200">
+                            Completed Logs
+                        </button>
+                    </div>
+                    
+                    <div class="flex items-center space-x-3">
+                        <input type="text" id="taskFilterName" oninput="renderTaskCenterConsole()" placeholder="🔍 Quick Search School..." class="bg-slate-900 border border-slate-800 text-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500 w-52">
                     </div>
                 </div>
 
@@ -285,15 +294,15 @@
                         <table class="w-full text-left border-collapse table-fixed">
                             <thead class="sticky top-0 bg-slate-950 border-b border-slate-800 text-slate-400 text-[10px] uppercase tracking-wider font-bold z-10">
                                 <tr>
-                                    <th class="p-3 pl-4 w-[35%]">School Target Account</th>
-                                    <th class="p-3 w-[25%]">Current Pipeline Stage</th>
-                                    <th class="p-3 w-[25%]">Action Due Deadline</th>
+                                    <th class="p-3 pl-4 w-[30%]">School Target Account</th>
+                                    <th class="p-3 w-[20%]">Current Stage</th>
+                                    <th class="p-3 w-[35%]">Urgency Deadline Tracker</th>
                                     <th class="p-3 w-[15%] pr-4 text-right">Action Gateway</th>
                                 </tr>
                             </thead>
                             <tbody id="taskTableBody" class="text-xs divide-y divide-slate-800/60 font-medium">
                                 <tr>
-                                    <td colspan="4" class="p-8 text-center text-slate-500">Awaiting database loads...</td>
+                                    <td colspan="4" class="p-8 text-center text-slate-500">Awaiting cloud configuration loads...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -301,6 +310,7 @@
                 </div>
             </div>
 
+            <!-- ANALYTICS TAB CONTAINER -->
             <div id="analytics-tab" class="tab-content hidden flex-1 flex flex-col p-6 overflow-y-auto space-y-6 h-full">
                 <div class="bg-slate-950 border border-slate-800 p-5 rounded-xl flex flex-col h-80 max-w-2xl mx-auto w-full">
                     <h3 class="text-xs font-bold text-slate-300 mb-3 uppercase text-center">Pipeline Volume Weight</h3>
@@ -311,6 +321,7 @@
         </main>
     </div>
 
+    <!-- APP CONTROLLER SYSTEM MODULE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -339,6 +350,7 @@
         let localInteractionLogsArray = [];
         let selectedRecordId = null;
         let pipelineChartInstance = null;
+        let currentTaskScopeTab = 'Pending'; // 'Pending' or 'Completed'
         
         let unsubscribeLeads = null;
         let unsubscribeTasks = null;
@@ -348,7 +360,6 @@
             const authScreen = document.getElementById('authScreen');
             const mainDashboard = document.getElementById('mainDashboard');
             if (user && (user.email || '').split('@')[1] === ALLOWED_DOMAIN) {
-                document.getElementById('adminExportBtn').classList.toggle('hidden', user.email.toLowerCase() !== SUPER_ADMIN_EMAIL.toLowerCase());
                 authScreen.classList.add('opacity-0', 'pointer-events-none');
                 mainDashboard.classList.remove('hidden');
                 document.getElementById('userNameProfile').innerText = user.displayName || 'Agent';
@@ -373,13 +384,12 @@
                 localLeadsArray = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
                 executeDataGridFilters();
                 if(selectedRecordId) loadWorkspaceDrawerRecord(selectedRecordId);
-                calculateActiveTaskWorkflowCounters();
             });
 
             unsubscribeTasks = onSnapshot(query(collection(db, "crm_tasks"), orderBy("dueDate", "asc")), (snapshot) => {
                 localTasksArray = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
-                renderTaskCenterConsole();
                 calculateActiveTaskWorkflowCounters();
+                renderTaskCenterConsole();
             });
 
             unsubscribeLogs = onSnapshot(query(collection(db, "lead_calls"), orderBy("timestamp", "desc")), (snapshot) => {
@@ -390,24 +400,53 @@
         }
 
         function calculateActiveTaskWorkflowCounters() {
-            const today = new Date().toLocaleDateString('en-CA');
-            const total = localTasksArray.filter(t => t.dueDate === today && t.taskStatus === 'Pending').length;
-            document.getElementById('sidebarTaskCount').innerText = total;
+            const todayStr = new Date().toLocaleDateString('en-CA'); // "YYYY-MM-DD"
+            
+            let overdue = 0;
+            let today = 0;
+            let upcoming = 0;
+            let completed = 0;
+
+            localTasksArray.forEach(t => {
+                if (t.taskStatus === 'Completed') {
+                    completed++;
+                } else {
+                    if (t.dueDate < todayStr) overdue++;
+                    else if (t.dueDate === todayStr) today++;
+                    else upcoming++;
+                }
+            });
+
+            // Update UI elements
+            document.getElementById('metricOverdue').innerText = overdue;
+            document.getElementById('metricToday').innerText = today;
+            document.getElementById('metricUpcoming').innerText = upcoming;
+            document.getElementById('metricCompleted').innerText = completed;
+            document.getElementById('sidebarTaskCount').innerText = today;
         }
+
+        window.setTaskViewTab = function(tabScope) {
+            currentTaskScopeTab = tabScope;
+            const pendingBtn = document.getElementById('taskTabPending');
+            const completedBtn = document.getElementById('taskTabCompleted');
+
+            if(tabScope === 'Pending') {
+                pendingBtn.className = "px-4 py-1.5 rounded-md text-xs font-bold transition bg-blue-600 text-white shadow-md";
+                completedBtn.className = "px-4 py-1.5 rounded-md text-xs font-bold transition text-slate-400 hover:text-slate-200";
+            } else {
+                completedBtn.className = "px-4 py-1.5 rounded-md text-xs font-bold transition bg-emerald-600 text-white shadow-md";
+                pendingBtn.className = "px-4 py-1.5 rounded-md text-xs font-bold transition text-slate-400 hover:text-slate-200";
+            }
+            renderTaskCenterConsole();
+        };
 
         window.executeDataGridFilters = function() {
             const search = document.getElementById('filterSearch').value.toLowerCase().trim();
             const stage = document.getElementById('filterStage').value;
-            const prog = document.getElementById('filterProgram').value;
-            const sort = document.getElementById('filterDateSort').value;
 
             let filtered = localLeadsArray.filter(l => {
-                return (!search || (l.school || '').toLowerCase().includes(search)) &&
-                       (!stage || l.status === stage) &&
-                       (!prog || l.scoutedFor === prog);
+                return (!search || (l.school || '').toLowerCase().includes(search)) && (!stage || l.status === stage);
             });
-
-            filtered.sort((a,b) => sort === 'asc' ? (a.timestamp?.seconds || 0) - (b.timestamp?.seconds || 0) : (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
             renderDataTable(filtered);
         };
 
@@ -422,10 +461,10 @@
                 tr.onclick = () => { selectedRecordId = lead.id; executeDataGridFilters(); loadWorkspaceDrawerRecord(lead.id); };
                 
                 tr.innerHTML = `
-                    <td class="p-3 pl-4 max-w-xs truncate"><div class="font-bold text-white">${lead.school || 'Unnamed'}</div><div class="text-[10px] text-slate-500 font-mono">${lead.mainContactName || 'N/A'}</div></td>
-                    <td class="p-3"><div class="font-semibold text-slate-300">${lead.scoutedFor}</div><div class="text-[10px] text-slate-500">👤 ${lead.operator.split('@')[0]}</div></td>
-                    <td class="p-3"><span class="font-mono bg-slate-900 text-slate-300 px-2 py-0.5 rounded border border-slate-800">${totalCalls} Calls Logged</span></td>
-                    <td class="p-3 pr-4"><span class="px-2 py-0.5 text-[10px] font-bold rounded border ${lead.status === 'Not Interested' ? 'bg-slate-900 border-slate-800 text-slate-500' : 'bg-blue-950/40 text-blue-400 border-blue-900/30'}">${lead.status}</span></td>
+                    <td class="p-3 pl-4 max-w-xs truncate"><div class="font-bold text-white">${lead.school || 'Unnamed'}</div></td>
+                    <td class="p-3"><div class="font-semibold text-slate-300">${lead.scoutedFor}</div></td>
+                    <td class="p-3"><span class="font-mono bg-slate-900 text-slate-300 px-2 py-0.5 rounded border border-slate-800">${totalCalls} Calls</span></td>
+                    <td class="p-3 pr-4"><span class="px-2 py-0.5 text-[10px] font-bold rounded border bg-blue-950/40 text-blue-400 border-blue-900/30">${lead.status}</span></td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -445,11 +484,9 @@
             document.getElementById('drawerSchoolId').innerText = lead.uniqueSchoolId;
             document.getElementById('drawerSchoolName').innerText = lead.school;
             document.getElementById('dContactName').innerText = lead.mainContactName || 'N/A';
-            document.getElementById('dContactDesignation').innerText = lead.mainContactDesignation || 'N/A';
             document.getElementById('dContactNo').innerText = lead.mainContactNo;
             document.getElementById('dCurrentStageBadge').innerText = lead.status;
 
-            // Reset interaction elements
             document.getElementById('drawerCallNotesInput').value = '';
             document.getElementById('drawerCallFollowUpInput').value = '';
             document.getElementById('drawerCallWebinarInput').value = '';
@@ -464,11 +501,10 @@
                 const followUpDate = document.getElementById('drawerCallFollowUpInput').value;
                 const webinarDate = document.getElementById('drawerCallWebinarInput').value;
 
-                if (!notes) return alert("System Guardrail: Interactivity requires documentation. Please provide Call Notes.");
-                if (nextStage !== 'Not Interested' && !followUpDate) return alert("System Guardrail: Ongoing workflows mandate choosing a future Loop Date.");
-                if (nextStage === 'Webinar Agreed' && !webinarDate) return alert("System Guardrail: Webinar targets require a selected execution day.");
+                if (!notes) return alert("Please provide Call Notes.");
+                if (nextStage !== 'Not Interested' && !followUpDate) return alert("System requires choosing a future follow-up loop date.");
+                if (nextStage === 'Webinar Agreed' && !webinarDate) return alert("Please select a valid execution day for the webinar target.");
 
-                // 1. Log call entry directly connected to the focused lead
                 addDoc(collection(db, "lead_calls"), {
                     leadId: id,
                     agent: auth.currentUser.email,
@@ -477,19 +513,16 @@
                     timestamp: serverTimestamp(),
                     dateString: new Date().toLocaleDateString()
                 }).then(() => {
-                    // 2. Adjust core pipeline tier record
                     return updateDoc(doc(db, "leads", id), {
                         status: nextStage,
                         webinarDate: nextStage === 'Webinar Agreed' ? webinarDate : '',
                         timestamp: serverTimestamp()
                     });
                 }).then(() => {
-                    // 3. Close open operational tasks linked to this segment automatically
                     localTasksArray.filter(t => t.leadId === id && t.taskStatus === 'Pending').forEach(t => {
                         updateDoc(doc(db, "crm_tasks", t.id), { taskStatus: 'Completed' });
                     });
 
-                    // 4. Loop workflow generator: Spin up subsequent task unless the account drops into terminal "Not Interested" state
                     if (nextStage !== 'Not Interested') {
                         addDoc(collection(db, "crm_tasks"), {
                             leadId: id,
@@ -500,7 +533,7 @@
                             operator: auth.currentUser.email
                         });
                     }
-                    alert(`Call logged successfully! Task closed and stage advanced to [${nextStage}].`);
+                    alert(`Call logged successfully! Task completed and pipeline advanced.`);
                 }).catch(err => alert("Operational write failure: " + err.message));
             };
         }
@@ -508,24 +541,21 @@
         function renderLeadSpecificTimeline(leadId) {
             const container = document.getElementById('leadSpecificLogsContainer');
             const filteredLogs = localInteractionLogsArray.filter(log => log.leadId === leadId);
-            
             document.getElementById('dCallCount').innerText = filteredLogs.length;
 
             if (filteredLogs.length === 0) {
-                container.innerHTML = `<div class="p-4 border border-dashed border-slate-800 text-center text-slate-500 rounded text-[11px]">No logged calls inside track profile. Entry is locked at New Lead status.</div>`;
+                container.innerHTML = `<div class="p-3 border border-dashed border-slate-800 text-center text-slate-500 rounded text-[11px]">No logged calls on file.</div>`;
                 return;
             }
 
             container.innerHTML = filteredLogs.map(log => `
-                <div class="bg-slate-900 border border-slate-800/80 p-2.5 rounded-lg text-[11px] space-y-1">
-                    <div class="flex items-center justify-between font-mono text-[10px]">
-                        <span class="text-slate-400 font-bold">👤 ${log.agent.split('@')[0]}</span>
-                        <span class="text-slate-500">${log.dateString || 'Just now'}</span>
+                <div class="bg-slate-900 border border-slate-800/80 p-2 rounded-lg text-[11px]">
+                    <div class="flex items-center justify-between font-mono text-[10px] text-slate-400 mb-1">
+                        <span>👤 ${log.agent.split('@')[0]}</span>
+                        <span>${log.dateString || 'Just now'}</span>
                     </div>
-                    <p class="text-slate-200 leading-relaxed font-sans">${log.notes}</p>
-                    <div class="pt-1 flex items-center">
-                        <span class="text-[9px] uppercase tracking-wider font-bold bg-blue-950/60 text-blue-400 px-1.5 py-0.5 rounded border border-blue-900/30">Result: ${log.transitionedTo}</span>
-                    </div>
+                    <p class="text-slate-200 mb-1">${log.notes}</p>
+                    <span class="inline-block text-[9px] font-bold bg-blue-950/60 text-blue-400 px-1.5 py-0.5 rounded border border-blue-900/30">Result: ${log.transitionedTo}</span>
                 </div>
             `).join('');
         }
@@ -542,31 +572,46 @@
             if(!tbody) return;
 
             const nameQuery = document.getElementById('taskFilterName').value.toLowerCase().trim();
-            const startRange = document.getElementById('taskFilterDateStart').value;
-            const endRange = document.getElementById('taskFilterDateEnd').value;
+            const todayStr = new Date().toLocaleDateString('en-CA');
 
-            let filtered = localTasksArray.filter(t => t.taskStatus === 'Pending');
+            let filtered = localTasksArray.filter(t => t.taskStatus === currentTaskScopeTab);
 
-            filtered = filtered.filter(t => {
-                const matchesName = !nameQuery || (t.schoolName || '').toLowerCase().includes(nameQuery);
-                let matchesDate = true;
-                if(startRange && t.dueDate < startRange) matchesDate = false;
-                if(endRange && t.dueDate > endRange) matchesDate = false;
-                return matchesName && matchesDate;
-            });
+            if(nameQuery) {
+                filtered = filtered.filter(t => (t.schoolName || '').toLowerCase().includes(nameQuery));
+            }
 
-            tbody.innerHTML = filtered.length === 0 ? '<tr><td colspan="4" class="p-8 text-center text-slate-500">No active loops pending for verification.</td></tr>' : '';
+            tbody.innerHTML = filtered.length === 0 ? `<tr><td colspan="4" class="p-8 text-center text-slate-500">No profiles currently marked as ${currentTaskScopeTab.toLowerCase()}.</td></tr>` : '';
 
             filtered.forEach(task => {
                 const tr = document.createElement('tr');
                 tr.className = "border-b border-slate-800/40 hover:bg-slate-900/40 transition font-medium";
                 
+                // Urgency Pill Builder Logic
+                let urgencyBadge = '';
+                if (task.taskStatus === 'Completed') {
+                    urgencyBadge = `<span class="bg-emerald-950/40 border border-emerald-900/40 text-emerald-400 text-[10px] px-2 py-0.5 rounded font-bold">🟢 Completed / Closed</span>`;
+                } else if (task.dueDate < todayStr) {
+                    urgencyBadge = `<span class="bg-rose-950/40 border border-rose-900/40 text-rose-400 text-[10px] px-2 py-0.5 rounded font-bold animate-pulse">🚨 Overdue</span>`;
+                } else if (task.dueDate === todayStr) {
+                    urgencyBadge = `<span class="bg-amber-950/40 border border-amber-900/40 text-amber-400 text-[10px] px-2 py-0.5 rounded font-bold">⚠️ Due Today</span>`;
+                } else {
+                    urgencyBadge = `<span class="bg-sky-950/40 border border-sky-900/40 text-sky-400 text-[10px] px-2 py-0.5 rounded font-bold">📅 Upcoming</span>`;
+                }
+
                 tr.innerHTML = `
                     <td class="p-3 pl-4 font-bold text-white">${task.schoolName}</td>
                     <td class="p-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-900 border border-slate-800 text-slate-400">${task.currentStage}</span></td>
-                    <td class="p-3 font-mono text-amber-400">${task.dueDate}</td>
+                    <td class="p-3">
+                        <div class="flex items-center space-x-3">
+                            <span class="font-mono font-bold tracking-tight text-slate-200">${task.dueDate}</span>
+                            ${urgencyBadge}
+                        </div>
+                    </td>
                     <td class="p-3 pr-4 text-right">
-                        <button onclick="switchTab('log-tab'); selectedRecordId='${task.leadId}'; loadWorkspaceDrawerRecord('${task.leadId}');" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-2.5 py-1 rounded text-[10px] transition">Open Call Desk</button>
+                        ${task.taskStatus === 'Pending' 
+                            ? `<button onclick="switchTab('log-tab'); selectedRecordId='${task.leadId}'; loadWorkspaceDrawerRecord('${task.leadId}');" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-1.5 rounded text-[10px] transition shadow-md shadow-blue-600/10">Open Call Desk</button>`
+                            : `<span class="text-[11px] text-slate-500 font-mono">Archive Verified</span>`
+                        }
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -579,8 +624,8 @@
             const mainContactNo = document.getElementById('mainContactNo').value.trim();
             const mainEmailId = document.getElementById('mainEmailId').value.trim();
 
-            if (localLeadsArray.some(l => (l.school || '').toLowerCase() === schoolName.toLowerCase() || (l.mainEmailId || '').toLowerCase() === mainEmailId.toLowerCase())) {
-                return alert("Conflict Warning: Profile parameters match an existing institutional configuration.");
+            if (localLeadsArray.some(l => (l.school || '').toLowerCase() === schoolName.toLowerCase())) {
+                return alert("Conflict Warning: School profile configuration already active.");
             }
 
             const btn = document.getElementById('submitBtn');
@@ -592,9 +637,6 @@
                 mainContactName: document.getElementById('mainContactName').value.trim(),
                 mainContactDesignation: document.getElementById('mainContactDesignation').value.trim(),
                 scoutedFor: document.getElementById('scoutedFor').value,
-                contactNo2: document.getElementById('contactNo2').value.trim(),
-                emailId2: document.getElementById('emailId2').value.trim(),
-                anyRelatedLinks: document.getElementById('anyRelatedLinks').value.trim(),
                 status: "New Lead", operator: auth.currentUser.email, addedDateTimeString: new Date().toLocaleString(), timestamp: serverTimestamp()
             };
 
@@ -603,13 +645,6 @@
                 btn.disabled = false;
                 document.querySelector('details').open = false; 
             }).catch(err => { alert("Write failed: " + err.message); btn.disabled = false; });
-        };
-
-        window.exportDatabaseToCSV = function() {
-            if (auth.currentUser.email.toLowerCase() !== SUPER_ADMIN_EMAIL.toLowerCase() || localLeadsArray.length === 0) return;
-            let csv = "data:text/csv;charset=utf-8,ID,School Name,Contact,Email,Course,Status\n" + localLeadsArray.map(l => `"${l.uniqueSchoolId}","${l.school}","${l.mainContactNo}","${l.mainEmailId}","${l.scoutedFor}","${l.status}"`).join("\n");
-            const link = document.createElement("a"); link.setAttribute("href", encodeURI(csv)); link.setAttribute("download", `Master_Pipeline_Snapshot.csv`);
-            document.body.appendChild(link); link.click(); document.body.removeChild(link);
         };
 
         window.switchTab = function(tabId) {
