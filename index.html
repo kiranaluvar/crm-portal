@@ -134,17 +134,30 @@
                                                 <option value="D+B SCHOOL">D+B SCHOOL</option>
                                             </select>
                                         </div>
-                                        <div><label class="text-slate-400 block mb-1">Curriculum Followed</label><input type="text" id="curriculum" placeholder="CBSE, ICSE, IB, etc." class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                        <div>
+                                            <label class="text-slate-400 block mb-1">Curriculum Followed</label>
+                                            <select id="curriculum" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-300 focus:outline-none focus:border-blue-500">
+                                                <option value="CBSE">CBSE</option>
+                                                <option value="ICSE">ICSE</option>
+                                                <option value="IGCSE">IGCSE</option>
+                                                <option value="IB">IB</option>
+                                                <option value="State Board">State Board</option>
+                                                <option value="Other">Other</option>
+                                            </select>
+                                        </div>
                                     </div>
                                     <div class="grid grid-cols-2 gap-2">
-                                        <div><label class="text-slate-400 block mb-1">School Fees</label><input type="text" id="schoolFees" placeholder="Exact fee or base" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                        <div>
+                                            <label class="text-slate-400 block mb-1">School Fees (₹ Real Value)</label>
+                                            <input type="number" id="schoolFees" placeholder="e.g. 150000" oninput="autoCalculateFeeRange(this.value)" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-200 focus:outline-none focus:border-blue-500 font-mono">
+                                        </div>
                                         <div>
                                             <label class="text-slate-400 block mb-1">School Fees Range</label>
                                             <select id="schoolFeesRange" class="w-full bg-[#17263f] border border-slate-800 rounded p-2 text-slate-300 focus:outline-none focus:border-blue-500 text-[11px]">
-                                                <option value="5k and 5k+ till 1 lakh">5k & 5k+ till 1 Lakh</option>
-                                                <option value="10k till 2 lakh">10k till 2 Lakh</option>
-                                                <option value="add 1 lakh till 20 lakh">Add 1 Lakh till 20 Lakh</option>
-                                                <option value="20l +">20L +</option>
+                                                <option value="5k and 5k+ till 1 lakh">5k & 5k+ till 1 lakh</option>
+                                                <option value="10k till 2 lakh">10k till 2 lakh</option>
+                                                <option value="add 1 lakh till 20 lakh">add 1 lakh till 20 lakh</option>
+                                                <option value="20l +">20l +</option>
                                             </select>
                                         </div>
                                     </div>
@@ -245,7 +258,7 @@
                         <header class="p-4 border-b border-slate-800/40 bg-[#090f1b] flex items-center justify-between">
                             <div>
                                 <span id="drawerSchoolId" class="font-mono text-[9px] font-bold text-blue-400 tracking-wider bg-blue-950/40 border border-blue-900/30 px-1.5 py-0.5 rounded uppercase">BC-SCH-UNKNOWN</span>
-                                <h3 id="drawerSchoolName" class="text-sm font-black text-white tracking-tight mt-1 truncate max-w-[220px]">Sample Academy Complex</h3>
+                                <h2 id="drawerSchoolName" class="text-sm font-black text-white tracking-tight mt-1 truncate max-w-[220px]">Sample Academy Complex</h2>
                             </div>
                             <button onclick="closeWorkspaceDrawer()" class="text-slate-500 hover:text-slate-300 text-lg p-1">✕</button>
                         </header>
@@ -489,6 +502,28 @@
         let unsubscribeLeads = null;
         let unsubscribeTasks = null;
         let unsubscribeLogs = null;
+
+        // DYNAMIC FEE PLACEMENT ALGORITHM MATCHING PARAMETERS IN SCREENSHOT 2026-06-17 AT 2.17.20 PM.PNG
+        window.autoCalculateFeeRange = function(value) {
+            const rangeSelect = document.getElementById('schoolFeesRange');
+            if (!value || isNaN(value)) return;
+            
+            const numericalFee = parseFloat(value);
+            
+            if (numericalFee < 100000) {
+                // Values below 1 Lakh (Starts with 5k and 5k+ up to 1 Lakh)
+                rangeSelect.value = "5k and 5k+ till 1 lakh";
+            } else if (numericalFee >= 100000 && numericalFee <= 200000) {
+                // From 10k increments up to 2 Lakh
+                rangeSelect.value = "10k till 2 lakh";
+            } else if (numericalFee > 200000 && numericalFee <= 2000000) {
+                // Adding 1 Lakh levels up to 20 Lakhs
+                rangeSelect.value = "add 1 lakh till 20 lakh";
+            } else if (numericalFee > 2000000) {
+                // Beyond 20 Lakhs
+                rangeSelect.value = "20l +";
+            }
+        };
 
         function showAuthMessage(text, type = 'error') {
             const msgEl = document.getElementById('authMessage');
@@ -737,7 +772,7 @@
             
             // Dynamic Workspace Collector Layout Injection Mapping from Ref 2.17.20 PM
             document.getElementById('dSchoolType').innerText = lead.schoolType || 'Not Specified';
-            document.getElementById('dSchoolFees').innerText = lead.schoolFees || 'Not Specified';
+            document.getElementById('dSchoolFees').innerText = lead.schoolFees ? "₹ " + parseInt(lead.schoolFees).toLocaleString('en-IN') : 'Not Specified';
             document.getElementById('dSchoolFeesRange').innerText = lead.schoolFeesRange || 'Not Specified';
             document.getElementById('dCurriculum').innerText = lead.curriculum || 'Not Specified';
             
@@ -874,7 +909,7 @@
                 country: document.getElementById('country').value.trim(),
                 mainEmailId: document.getElementById('mainEmailId').value.trim(),
                 mainContactNo: document.getElementById('mainContactNo').value.trim(),
-                curriculum: document.getElementById('curriculum').value.trim(),
+                curriculum: document.getElementById('curriculum').value,
                 schoolFees: document.getElementById('schoolFees').value.trim(),
                 schoolFeesRange: document.getElementById('schoolFeesRange').value,
                 
