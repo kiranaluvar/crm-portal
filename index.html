@@ -102,7 +102,7 @@
                         </div>
 
                         <!-- TEAM LEAD OPERATIONS CONTROL PANEL -->
-                        <div class="flex items-center bg-[#111827] border border-dashed border-slate-700/60 rounded-xl px-3 py-1.5 space-x-3">
+                        <div id="tlRoutingPanel" class="hidden flex items-center bg-[#111827] border border-dashed border-slate-700/60 rounded-xl px-3 py-1.5 space-x-3">
                             <span class="text-[10px] font-bold uppercase text-amber-400 tracking-wider">TL Routing:</span>
                             <select id="tlAgentSelectDropdown" class="bg-[#070b12] border border-slate-800 text-[11px] px-2 py-1 rounded-lg text-slate-200 focus:outline-none">
                                 <option value="">Select Target Agent...</option>
@@ -511,6 +511,11 @@
 
         const ALLOWED_DOMAIN = 'brightchamps.com'; 
 
+        // TEAM LEAD AND MANAGEMENT EMAIL AUTHORIZATION MATRIX
+        const TEAM_LEADERS_LIST = [
+            'kiran.aluvara@brightchamps.com'
+        ];
+
         const firebaseConfig = {
             apiKey: "AIzaSyAYpGUhW9CDWLwuj7ZHVRYFAq-37uS0flU",
             authDomain: "partnership-outreach-crm.firebaseapp.com",
@@ -593,6 +598,15 @@
                     document.getElementById('userNameProfile').innerText = user.displayName || 'Agent User';
                     document.getElementById('userEmailProfile').innerText = user.email;
                     document.getElementById('userInitial').innerText = (user.displayName || 'A').charAt(0);
+                    
+                    // --- SECURITY INTERFACE VISIBILITY CONTROLS ---
+                    const routingPanel = document.getElementById('tlRoutingPanel');
+                    if (TEAM_LEADERS_LIST.includes(user.email.toLowerCase())) {
+                        routingPanel.classList.remove('hidden');
+                    } else {
+                        routingPanel.classList.add('hidden');
+                    }
+                    
                     initializeDataStreams();
                 } else {
                     showAuthMessage(`Access Denied: Please authorize via a professional @${ALLOWED_DOMAIN} workspace alias profile.`, 'warning');
@@ -754,6 +768,12 @@
 
         // EXECUTED BY TEAM LEAD TO ALLOCATE / ROUTE MULTIPLE LEADS IN BULK
         window.executeTlBulkAssignmentOperation = function() {
+            // BACK-END FUNCTION SECURITY GUARDFENCE
+            const currentUserEmail = auth.currentUser ? auth.currentUser.email.toLowerCase() : '';
+            if (!TEAM_LEADERS_LIST.includes(currentUserEmail)) {
+                return alert("Access Denied: Your terminal session does not carry high-level Lead Routing privileges.");
+            }
+
             const targetAgent = document.getElementById('tlAgentSelectDropdown').value;
             if(!targetAgent) return alert("Please select a valid destination agent profile.");
             
