@@ -325,11 +325,58 @@
                 </div>
             </div>
 
-            <!-- ANALYTICS TAB CONTAINER -->
+            <!-- ENHANCED ANALYTICS TAB CONTAINER -->
             <div id="analytics-tab" class="tab-content hidden flex-1 flex flex-col p-6 overflow-y-auto space-y-6 h-full">
-                <div class="bg-slate-950 border border-slate-800 p-5 rounded-xl flex flex-col h-80 max-w-2xl mx-auto w-full">
-                    <h3 class="text-xs font-bold text-slate-300 mb-3 uppercase text-center">Pipeline Volume Weight</h3>
-                    <div class="flex-1 relative"><canvas id="pipelineChart"></canvas></div>
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-base font-bold text-white">Data Modeling & Insights</h2>
+                        <p class="text-slate-400 text-xs">Real-time performance tracking of total institutional accounts, conversation loops, and target achievements.</p>
+                    </div>
+                    
+                    <!-- ANALYTICS PARAMETRIC FILTERS -->
+                    <div class="bg-slate-950 border border-slate-800 p-2 rounded-xl flex items-center gap-2">
+                        <select id="analyticsDateScope" onchange="generateChartAnalytics()" class="bg-slate-900 border border-slate-800 text-slate-300 text-[11px] font-semibold rounded-lg p-1.5 focus:outline-none">
+                            <option value="7">Last 7 Days</option>
+                            <option value="30" selected>Last 30 Days</option>
+                            <option value="ALL">All-Time Horizon</option>
+                        </select>
+                        <select id="analyticsOwnerScope" onchange="generateChartAnalytics()" class="bg-slate-900 border border-slate-800 text-blue-400 text-[11px] font-bold rounded-lg p-1.5 focus:outline-none">
+                            <option value="ALL">All Agents combined</option>
+                            <option value="MINE">My Execution Data</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- METRICS OVERVIEW BAR -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 relative overflow-hidden">
+                        <span class="text-slate-500 text-[10px] font-bold uppercase tracking-wider block">Total Pipeline Inflow</span>
+                        <span id="statTotalAccounts" class="text-2xl font-black text-white font-mono">0</span>
+                    </div>
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                        <span class="text-slate-500 text-[10px] font-bold uppercase tracking-wider block">Webinars Locked</span>
+                        <span id="statWebinarsAgreed" class="text-2xl font-black text-emerald-400 font-mono">0</span>
+                    </div>
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                        <span class="text-slate-500 text-[10px] font-bold uppercase tracking-wider block">Total Interactions</span>
+                        <span id="statTotalCalls" class="text-2xl font-black text-blue-400 font-mono">0</span>
+                    </div>
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                        <span class="text-slate-500 text-[10px] font-bold uppercase tracking-wider block">Conversion Success Rate</span>
+                        <span id="statConversionRate" class="text-2xl font-black text-amber-400 font-mono">0%</span>
+                    </div>
+                </div>
+
+                <!-- SIDE-BY-SIDE CHART LAYOUT -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-slate-950 border border-slate-800 p-5 rounded-xl flex flex-col h-85 w-full">
+                        <h3 class="text-xs font-bold text-slate-300 mb-3 uppercase text-center tracking-wider">Pipeline Volume Weight</h3>
+                        <div class="flex-1 relative"><canvas id="pipelineChart"></canvas></div>
+                    </div>
+                    <div class="bg-slate-950 border border-slate-800 p-5 rounded-xl flex flex-col h-85 w-full">
+                        <h3 class="text-xs font-bold text-slate-300 mb-3 uppercase text-center tracking-wider">Daywise Scouts (Bars) vs Follow-ups (Line)</h3>
+                        <div class="flex-1 relative"><canvas id="activityChart"></canvas></div>
+                    </div>
                 </div>
             </div>
 
@@ -364,6 +411,7 @@
         let localInteractionLogsArray = [];
         let selectedRecordId = null;
         let pipelineChartInstance = null;
+        let activityChartInstance = null;
         
         let currentTaskScopeTab = 'Pending'; 
         let urgencyQuickFilterState = null;  
@@ -400,11 +448,13 @@
                 localLeadsArray = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
                 executeDataGridFilters();
                 if(selectedRecordId) loadWorkspaceDrawerRecord(selectedRecordId);
+                if (!document.getElementById('analytics-tab').classList.contains('hidden')) generateChartAnalytics();
             });
 
             unsubscribeTasks = onSnapshot(query(collection(db, "crm_tasks"), orderBy("dueDate", "asc")), (snapshot) => {
                 localTasksArray = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
                 calculateActiveTaskWorkflowCounters();
+                executeDataGridFilters(); 
                 renderTaskCenterConsole();
             });
 
@@ -412,6 +462,7 @@
                 localInteractionLogsArray = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
                 if(selectedRecordId) renderLeadSpecificTimeline(selectedRecordId);
                 executeDataGridFilters();
+                if (!document.getElementById('analytics-tab').classList.contains('hidden')) generateChartAnalytics();
             });
         }
 
@@ -510,22 +561,66 @@
             const tbody = document.getElementById('dataTableBody');
             tbody.innerHTML = subset.length === 0 ? '<tr><td colspan="4" class="p-8 text-center text-slate-500">No matching records found.</td></tr>' : '';
             
+            const todayStr = getNormalizedTodayString();
+            const fortyEightHoursAgo = Date.now() - (48 * 60 * 60 * 1000);
+
             subset.forEach(lead => {
                 const totalCalls = localInteractionLogsArray.filter(log => log.leadId === lead.id).length;
+                
+                // CORE ADVANCED "DROPPED BALL / STALE ALERT" SAFETY ENGINE
+                let isStaleDroppedBall = false;
+                let staleReason = "";
+
+                if (lead.status !== 'Webinar Agreed' && lead.status !== 'Not Interested') {
+                    const openTasks = localTasksArray.filter(t => t.leadId === lead.id && t.taskStatus === 'Pending');
+                    
+                    if (openTasks.length > 0) {
+                        // If open task exists, wait until the follow up date passes. Is it overdue?
+                        const hasOverdueTask = openTasks.some(t => t.dueDate < todayStr);
+                        if (hasOverdueTask) {
+                            isStaleDroppedBall = true;
+                            staleReason = "Overdue task loop";
+                        }
+                    } else {
+                        // No open tasks scheduled - fallback to strict 48-hour touchpoint verification
+                        const leadLogs = localInteractionLogsArray.filter(log => log.leadId === lead.id);
+                        if (leadLogs.length > 0) {
+                            const lastLog = leadLogs[0];
+                            const lastLogTime = lastLog.timestamp ? (lastLog.timestamp.seconds * 1000 || lastLog.timestamp.toMillis?.()) : null;
+                            if (lastLogTime && lastLogTime < fortyEightHoursAgo) {
+                                isStaleDroppedBall = true;
+                                staleReason = "No task & >48h idle";
+                            }
+                        } else {
+                            // Freshly scouted record with no follow-ups logged yet
+                            const createdTime = lead.timestamp ? (lead.timestamp.seconds * 1000 || lead.timestamp.toMillis?.()) : null;
+                            if (createdTime && createdTime < fortyEightHoursAgo) {
+                                isStaleDroppedBall = true;
+                                staleReason = "Untouched >48h";
+                            }
+                        }
+                    }
+                }
+
                 const tr = document.createElement('tr');
-                tr.className = `cursor-pointer transition border-b border-slate-800/40 hover:bg-slate-900/60 ${selectedRecordId === lead.id ? 'bg-slate-900/80 border-l-2 border-l-blue-500' : ''}`;
+                tr.className = `cursor-pointer transition border-b border-slate-800/40 hover:bg-slate-900/60 ${selectedRecordId === lead.id ? 'bg-slate-900/80 border-l-2 border-l-blue-500' : ''} ${isStaleDroppedBall ? 'bg-rose-950/10 border-l-2 border-l-rose-600' : ''}`;
                 tr.onclick = () => { selectedRecordId = lead.id; executeDataGridFilters(); loadWorkspaceDrawerRecord(lead.id); };
                 
                 const shortOwner = lead.operator ? lead.operator.split('@')[0] : 'System';
 
                 tr.innerHTML = `
-                    <td class="p-3 pl-4 max-w-xs truncate"><div class="font-bold text-white">${lead.school || 'Unnamed'}</div></td>
+                    <td class="p-3 pl-4 max-w-xs truncate">
+                        <div class="font-bold text-white flex items-center space-x-1.5">
+                            <span>${lead.school || 'Unnamed'}</span>
+                            ${isStaleDroppedBall ? `<span class="bg-rose-500/10 border border-rose-500/30 text-rose-400 text-[9px] px-1.5 py-0.5 rounded font-mono animate-pulse" title="${staleReason}">⚠️ STALE</span>` : ''}
+                        </div>
+                    </td>
                     <td class="p-3">
                         <div class="font-semibold text-slate-300">${lead.scoutedFor}</div>
                         <div class="text-[10px] text-slate-500 truncate">👤 ${shortOwner}</div>
                     </td>
                     <td class="p-3"><span class="font-mono bg-slate-900 text-slate-300 px-2 py-0.5 rounded border border-slate-800">${totalCalls} Calls</span></td>
-                    <td class="p-3 pr-4"><span class="px-2 py-0.5 text-[10px] font-bold rounded border bg-blue-950/40 text-blue-400 border-blue-900/30">${lead.status}</span></td>
+                    <td class="p-3 pr-4"><span class="px-2 py-0.5 text-[10px] font-bold rounded border ${isStaleDroppedBall ? 'bg-rose-950/40 text-rose-400 border-rose-900/30' : 'bg-blue-950/40 text-blue-400 border-blue-900/30'}">${lead.status}</span></td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -566,13 +661,15 @@
                 if (nextStage !== 'Not Interested' && !followUpDate) return alert("System requires choosing a future follow-up loop date.");
                 if (nextStage === 'Webinar Agreed' && !webinarDate) return alert("Please select a valid execution day for the webinar target.");
 
+                const dateStr = getNormalizedTodayString();
+
                 addDoc(collection(db, "lead_calls"), {
                     leadId: id,
                     agent: auth.currentUser.email,
                     notes: notes,
                     transitionedTo: nextStage,
                     timestamp: serverTimestamp(),
-                    dateString: new Date().toLocaleDateString()
+                    dateString: dateStr
                 }).then(() => {
                     return updateDoc(doc(db, "leads", id), {
                         status: nextStage,
@@ -628,24 +725,14 @@
             executeDataGridFilters();
         };
 
-        // FIXED ACTION ROUTER ENGINE: Synchronizes search filters prior to layout construction
         window.routeToCallDeskAccount = function(leadId, schoolName) {
-            // 1. Force navigation tab swap
             switchTab('log-tab');
-            
-            // 2. Set globally active tracking points
             selectedRecordId = leadId;
-            
-            // 3. Pin down the target by overriding search fields to prevent list positioning drift
             const searchField = document.getElementById('filterSearch');
             if (searchField) {
                 searchField.value = schoolName;
             }
-            
-            // 4. Force list refresh to prioritize this record
             executeDataGridFilters();
-            
-            // 5. Open right contextual profile panel cleanly
             loadWorkspaceDrawerRecord(leadId);
         };
 
@@ -681,7 +768,6 @@
                 filtered = filtered.filter(t => (t.schoolName || '').toLowerCase().includes(nameQuery));
             }
 
-            // High priority sorting engine
             filtered.sort((a, b) => {
                 if (a.dueDate < todayStr && b.dueDate >= todayStr) return -1;
                 if (a.dueDate >= todayStr && b.dueDate < todayStr) return 1;
@@ -706,8 +792,6 @@
                 }
 
                 const displayOwner = task.operator ? task.operator.split('@')[0] : 'System';
-
-                // Escaped string values to prevent breakdown on complex titles
                 const cleanSchoolName = (task.schoolName || '').replace(/'/g, "\\'");
 
                 tr.innerHTML = `
@@ -747,12 +831,15 @@
             btn.disabled = true;
 
             const uniqueId = "BC-SCH-" + Math.random().toString(36).substr(2, 8).toUpperCase();
+            const todayStr = getNormalizedTodayString();
+
             const payload = {
                 uniqueSchoolId: uniqueId, school: schoolName, mainContactNo: mainContactNo, mainEmailId: mainEmailId,
                 mainContactName: document.getElementById('mainContactName').value.trim(),
                 mainContactDesignation: document.getElementById('mainContactDesignation').value.trim(),
                 scoutedFor: document.getElementById('scoutedFor').value,
-                status: "New Lead", operator: auth.currentUser.email, addedDateTimeString: new Date().toLocaleString(), timestamp: serverTimestamp()
+                status: "New Lead", operator: auth.currentUser.email, 
+                dateStr: todayStr, addedDateTimeString: new Date().toLocaleString(), timestamp: serverTimestamp()
             };
 
             addDoc(collection(db, "leads"), payload).then(() => {
@@ -766,21 +853,121 @@
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(tabId).classList.remove('hidden');
             document.querySelectorAll('nav button').forEach(b => b.className = "w-full text-left px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-900 hover:text-slate-200 font-medium text-xs transition flex items-center space-x-3");
-            document.getElementById(`btn-${tabId}`).className = "w-full text-left px-3 py-2.5 rounded-lg bg-blue-600 text-white font-medium text-xs transition flex items-center space-x-3";
+            document.getElementById(`btn-${tabId}`).className = "w-full text-left px-3 py-2.5 rounded-lg bg-blue-600 text-white font-medium text-xs transition flex items-center space-x-3");
             if (tabId === 'analytics-tab') generateChartAnalytics();
             if (tabId === 'tasks-tab') renderTaskCenterConsole();
         };
 
         function generateChartAnalytics() {
-            const metrics = { 'New Lead': 0, 'Contacted': 0, 'Webinar Agreed': 0, 'Not Interested': 0 };
-            localLeadsArray.forEach(l => { if(metrics[l.status] !== undefined) metrics[l.status]++; });
+            const dateScope = document.getElementById('analyticsDateScope').value;
+            const ownerScope = document.getElementById('analyticsOwnerScope').value;
+            const currentUserEmail = auth.currentUser ? auth.currentUser.email : '';
+            const todayStr = getNormalizedTodayString();
+
+            // 1. FILTER ARRAYS BASED ON USER CHOICES
+            let filteredLeads = [...localLeadsArray];
+            let filteredCalls = [...localInteractionLogsArray];
+
+            if (ownerScope === 'MINE') {
+                filteredLeads = filteredLeads.filter(l => l.operator === currentUserEmail);
+                filteredCalls = filteredCalls.filter(c => c.agent === currentUserEmail);
+            }
+
+            if (dateScope !== 'ALL') {
+                const daysLimit = parseInt(dateScope);
+                const limitDate = new Date();
+                limitDate.setDate(limitDate.getDate() - daysLimit);
+                const limitDateStr = limitDate.toISOString().split('T')[0];
+
+                filteredLeads = filteredLeads.filter(l => (l.dateStr || todayStr) >= limitDateStr);
+                // Fallback parsing if absolute server timestamp is used
+                filteredCalls = filteredCalls.filter(c => (c.dateString || todayStr) >= limitDateStr);
+            }
+
+            // 2. ASSIGN VALUES TO CORE VALUE STAT CARDS
+            const totalAccounts = filteredLeads.length;
+            const totalCallsCount = filteredCalls.length;
+            const webinarsAgreedCount = filteredLeads.filter(l => l.status === 'Webinar Agreed').length;
+            const conversionRate = totalAccounts > 0 ? Math.round((webinarsAgreedCount / totalAccounts) * 100) : 0;
+
+            document.getElementById('statTotalAccounts').innerText = totalAccounts;
+            document.getElementById('statWebinarsAgreed').innerText = webinarsAgreedCount;
+            document.getElementById('statTotalCalls').innerText = totalCallsCount;
+            document.getElementById('statConversionRate').innerText = conversionRate + "%";
+
+            // 3. PIE CHART: PIPELINE WEIGHT DISTRIBUTION
+            const pipeMetrics = { 'New Lead': 0, 'Contacted': 0, 'Webinar Agreed': 0, 'Not Interested': 0 };
+            filteredLeads.forEach(l => { if(pipeMetrics[l.status] !== undefined) pipeMetrics[l.status]++; });
 
             const ctx1 = document.getElementById('pipelineChart').getContext('2d');
             if (pipelineChartInstance) pipelineChartInstance.destroy();
             pipelineChartInstance = new Chart(ctx1, {
                 type: 'pie',
-                data: { labels: Object.keys(metrics), datasets: [{ data: Object.values(metrics), backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#475569'], borderWidth: 2, borderColor: '#0f172a' }] },
+                data: { labels: Object.keys(pipeMetrics), datasets: [{ data: Object.values(pipeMetrics), backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#475569'], borderWidth: 2, borderColor: '#0f172a' }] },
                 options: { plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10 } } } }, responsive: true, maintainAspectRatio: false }
+            });
+
+            // 4. MIXED CHART: DAYWISE INFLOW VS EFFORT TIMELINE
+            const daywiseMap = {};
+            const lookbackDays = dateScope === 'ALL' ? 14 : parseInt(dateScope);
+
+            // Seed empty framework structure for consistent chronological tracking lines
+            for (let i = lookbackDays - 1; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const dStr = d.toISOString().split('T')[0];
+                daywiseMap[dStr] = { scouts: 0, followups: 0 };
+            }
+
+            // Populate calculations
+            filteredLeads.forEach(l => {
+                const dKey = l.dateStr || (l.addedDateTimeString ? l.addedDateTimeString.split(',')[0] : null);
+                if (daywiseMap[dKey]) daywiseMap[dKey].scouts++;
+            });
+            filteredCalls.forEach(c => {
+                const dKey = c.dateString;
+                if (daywiseMap[dKey]) daywiseMap[dKey].followups++;
+            });
+
+            const sortedLabels = Object.keys(daywiseMap).sort();
+            const scoutsData = sortedLabels.map(k => daywiseMap[k].scouts);
+            const followupsData = sortedLabels.map(k => daywiseMap[k].followups);
+
+            const ctx2 = document.getElementById('activityChart').getContext('2d');
+            if (activityChartInstance) activityChartInstance.destroy();
+            activityChartInstance = new Chart(ctx2, {
+                data: {
+                    labels: sortedLabels,
+                    datasets: [
+                        {
+                            type: 'bar',
+                            label: 'New Scouts Inflow',
+                            data: scoutsData,
+                            backgroundColor: '#3b82f6',
+                            borderRadius: 4,
+                            barPercentage: 0.6
+                        },
+                        {
+                            type: 'line',
+                            label: 'Follow-up Call Logs',
+                            data: followupsData,
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'transparent',
+                            tension: 0.25,
+                            borderWidth: 2,
+                            pointBackgroundColor: '#f59e0b'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { size: 9 } } },
+                        y: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { size: 9 }, stepSize: 1 }, beginAtZero: true }
+                    },
+                    plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10 } } } }
+                }
             });
         }
     </script>
