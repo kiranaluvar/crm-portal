@@ -15,995 +15,1328 @@
             <h1 class="text-2xl font-black text-white tracking-tight mb-2">Webinar Ops CRM Portal</h1>
             <p class="text-xs text-slate-400 mb-6 font-medium">Internal execution dashboard. Authorized access checkpoints enabled.</p>
             
-            <div id="authMessage" class="hidden p-3 rounded-xl text-xs mb-4 font-bold border"></div>
-
-            <div class="space-y-3 text-left">
-                <div>
-                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1.5">Corporate Email Address</label>
-                    <input type="email" id="authEmail" class="w-full bg-[#070b12] border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 font-medium tracking-wide text-slate-200 transition" placeholder="name@brightchamps.com">
-                </div>
-                <button onclick="handleAuthentication()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3 px-4 rounded-xl text-xs uppercase tracking-wider transition shadow-lg shadow-blue-600/10 mt-2">Verify Credentials</button>
-            </div>
-            <div class="mt-8 pt-4 border-t border-slate-900 text-[10px] text-slate-500 font-semibold tracking-wider uppercase">Secure Network Node</div>
+            <div id="authMessage" class="hidden p-3 rounded-xl mb-5 text-left text-xs font-semibold border transition-all duration-300"></div>
+            
+            <button id="signInBtn" class="w-full bg-blue-600 hover:bg-blue-500 active:scale-[0.99] text-white py-3 rounded-xl font-bold tracking-wide transition shadow-lg shadow-blue-600/20 text-xs uppercase">
+                Sign In with BrightChamps Account
+            </button>
         </div>
     </div>
 
-    <div id="appDashboard" class="hidden min-h-screen flex flex-col opacity-0 transition-opacity duration-500">
+    <div id="mainDashboard" class="hidden flex h-screen overflow-hidden">
         
-        <header class="bg-[#111827]/80 backdrop-blur-md border-b border-slate-800/60 sticky top-0 z-40 px-6 py-4 flex items-center justify-between shadow-xl shadow-black/5">
-            <div class="flex items-center space-x-3">
-                <div class="w-9 h-9 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-xl flex items-center justify-center text-white text-sm shadow-md font-black">W</div>
-                <div>
-                    <h2 class="text-sm font-black tracking-tight text-white uppercase">Webinar Ops Dashboard</h2>
-                    <p id="userProfileBadge" class="text-[10px] text-slate-400 font-semibold tracking-wide flex items-center gap-1.5 mt-0.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Initializing Node...</p>
-                </div>
-            </div>
-            
-            <div class="flex items-center space-x-3">
-                <div id="adminImportSection" class="hidden flex items-center bg-[#070b12] border border-dashed border-purple-500/30 rounded-xl px-3 py-1.5 space-x-3">
-                    <span class="text-[10px] font-black uppercase text-purple-400 tracking-wider">Bulk Tools:</span>
-                    <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="handleCSVFileSelect(event)" />
-                    <button onclick="document.getElementById('csvFileInput').click()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg transition uppercase tracking-wider shadow-lg shadow-purple-600/10">= Ingest CSV Matrix</button>
+        <aside class="w-64 bg-[#111827] border-r border-slate-800 p-4 flex flex-col justify-between shrink-0">
+            <div>
+                <div class="flex items-center space-x-3 px-2 py-3 mb-6">
+                    <div class="w-8 h-8 bg-blue-600/20 border border-blue-500/30 rounded-xl flex items-center justify-center text-xs text-blue-400 shadow-inner">⚡</div>
+                    <div>
+                        <h2 class="text-xs font-black tracking-wider text-white uppercase">Webinar Ops</h2>
+                        <span class="text-[9px] font-bold text-emerald-400 tracking-widest block mt-0.5 uppercase">CLUSTER ACTIVE</span>
+                    </div>
                 </div>
 
-                <button onclick="openAddLeadModal()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-lg shadow-blue-600/10 flex items-center gap-1.5">
-                    <span>+</span> Scout New Institution
-                </button>
-                <div id="tlControlPanel" class="hidden flex items-center bg-[#070b12] border border-slate-800 rounded-xl p-1 space-x-1">
-                    <button onclick="openAssignmentModal()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg transition uppercase tracking-wider shadow-lg shadow-blue-600/10">Assign Leads</button>
-                    <button onclick="exportToCSV()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold px-3 py-1.5 rounded-lg transition uppercase tracking-wider">Export CSV</button>
-                </div>
-                <button onclick="triggerSystemSignOut()" class="text-slate-400 hover:text-rose-400 text-xs font-bold px-3 py-1.5 rounded-xl transition uppercase tracking-wider hover:bg-rose-500/5">Disconnect</button>
-            </div>
-        </header>
-
-        <main class="flex-1 p-6 space-y-6 max-w-[1600px] w-full mx-auto overflow-x-hidden">
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="bg-[#111827] border border-slate-800/80 p-5 rounded-2xl relative overflow-hidden group shadow-lg">
-                    <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl transition group-hover:bg-blue-500/10"></div>
-                    <p class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Total Active Rows</p>
-                    <h3 id="metricTotalRows" class="text-3xl font-black text-white mt-1 tracking-tight">0</h3>
-                    <p class="text-[10px] text-slate-500 font-semibold mt-2 uppercase tracking-wide">Aggregated Inflow Matrix</p>
-                </div>
-                <div class="bg-[#111827] border border-slate-800/80 p-5 rounded-2xl relative overflow-hidden group shadow-lg">
-                    <div class="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl transition group-hover:bg-emerald-500/10"></div>
-                    <p class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Webinar Links Secured</p>
-                    <h3 id="metricLinksSecured" class="text-3xl font-black text-emerald-400 mt-1 tracking-tight">0</h3>
-                    <p id="metricConversionRate" class="text-[10px] text-emerald-500/80 font-bold mt-2 uppercase tracking-wide">0% Ratio Complete</p>
-                </div>
-                <div class="bg-[#111827] border border-slate-800/80 p-5 rounded-2xl relative overflow-hidden group shadow-lg">
-                    <div class="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full blur-2xl transition group-hover:bg-amber-500/10"></div>
-                    <p class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Pending Contacts</p>
-                    <h3 id="metricPendingContacts" class="text-3xl font-black text-amber-500 mt-1 tracking-tight">0</h3>
-                    <p class="text-[10px] text-slate-500 font-semibold mt-2 uppercase tracking-wide">Operational Pipeline Backlog</p>
-                </div>
-                <div class="bg-[#111827] border border-slate-800/80 p-5 rounded-2xl relative overflow-hidden group shadow-lg">
-                    <div class="absolute top-0 right-0 w-24 h-24 bg-purple-500/5 rounded-full blur-2xl transition group-hover:bg-purple-500/10"></div>
-                    <p class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Unassigned Queue</p>
-                    <h3 id="metricUnassignedQueue" class="text-3xl font-black text-purple-400 mt-1 tracking-tight">0</h3>
-                    <p class="text-[10px] text-slate-500 font-semibold mt-2 uppercase tracking-wide">Awaiting Assignment Routing</p>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="bg-[#111827] border border-slate-800/80 p-5 rounded-2xl lg:col-span-2 shadow-xl flex flex-col">
-                    <div class="flex items-center justify-between mb-4">
-                        <div>
-                            <h3 class="text-xs font-black uppercase text-white tracking-wider">Daily Pipeline Conversion Matrix</h3>
-                            <p class="text-[10px] text-slate-400 font-medium">Historical workflow progression velocity</p>
+                <div class="mb-6 p-3 rounded-xl bg-slate-900/40 border border-slate-800/60 space-y-3">
+                    <div class="text-[9px] font-bold tracking-wider text-slate-400 uppercase">Live Performance Metrics</div>
+                    <div class="grid grid-cols-2 gap-2 text-center">
+                        <div class="bg-slate-950/60 p-2 rounded-lg border border-slate-800/40">
+                            <span class="text-[9px] block text-slate-400 font-medium uppercase">Today Inflow</span>
+                            <strong id="sidebarTodayReachouts" class="text-sm font-black text-blue-400">0</strong>
+                            <span class="text-[8px] block text-slate-500 mt-0.5">Ytd: <span id="sidebarYdayReachouts">0</span></span>
+                        </div>
+                        <div class="bg-slate-950/60 p-2 rounded-lg border border-slate-800/40">
+                            <span class="text-[9px] block text-slate-400 font-medium uppercase">Today Calls</span>
+                            <strong id="sidebarTodayCalls" class="text-sm font-black text-amber-500">0</strong>
+                            <span class="text-[8px] block text-slate-500 mt-0.5">Ytd: <span id="sidebarYdayCalls">0</span></span>
                         </div>
                     </div>
-                    <div class="flex-1 min-h-[260px] relative flex items-center justify-center">
-                        <canvas id="timelineChart"></canvas>
+                </div>
+
+                <nav class="space-y-1">
+                    <button id="btn-log-tab" onclick="switchTab('log-tab')" class="w-full text-left px-3 py-2.5 rounded-xl bg-blue-600 text-white font-bold text-xs transition flex items-center space-x-3 shadow-lg shadow-blue-600/10">
+                        <span class="text-sm">📋</span> <span>Accounts Console</span>
+                    </button>
+                    <button id="btn-tasks-tab" onclick="switchTab('tasks-tab')" class="w-full text-left px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-900/60 hover:text-slate-200 font-bold text-xs transition flex items-center space-x-3">
+                        <span class="text-sm">📅</span> <span>Task Center Loop</span>
+                        <span id="sidebarTaskCount" class="ml-auto bg-slate-800 text-[10px] px-2 py-0.5 rounded-md text-slate-300 font-semibold">0</span>
+                    </button>
+                    <button id="btn-analytics-tab" onclick="switchTab('analytics-tab')" class="w-full text-left px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-900/60 hover:text-slate-200 font-bold text-xs transition flex items-center space-x-3">
+                        <span class="text-sm">📊</span> <span>Data Modeling & Insights</span>
+                    </button>
+                </nav>
+            </div>
+
+            <div class="border-t border-slate-800/60 pt-4 px-1">
+                <div class="flex items-center space-x-3 mb-3">
+                    <div id="userInitial" class="w-8 h-8 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-xs text-blue-400">U</div>
+                    <div class="truncate">
+                        <div id="userNameProfile" class="text-xs font-bold text-slate-200 truncate">Agent User</div>
+                        <div id="userEmailProfile" class="text-[10px] text-slate-500 truncate">user@domain.com</div>
                     </div>
                 </div>
-                <div class="bg-[#111827] border border-slate-800/80 p-5 rounded-2xl shadow-xl flex flex-col">
-                    <h3 class="text-xs font-black uppercase text-white tracking-wider mb-4">Functional Funnel Partitioning</h3>
-                    <div class="flex-1 min-h-[260px] relative flex items-center justify-center">
-                        <canvas id="statusFunnelChart"></canvas>
+                <button id="signOutBtn" class="w-full bg-slate-950 hover:bg-rose-950/20 hover:text-rose-400 hover:border-rose-900/40 border border-slate-800 text-slate-400 text-[10px] font-bold py-2 rounded-lg transition tracking-wider uppercase">
+                    Disconnect Session
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 bg-[#070b12] flex flex-col overflow-hidden relative">
+            
+            <div id="log-tab" class="tab-content flex flex-1 overflow-hidden">
+                <div class="flex-1 flex flex-col min-w-0 border-r border-slate-800">
+                    
+                    <header class="p-4 bg-[#111827]/40 border-b border-slate-800 flex flex-wrap gap-3 items-center justify-between">
+                        <div class="flex items-center space-x-3 flex-1 min-w-[280px]">
+                            <input id="filterSearch" oninput="executeDataGridFilters()" type="text" placeholder="Search school profiles..." class="bg-[#111827] border border-slate-800 text-xs px-3.5 py-2 rounded-xl focus:outline-none focus:border-blue-500 text-slate-200 placeholder-slate-500 w-full max-w-xs font-medium transition">
+                            <select id="filterStage" onchange="executeDataGridFilters()" class="bg-[#111827] border border-slate-800 text-xs px-2.5 py-2 rounded-xl focus:outline-none focus:border-blue-500 text-slate-300 font-semibold cursor-pointer transition">
+                                <option value="">All Pipelines</option>
+                                <option value="Unassigned">🛑 Unassigned Pool</option>
+                                <option value="Assigned / New">📥 Assigned / New</option>
+                                <option value="Contacted">Contacted</option>
+                                <option value="Webinar Agreed">Webinar Agreed</option>
+                                <option value="Not Interested">Not Interested</option>
+                            </select>
+                            <select id="filterAccountOwner" onchange="executeDataGridFilters()" class="bg-[#111827] border border-slate-800 text-xs px-2.5 py-2 rounded-xl focus:outline-none focus:border-blue-500 text-slate-300 font-semibold cursor-pointer transition">
+                                <option value="ALL">Entire Board Matrix</option>
+                                <option value="MINE">My Active Bucket</option>
+                            </select>
+                        </div>
+
+                        <!-- TEAM LEAD OPERATIONS CONTROL PANEL -->
+                        <div id="tlRoutingPanel" class="hidden flex items-center bg-[#111827] border border-dashed border-slate-700/60 rounded-xl px-3 py-1.5 space-x-3">
+                            <span class="text-[10px] font-bold uppercase text-amber-400 tracking-wider">TL Routing:</span>
+                            <select id="tlAgentSelectDropdown" class="bg-[#070b12] border border-slate-800 text-[11px] px-2 py-1 rounded-lg text-slate-200 focus:outline-none">
+                                <option value="">Select Target Agent...</option>
+                            </select>
+                            <button onclick="executeTlBulkAssignmentOperation()" class="bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-bold px-3 py-1 rounded-lg transition uppercase tracking-wider">
+                                Assign Checked
+                            </button>
+                        </div>
+
+                        <details class="relative">
+                            <summary class="bg-blue-600 hover:bg-blue-500 list-none text-white text-xs font-bold px-4 py-2 rounded-xl cursor-pointer transition shadow-lg shadow-blue-600/10 select-none">
+                                ➕ Scout / Ingest Lead
+                            </summary>
+                            <form id="outreachForm" onsubmit="handleFormSubmit(event)" class="absolute right-0 mt-2 p-5 bg-[#111827] border border-slate-800 rounded-2xl shadow-2xl w-[26rem] max-h-[85vh] overflow-y-auto z-20 space-y-4 text-xs text-left">
+                                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                                    <h3 class="font-bold text-white text-sm">Ingest Lead Asset</h3>
+                                    <span class="text-[9px] text-slate-500 uppercase font-semibold">Defaults to Unassigned Pool</span>
+                                </div>
+                                
+                                <div class="space-y-3">
+                                    <div class="text-[9px] font-bold tracking-wider text-blue-400 uppercase">School Information</div>
+                                    <div>
+                                        <label class="text-slate-400 block mb-1">School Name*</label>
+                                        <input type="text" id="schoolName" required class="w-full bg-[#070b12] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-blue-500 transition">
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <label class="text-slate-400 block mb-1">School Type</label>
+                                            <select id="schoolType" class="w-full bg-[#070b12] border border-slate-800 rounded-lg p-2 text-slate-300 focus:outline-none focus:border-blue-500 cursor-pointer">
+                                                <option value="Day">Day</option>
+                                                <option value="Boarding">Boarding</option>
+                                                <option value="D+B SCHOOL">D+B SCHOOL</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="text-slate-400 block mb-1">Curriculum Followed</label>
+                                            <select id="curriculum" class="w-full bg-[#070b12] border border-slate-800 rounded-lg p-2 text-slate-300 focus:outline-none focus:border-blue-500 cursor-pointer">
+                                                <option value="CBSE">CBSE</option>
+                                                <option value="ICSE">ICSE</option>
+                                                <option value="IGCSE">IGCSE</option>
+                                                <option value="IB">IB</option>
+                                                <option value="State Board">State Board</option>
+                                                <option value="Other">Other</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <label class="text-slate-400 block mb-1">School Fees</label>
+                                            <input type="text" id="schoolFees" placeholder="e.g. 6000 or 1.2 lakh" oninput="autoCalculateFeeRange(this.value)" class="w-full bg-[#070b12] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-blue-500 font-semibold">
+                                        </div>
+                                        <div>
+                                            <label class="text-slate-400 block mb-1">School Fees Range</label>
+                                            <select id="schoolFeesRange" class="w-full bg-[#070b12] border border-slate-800 rounded-lg p-2 text-slate-400 focus:outline-none focus:border-blue-500 text-[11px] bg-slate-900 pointer-events-none">
+                                                <option value="">Awaiting Fee Entry...</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-3 pt-2 border-t border-slate-800/60">
+                                    <div class="text-[9px] font-bold tracking-wider text-amber-500 uppercase">Primary Contact Lines</div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div><label class="text-slate-400 block mb-1">Phone No*</label><input type="text" id="mainContactNo" required class="w-full bg-[#070b12] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                        <div><label class="text-slate-400 block mb-1">Email Address</label><input type="email" id="mainEmailId" class="w-full bg-[#070b12] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-3 pt-2 border-t border-slate-800/60">
+                                    <div class="text-[9px] font-bold tracking-wider text-emerald-500 uppercase">Geographical Data</div>
+                                    <div><label class="text-slate-400 block mb-1">Address</label><input type="text" id="address" class="w-full bg-[#070b12] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div><label class="text-slate-400 block mb-1">Pin Code</label><input type="text" id="pinCode" class="w-full bg-[#070b12] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                        <div><label class="text-slate-400 block mb-1">City</label><input type="text" id="city" class="w-full bg-[#070b12] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div><label class="text-slate-400 block mb-1">State</label><input type="text" id="state" class="w-full bg-[#070b12] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                        <div><label class="text-slate-400 block mb-1">Country</label><input type="text" id="country" value="India" class="w-full bg-[#070b12] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-3 pt-2 border-t border-slate-800/60">
+                                    <div class="text-[9px] font-bold tracking-wider text-blue-400 uppercase">Point of Contact 1</div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div><label class="text-slate-400 block mb-1">Name</label><input type="text" id="poc1Name" class="w-full bg-[#070b12] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                        <div><label class="text-slate-400 block mb-1">Designation</label><input type="text" id="poc1Designation" class="w-full bg-[#070b12] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div><label class="text-slate-400 block mb-1">Number</label><input type="text" id="poc1Number" class="w-full bg-[#070b12] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                        <div><label class="text-slate-400 block mb-1">Email</label><input type="email" id="poc1Email" class="w-full bg-[#070b12] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-blue-500"></div>
+                                    </div>
+                                </div>
+
+                                <div class="pt-2 border-t border-slate-800/60">
+                                    <label class="text-slate-400 block mb-1">Scouted Campaign Goal</label>
+                                    <select id="scoutedFor" class="w-full bg-[#070b12] border border-slate-800 rounded-lg p-2 text-slate-300">
+                                        <option value="Free Coding Webinar">Free Coding Webinar</option>
+                                        <option value="Math Olympiad Bootcamp">Math Olympiad Bootcamp</option>
+                                        <option value="AI Literacy Seminar">AI Literacy Seminar</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-center space-x-2 pt-3 border-t border-slate-800/60">
+                                    <button type="submit" id="submitBtn" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-xl transition text-xs">Ingest Record</button>
+                                    <button type="button" onclick="this.closest('details').open = false" class="bg-slate-900 border border-slate-800 text-slate-400 px-3 py-2 rounded-xl hover:bg-slate-800 transition text-xs">Cancel</button>
+                                </div>
+                            </form>
+                        </details>
+                    </header>
+
+                    <div class="flex-1 overflow-y-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-slate-900/30 text-slate-400 font-bold border-b border-slate-800 uppercase text-[10px] tracking-wider">
+                                    <th class="p-4 pl-6 w-12"><input type="checkbox" id="masterTableSelectCheckbox" onchange="toggleMasterCheckboxSelections(this.checked)" class="cursor-pointer"></th>
+                                    <th class="p-4">School Profile Target</th>
+                                    <th class="p-4">Campaign Context</th>
+                                    <th class="p-4">Follow-ups Logged</th>
+                                    <th class="p-4 pr-6">Status Pipeline</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dataTableBody" class="divide-y divide-slate-900/40 text-slate-300 font-medium"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="w-96 bg-[#111827]/20 flex flex-col shrink-0 overflow-hidden border-l border-slate-800">
+                    <div id="drawerEmptyState" class="flex-1 flex flex-col items-center justify-center p-6 text-center">
+                        <span class="text-2xl mb-2 opacity-20">📞</span>
+                        <h4 class="text-xs font-bold text-slate-400 mb-1">Workspace Console Ready</h4>
+                        <p class="text-[11px] text-slate-500 max-w-[200px] leading-relaxed">Select an active school item from the index matrix to access actions.</p>
+                    </div>
+
+                    <div id="drawerActiveState" class="hidden flex-1 flex flex-col overflow-hidden">
+                        <header class="p-4 border-b border-slate-800 bg-[#111827]/80 flex items-center justify-between">
+                            <div>
+                                <span id="drawerSchoolId" class="text-[9px] font-bold text-blue-400 tracking-widest bg-blue-950/40 border border-blue-900/30 px-1.5 py-0.5 rounded uppercase">BC-SCH-UNKNOWN</span>
+                                <h2 id="drawerSchoolName" class="text-sm font-black text-white tracking-tight mt-1.5 truncate max-w-[220px]">Sample Academy Complex</h2>
+                            </div>
+                            <button onclick="closeWorkspaceDrawer()" class="text-slate-500 hover:text-slate-300 transition text-sm p-1">✕</button>
+                        </header>
+
+                        <div class="flex-1 overflow-y-auto p-4 space-y-4">
+                            <!-- LOCK MESSAGE FOR UNASSIGNED LEADS -->
+                            <div id="drawerUnassignedLockMessage" class="hidden bg-amber-950/20 border border-amber-900/40 rounded-xl p-3 text-[11px] text-amber-400 space-y-1">
+                                <strong class="block">🔒 Awaiting Allocation Protocol</strong>
+                                <p class="text-slate-400 leading-normal">This record is currently in the unassigned holding pool. Assign it to an agent to activate follow-up logs.</p>
+                            </div>
+
+                            <div id="drawerInteractiveControlsContainer" class="space-y-4">
+                                <div class="bg-[#111827]/90 rounded-2xl border border-slate-800 p-4 space-y-3 text-[11px]">
+                                    <div>
+                                        <span class="text-slate-500 block font-bold uppercase text-[9px] tracking-wider">Demographic Matrix</span>
+                                        <div class="text-slate-300 font-medium mt-1 space-y-1">
+                                            <div>Type: <span id="dSchoolType" class="text-slate-200 font-semibold">N/A</span> | Fees: <span id="dSchoolFees" class="text-slate-200 font-semibold">N/A</span></div>
+                                            <div class="text-[10px] text-slate-400">Step Range: <span id="dSchoolFeesRange" class="text-amber-400 font-bold">N/A</span></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="border-t border-slate-800/60 pt-2.5">
+                                        <span class="text-slate-400 block font-bold uppercase text-[9px] tracking-wider">Primary Contact Channels</span>
+                                        <div class="text-slate-300 text-[10px] mt-1">Line: <span id="dContactNo" class="text-blue-400 font-semibold">N/A</span></div>
+                                        <div class="text-slate-400 text-[10px] truncate">Mail: <span id="dContactEmail" class="text-slate-300">N/A</span></div>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-3.5 border-t border-slate-800/60 pt-4">
+                                    <div>
+                                        <label class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1.5">Action Logging Status Disposition</label>
+                                        <select id="drawerCallStatusSelect" onchange="evaluateDrawerCallFields(this.value)" class="w-full bg-[#111827] border border-slate-800 text-xs px-3 py-2 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500 font-semibold cursor-pointer">
+                                            <option value="Contacted">Contacted / Pitch Follow-up Loop</option>
+                                            <option value="Webinar Agreed">🎉 Webinar Engagement Agreed</option>
+                                            <option value="Not Interested">❌ Not Interested / Rejected</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1.5">Agent Interaction Notes</label>
+                                        <textarea id="drawerCallNotesInput" rows="3" placeholder="Document conversational metrics..." class="w-full bg-[#111827] border border-slate-800 text-xs p-2.5 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500 placeholder-slate-600 font-medium"></textarea>
+                                    </div>
+
+                                    <div id="drawerCallFollowUpWrapper">
+                                        <label class="block text-[10px] text-amber-400 font-bold uppercase tracking-wider mb-1.5">📅 Next Task Pipeline Deadline</label>
+                                        <input type="date" id="drawerCallFollowUpInput" class="w-full bg-[#111827] border border-slate-800 text-xs p-2.5 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500 font-semibold">
+                                    </div>
+
+                                    <div id="drawerCallWebinarWrapper" class="hidden">
+                                        <label class="block text-[10px] text-emerald-400 font-bold uppercase tracking-wider mb-1.5">🚀 Scheduled Webinar Execution Date</label>
+                                        <input type="date" id="drawerCallWebinarInput" class="w-full bg-[#111827] border border-slate-800 text-xs p-2.5 rounded-xl text-slate-200 focus:outline-none focus:border-blue-500 font-semibold">
+                                    </div>
+
+                                    <button id="drawerLogCallBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-xl transition text-xs shadow-md shadow-blue-700/10 uppercase tracking-wider">
+                                        Commit Follow-up Note & Update Loop
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="border-t border-slate-800/60 pt-4">
+                                <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2.5 flex items-center justify-between">
+                                    <span>Historical Log Matrix</span>
+                                    <span id="dCallCount" class="bg-slate-900 border border-slate-800 px-2 py-0.5 text-slate-400 rounded-md">0</span>
+                                </h4>
+                                <div id="leadSpecificLogsContainer" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-[#111827] border border-slate-800/80 rounded-2xl shadow-xl overflow-hidden">
-                <div class="p-5 border-b border-slate-800/60 bg-gradient-to-r from-slate-900/40 to-transparent">
-                    <h3 class="text-xs font-black uppercase text-white tracking-wider">Geographical Lead Distribution Density</h3>
-                    <p class="text-[10px] text-slate-400 font-medium">Regional territory performance metric matrices</p>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-xs">
+            <div id="tasks-tab" class="tab-content hidden flex-1 flex flex-col overflow-hidden">
+                <header class="p-6 bg-[#111827]/20 border-b border-slate-800 shrink-0">
+                    <h2 class="text-xl font-black text-white tracking-tight mb-0.5">Task Operational Center</h2>
+                    <p class="text-xs text-slate-500 font-medium">Pipeline execution engine and responsive workflow controls.</p>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-5">
+                        <div onclick="setUrgencyQuickFilter('OVERDUE')" class="bg-[#111827] border border-slate-800 p-3.5 rounded-2xl cursor-pointer hover:border-rose-900/40 group transition flex items-center justify-between shadow-xl">
+                            <div><span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">🚨 Overdue</span><strong id="metricOverdue" class="text-xl font-black text-rose-500">0</strong></div>
+                            <span class="text-base opacity-40 group-hover:opacity-80 transition">⚠️</span>
+                        </div>
+                        <div onclick="setUrgencyQuickFilter('TODAY')" class="bg-[#111827] border border-slate-800 p-3.5 rounded-2xl cursor-pointer hover:border-amber-900/40 group transition flex items-center justify-between shadow-xl">
+                            <div><span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">Due Today</span><strong id="metricToday" class="text-xl font-black text-amber-500">0</strong></div>
+                            <span class="text-base opacity-40 group-hover:opacity-80 transition">🔔</span>
+                        </div>
+                        <div onclick="setUrgencyQuickFilter('UPCOMING')" class="bg-[#111827] border border-slate-800 p-3.5 rounded-2xl cursor-pointer hover:border-blue-900/40 group transition flex items-center justify-between shadow-xl">
+                            <div><span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">⏳ Upcoming</span><strong id="metricUpcoming" class="text-xl font-black text-blue-400">0</strong></div>
+                            <span class="text-base opacity-40 group-hover:opacity-80 transition">📅</span>
+                        </div>
+                        <div onclick="setUrgencyQuickFilter('COMPLETED')" class="bg-[#111827] border border-slate-800 p-3.5 rounded-2xl cursor-pointer hover:border-emerald-900/40 group transition flex items-center justify-between shadow-xl">
+                            <div><span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">✅ Completed</span><strong id="metricCompleted" class="text-xl font-black text-emerald-400">0</strong></div>
+                            <span class="text-base opacity-40 group-hover:opacity-80 transition">🎉</span>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2.5 mt-5 pt-4 border-t border-slate-800/60 text-xs">
+                        <div class="bg-[#111827] p-1 rounded-xl border border-slate-800 inline-flex items-center">
+                            <button id="taskTabPending" onclick="setTaskViewTab('Pending')" class="px-4 py-1.5 rounded-lg text-[11px] font-bold transition bg-blue-600 text-white shadow-md">Pending Actions</button>
+                            <button id="taskTabCompleted" onclick="setTaskViewTab('Completed')" class="px-4 py-1.5 rounded-lg text-[11px] font-bold transition text-slate-400 hover:text-slate-200">Completed Logs</button>
+                        </div>
+
+                        <select id="taskTeamFilterSelect" onchange="renderTaskCenterConsole()" class="bg-[#111827] border border-slate-800 px-3 py-1.5 rounded-xl font-bold text-slate-300 cursor-pointer focus:outline-none focus:border-blue-500">
+                            <option value="MINE">My Personal Tasks</option>
+                            <option value="ALL">Entire Team Board</option>
+                        </select>
+
+                        <button id="clearUrgencyFilterBtn" onclick="clearUrgencyQuickFilter()" class="hidden bg-slate-900 hover:bg-slate-800 text-slate-400 font-bold px-3 py-1.5 rounded-xl border border-slate-800 transition text-[11px]">
+                            Clear Filter ✕
+                        </button>
+
+                        <input id="taskFilterName" oninput="renderTaskCenterConsole()" type="text" placeholder="Search accounts..." class="bg-[#111827] border border-slate-800 px-3 py-1.5 rounded-xl focus:outline-none focus:border-blue-500 ml-auto w-48 text-slate-300 placeholder-slate-600 transition font-medium">
+                    </div>
+                </header>
+
+                <div class="flex-1 overflow-y-auto">
+                    <table class="w-full text-left text-xs border-collapse">
                         <thead>
-                            <tr class="border-b border-slate-800 bg-[#070b12]/50 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
-                                <th class="py-3 px-5">Target Region State</th>
-                                <th class="py-3 text-center">Inflow Bulk</th>
-                                <th class="py-3 text-center">Secured Links</th>
-                                <th class="py-3 text-center">Conversion Ratio</th>
-                                <th class="py-3 pr-5 w-1/3">Density Breakdown</th>
+                            <tr class="bg-slate-900/30 text-slate-400 font-bold border-b border-slate-800 uppercase text-[10px] tracking-wider">
+                                <th class="p-4 pl-6">School Account Target</th>
+                                <th class="p-4">Context Stage</th>
+                                <th class="p-4">Deadline Schedule</th>
+                                <th class="p-4 pr-6 text-right">Action Interface</th>
                             </tr>
                         </thead>
-                        <tbody id="territoryTableBody" class="divide-y divide-slate-800/40">
-                            <tr>
-                                <td colspan="5" class="py-8 text-center text-slate-500 font-medium tracking-wide">Awaiting diagnostic sequence stream...</td>
-                            </tr>
-                        </tbody>
+                        <tbody id="taskTableBody" class="divide-y divide-slate-900/30 text-slate-300 font-medium"></tbody>
                     </table>
                 </div>
             </div>
 
-            <div class="bg-[#111827] border border-slate-800/80 rounded-2xl shadow-xl overflow-hidden flex flex-col">
-                <div class="p-5 border-b border-slate-800/60 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-gradient-to-r from-slate-900/40 to-transparent">
+            <div id="analytics-tab" class="tab-content hidden flex-1 flex flex-col overflow-hidden p-6 space-y-5">
+                <header class="flex flex-wrap items-center justify-between gap-4 bg-[#111827]/40 border border-slate-800 p-4 rounded-2xl shrink-0 shadow-lg">
                     <div>
-                        <h3 class="text-xs font-black uppercase text-white tracking-wider">Operational Pipeline Register</h3>
-                        <p id="totalRecordsCounter" class="text-[10px] text-slate-400 font-medium mt-0.5">Stream connections operating at standard execution benchmarks.</p>
+                        <h2 class="text-lg font-black text-white tracking-tight">Data Modeling & Performance Metrics</h2>
+                        <p class="text-xs text-slate-500 font-medium">Live pipeline metrics generated from systemic cluster snapshots.</p>
                     </div>
-                    <div class="flex flex-wrap items-center gap-2">
-                        <input type="text" id="globalSearchInput" oninput="executePipelineFiltering()" class="bg-[#070b12] border border-slate-800 rounded-xl px-4 py-2 text-xs font-medium focus:outline-none focus:border-blue-500 text-slate-200 w-full sm:w-64 placeholder-slate-500 transition shadow-inner" placeholder="Search system node matrices...">
-                        <select id="filterStatusDropdown" onchange="executePipelineFiltering()" class="bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-300 focus:outline-none focus:border-blue-500 transition cursor-pointer">
-                            <option value="ALL">All Pipeline States</option>
-                            <option value="Unassigned">Unassigned Queue</option>
-                            <option value="Assigned / New">Assigned / New</option>
-                            <option value="Contacted">Contacted</option>
-                            <option value="Follow-up">In Follow-up Loop</option>
-                            <option value="Webinar Agreed">Webinar Agreed</option>
-                            <option value="Webinar Postponed">Webinar Postponed</option>
-                            <option value="Not Interested">Not Interested / Dropped</option>
+                    <div class="flex items-center space-x-2 text-xs">
+                        <select id="analyticsOwnerScope" onchange="generateChartAnalytics()" class="bg-[#111827] border border-slate-800 text-slate-300 px-3 py-1.5 rounded-xl font-bold cursor-pointer focus:outline-none">
+                            <option value="ALL">Entire Cluster Board</option>
+                            <option value="MINE">My Personal Log Matrix</option>
                         </select>
-                        <select id="filterOperatorDropdown" onchange="executePipelineFiltering()" class="bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-300 focus:outline-none focus:border-blue-500 transition cursor-pointer">
-                            <option value="ALL">All Routing Vectors</option>
+                        <select id="analyticsDateScope" onchange="generateChartAnalytics()" class="bg-[#111827] border border-slate-800 text-slate-300 px-3 py-1.5 rounded-xl font-bold cursor-pointer focus:outline-none">
+                            <option value="7">Last 7 Days</option>
+                            <option value="14">Last 14 Days</option>
+                            <option value="30">Last 30 Days</option>
+                            <option value="ALL">All Snapshot Cycles</option>
                         </select>
+                    </div>
+                </header>
+
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 shrink-0">
+                    <div class="bg-[#111827]/40 border border-slate-800/70 p-4 rounded-2xl shadow-xl">
+                        <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider block mb-0.5">Pipeline Inflow</span>
+                        <div id="statTotalAccounts" class="text-xl font-black text-white">0</div>
+                    </div>
+                    <div class="bg-[#111827]/40 border border-slate-800/70 p-4 rounded-2xl shadow-xl">
+                        <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider block mb-0.5">Conversion Efficiency</span>
+                        <div id="statConversionRate" class="text-xl font-black text-emerald-400">0%</div>
+                    </div>
+                    <div class="bg-[#111827]/40 border border-slate-800/70 p-4 rounded-2xl shadow-xl">
+                        <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider block mb-0.5">Logged Follow-ups</span>
+                        <div id="statTotalCalls" class="text-xl font-black text-blue-400">0</div>
+                    </div>
+                    <div class="bg-[#111827]/40 border border-slate-800/70 p-4 rounded-2xl shadow-xl">
+                        <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider block mb-0.5">Webinars Agreed</span>
+                        <div id="statWebinarsAgreed" class="text-xl font-black text-amber-500">0</div>
                     </div>
                 </div>
 
-                <div class="overflow-x-auto flex-1 min-h-[400px]">
-                    <table class="w-full text-left border-collapse text-xs whitespace-nowrap">
-                        <thead>
-                            <tr class="border-b border-slate-800 bg-[#070b12]/50 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
-                                <th class="py-3 px-4">School Matrix Node</th>
-                                <th class="py-3 px-4">Contact Profile</th>
-                                <th class="py-3 px-4 text-center">Pipeline State</th>
-                                <th class="py-3 px-4">Routing Allocation</th>
-                                <th class="py-3 px-4 text-center">Audit Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="pipelineTableBody" class="divide-y divide-slate-800/40">
-                            <tr>
-                                <td colspan="5" class="py-24 text-center text-slate-400 font-medium">
-                                    <div class="w-8 h-8 border-2 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mx-auto mb-3"></div>
-                                    Synchronizing localized instance arrays with cluster state matrices...
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="bg-[#111827]/40 border border-slate-800 p-1.5 rounded-2xl flex space-x-2 shrink-0 max-w-xl text-xs font-bold">
+                    <button id="subBtn-heatmap" onclick="switchAnalyticsSubView('heatmap')" class="px-4 py-2 rounded-xl bg-blue-600 text-white shadow-md transition">Activity Heatmaps</button>
+                    <button id="subBtn-agents" onclick="switchAnalyticsSubView('agents')" class="px-4 py-2 rounded-xl text-slate-400 hover:text-slate-200 transition">Agent Leaderboards</button>
+                    <button id="subBtn-territory" onclick="switchAnalyticsSubView('territory')" class="px-4 py-2 rounded-xl text-slate-400 hover:text-slate-200 transition">Territory Analytics</button>
+                </div>
+
+                <div id="subView-heatmap" class="sub-analytics-view flex-1 grid grid-cols-1 lg:grid-cols-3 gap-5 min-h-0 overflow-y-auto pr-1">
+                    <div class="lg:col-span-2 bg-[#111827]/20 border border-slate-800 rounded-2xl p-4 flex flex-col h-80">
+                        <h4 class="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-3">Pipeline Interaction Engine Delta Over Time</h4>
+                        <div class="flex-1 min-h-0 relative"><canvas id="activityChart"></canvas></div>
+                    </div>
+                    <div class="bg-[#111827]/20 border border-slate-800 rounded-2xl p-4 flex flex-col h-80">
+                        <h4 class="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-3">Stage Volumetric Distribution Matrix</h4>
+                        <div class="flex-1 min-h-0 relative flex items-center justify-center"><canvas id="pipelineChart"></canvas></div>
+                    </div>
+                    
+                    <div class="lg:col-span-3 bg-[#111827]/20 border border-slate-800 rounded-2xl p-5 flex flex-col min-h-[340px]">
+                        <div class="flex items-center justify-between mb-4 border-b border-slate-800/60 pb-2">
+                            <h4 class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Hourly Activity Spread & Unique Reach Grid</h4>
+                            <span class="text-[9px] text-slate-500 font-semibold uppercase">Hour-by-Hour Core Breakdown</span>
+                        </div>
+                        <div class="flex-1 overflow-x-auto">
+                            <table class="w-full text-left text-[11px] border-collapse">
+                                <thead>
+                                    <tr class="text-slate-400 border-b border-slate-800 font-bold uppercase tracking-wider text-[10px]">
+                                        <th class="pb-2">Execution Hour</th>
+                                        <th class="pb-2 text-center">Total Sync Attempts</th>
+                                        <th class="pb-2 text-center">Unique Accounts Reached</th>
+                                        <th class="pb-2 text-center">Inflow Contribution</th>
+                                        <th class="pb-2">Activity Density Heat Index</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hourlyMetricsTableBody" class="divide-y divide-slate-900/40 text-slate-300 font-medium"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="subView-agents" class="sub-analytics-view hidden flex-1 flex flex-col space-y-5 min-h-0 overflow-y-auto pr-1">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 shrink-0">
+                        <div class="bg-[#111827]/20 border border-slate-800 rounded-2xl p-4 flex flex-col h-80">
+                            <h4 class="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-3">Agent Daily Reachout Velocity Spectrum</h4>
+                            <div class="flex-1 min-h-0 relative"><canvas id="agentVelocityChart"></canvas></div>
+                        </div>
+                        <div class="bg-[#111827]/20 border border-slate-800 rounded-2xl p-4 flex flex-col h-80">
+                            <h4 class="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-3">Agent Funnel Distribution Balancing Matrix</h4>
+                            <div class="flex-1 min-h-0 relative"><canvas id="agentStageChart"></canvas></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-[#111827]/20 border border-slate-800 rounded-2xl p-5 flex flex-col min-h-[260px]">
+                        <h4 class="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-4 border-b border-slate-800/60 pb-2">Agent-Wise Lead-to-Engagement (L2E) Scorecard Matrix</h4>
+                        <div class="overflow-x-auto flex-1">
+                            <table class="w-full text-left text-[11px] border-collapse">
+                                <thead>
+                                    <tr class="text-slate-400 border-b border-slate-800 font-bold uppercase tracking-wider text-[10px]">
+                                        <th class="pb-2">Operator Identity Profile</th>
+                                        <th class="pb-2 text-center">Total Allocated Assets</th>
+                                        <th class="pb-2 text-center">Webinar Confirmations</th>
+                                        <th class="pb-2 text-center">L2E Efficiency %</th>
+                                        <th class="pb-2 text-center">Avg Operational Touches</th>
+                                        <th class="pb-2 text-center">Avg Pipeline Cycle Speed</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="agentScorecardTableBody" class="divide-y divide-slate-900/40 text-slate-300 font-medium"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="subView-territory" class="sub-analytics-view hidden flex-1 flex flex-col space-y-5 min-h-0 overflow-y-auto pr-1">
+                    <div class="bg-[#111827]/20 border border-slate-800 rounded-2xl p-5 flex flex-col flex-1 min-h-[360px]">
+                        <div class="flex items-center justify-between mb-4 border-b border-slate-800/60 pb-2">
+                            <h4 class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Geographical L2E Efficiency Matrix Index</h4>
+                            <span class="text-[9px] text-slate-500 font-semibold uppercase">Regional Hit-Ratio Analysis</span>
+                        </div>
+                        <div class="overflow-y-auto flex-1">
+                            <table class="w-full text-left text-[11px] border-collapse">
+                                <thead>
+                                    <tr class="text-slate-400 border-b border-slate-800 font-bold uppercase tracking-wider text-[10px]">
+                                        <th class="pb-2">Geographical Cluster (City / State)</th>
+                                        <th class="pb-2 text-center">Market Share (Inflow Count)</th>
+                                        <th class="pb-2 text-center">Conversions Secured</th>
+                                        <th class="pb-2 text-center">Territory Success Ratio %</th>
+                                        <th class="pb-2">Regional Density Indicator</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="territoryMetricsTableBody" class="divide-y divide-slate-900/40 text-slate-300 font-medium"></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <div id="addLeadModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-[#111827] border border-slate-800 max-w-2xl w-full rounded-2xl p-6 shadow-2xl relative overflow-y-auto max-h-[90vh] transform scale-95 transition-transform duration-300">
-            <button onclick="closeAddLeadModal()" class="absolute top-4 right-4 text-slate-500 hover:text-slate-300 transition text-lg font-black">×</button>
-            <h3 class="text-sm font-black uppercase text-white tracking-wider mb-1">Scout Institution Vector</h3>
-            <p class="text-[10px] text-slate-400 font-medium mb-6">Initialize a tracking row inside the target cloud index pipeline cluster.</p>
-            
-            <form id="leadGenerationForm" onsubmit="commitNewLeadNode(event)" class="space-y-4 text-xs">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1">School Name *</label>
-                        <input type="text" id="formSchool" required class="w-full bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500 font-semibold text-slate-200">
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1">School Type</label>
-                        <select id="formSchoolType" class="w-full bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500 font-bold text-slate-300 cursor-pointer">
-                            <option value="Day">Day School</option>
-                            <option value="Boarding">Boarding</option>
-                            <option value="Day-Boarding">Day-Boarding</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1">Address Layout Details</label>
-                    <input type="text" id="formAddress" class="w-full bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500 font-semibold text-slate-200">
-                </div>
-
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div>
-                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1">City *</label>
-                        <input type="text" id="formCity" required class="w-full bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500 font-semibold text-slate-200">
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1">State *</label>
-                        <input type="text" id="formState" required class="w-full bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500 font-semibold text-slate-200">
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1">Pin Code</label>
-                        <input type="text" id="formPinCode" class="w-full bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500 font-semibold text-slate-200">
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1">Country</label>
-                        <input type="text" id="formCountry" value="India" class="w-full bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500 font-semibold text-slate-200">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1">Primary Email ID</label>
-                        <input type="email" id="formEmail" class="w-full bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500 font-semibold text-slate-200">
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1">Primary Contact No *</label>
-                        <input type="tel" id="formContact" required class="w-full bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500 font-semibold text-slate-200">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1">Curriculum Standard</label>
-                        <select id="formCurriculum" class="w-full bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500 font-bold text-slate-300 cursor-pointer">
-                            <option value="CBSE">CBSE</option>
-                            <option value="ICSE">ICSE</option>
-                            <option value="IGCSE">IGCSE</option>
-                            <option value="IB">IB</option>
-                            <option value="State Board">State Board</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1">Annual Fees Estimate</label>
-                        <input type="number" id="formFees" oninput="autoCalculateFeeRange()" class="w-full bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500 font-semibold text-slate-200" placeholder="e.g. 75000">
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1">Calculated Fee Category Range</label>
-                        <input type="text" id="formFeesRange" readonly class="w-full bg-[#070b12]/50 border border-slate-800 rounded-xl px-3 py-2 focus:outline-none text-slate-500 font-bold select-none cursor-not-allowed">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1">Target Campaign Pitch / Scouted For</label>
-                    <select id="formScoutedFor" class="w-full bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500 font-bold text-slate-300 cursor-pointer">
-                        <option value="Free Coding Webinar">Free Coding Webinar</option>
-                        <option value="Math Olympiad Bootcamp">Math Olympiad Bootcamp</option>
-                        <option value="AI Awareness Workshop">AI Awareness Workshop</option>
-                    </select>
-                </div>
-
-                <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3 px-4 rounded-xl text-xs uppercase tracking-wider transition shadow-lg shadow-blue-600/10 pt-2">Commit Record Matrix</button>
-            </form>
-        </div>
-    </div>
-
-    <div id="updateCommentsModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-[#111827] border border-slate-800 max-w-md w-full rounded-2xl p-6 shadow-2xl relative transform scale-95 transition-transform duration-300">
-            <button onclick="closeCommentsModal()" class="absolute top-4 right-4 text-slate-500 hover:text-slate-300 transition text-lg font-black">×</button>
-            <h3 class="text-sm font-black uppercase text-white tracking-wider mb-1">Audit Record Mutation</h3>
-            <p id="commentsModalTargetHeader" class="text-[10px] text-blue-400 font-bold tracking-wide uppercase mb-4"></p>
-            
-            <input type="hidden" id="commentsTargetDocId">
-            <div class="space-y-4">
-                <div>
-                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1.5">Modify Lifecycle Status</label>
-                    <select id="commentsFieldStatus" class="w-full bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-200 focus:outline-none focus:border-blue-500 transition cursor-pointer">
-                        <option value="Unassigned">Unassigned Queue</option>
-                        <option value="Assigned / New">Assigned / New</option>
-                        <option value="Contacted">Contacted</option>
-                        <option value="Follow-up">In Follow-up Loop</option>
-                        <option value="Webinar Agreed">Webinar Agreed</option>
-                        <option value="Webinar Postponed">Webinar Postponed</option>
-                        <option value="Not Interested">Not Interested / Dropped</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1.5">Append Audit Execution Note</label>
-                    <textarea id="commentsFieldNote" rows="3" class="w-full bg-[#070b12] border border-slate-800 rounded-xl p-3 text-xs focus:outline-none focus:border-blue-500 font-medium text-slate-300 placeholder-slate-600 transition resize-none" placeholder="Enter diagnostic update strings or interaction logs..."></textarea>
-                </div>
-                <button onclick="commitCommentsRecordMutation()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs uppercase tracking-wider transition shadow-lg shadow-emerald-600/10 mt-2">Commit Mutation</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="assignmentDeskModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-[#111827] border border-slate-800 max-w-md w-full rounded-2xl p-6 shadow-2xl relative transform scale-95 transition-transform duration-300">
-            <button onclick="closeAssignmentModal()" class="absolute top-4 right-4 text-slate-500 hover:text-slate-300 transition text-lg font-black">×</button>
-            <h3 class="text-sm font-black uppercase text-white tracking-wider mb-1">Queue Routing Allocator</h3>
-            <p class="text-[10px] text-slate-400 font-medium mb-4">Bulk distribution parameters for unassigned entry components.</p>
-            
-            <div class="space-y-4">
-                <div class="p-3 bg-[#070b12] border border-slate-800 rounded-xl flex items-center justify-between">
-                    <span class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Unassigned Inventory Available:</span>
-                    <span id="assignmentDeskQueueCounter" class="bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-black px-2.5 py-0.5 rounded-lg">0 nodes</span>
-                </div>
-                <div>
-                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1.5">Target Allocation Operator Vector</label>
-                    <select id="assignmentDeskOperatorSelect" class="w-full bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-200 focus:outline-none focus:border-blue-500 transition cursor-pointer">
-                        <option value="">Select Target Routing Node...</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1.5">Allocation Ingestion Depth</label>
-                    <input type="number" id="assignmentDeskBatchSize" min="1" value="5" class="w-full bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2.5 text-xs font-bold focus:outline-none focus:border-blue-500 text-slate-200 transition">
-                </div>
-                <button onclick="executeBulkAssignmentRouting()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs uppercase tracking-wider transition shadow-lg shadow-blue-600/10 mt-2">Execute Distribution Script</button>
-            </div>
-        </div>
-    </div>
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, query, doc, updateDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, doc, updateDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // FIREBASE CLOUD SYSTEM CONSTANTS
-        const firebaseConfig = {
-            apiKey: "AIzaSyAs7K-9sUo8X_3jL2M4pQn6Wv1xYz8tEw0",
-            authDomain: "webinar-ops-crm.firebaseapp.com",
-            projectId: "webinar-ops-crm",
-            storageBucket: "webinar-ops-crm.appspot.com",
-            messagingSenderId: "1029384756",
-            appId: "1:1029384756:web:a1b2c3d4e5f6g7h8i9j0"
-        };
+        const ALLOWED_DOMAIN = 'brightchamps.com'; 
 
+        // TEAM LEAD AND MANAGEMENT EMAIL AUTHORIZATION MATRIX
         const TEAM_LEADERS_LIST = [
-            "kiran.aluvara@brightchamps.com",
-            "shubham.rautela@brightchamps.com"
+            'kiran.aluvara@brightchamps.com'
         ];
 
-        // ENGINE INITS
+        const firebaseConfig = {
+            apiKey: "AIzaSyAYpGUhW9CDWLwuj7ZHVRYFAq-37uS0flU",
+            authDomain: "partnership-outreach-crm.firebaseapp.com",
+            projectId: "partnership-outreach-crm",
+            storageBucket: "partnership-outreach-crm.firebasestorage.app",
+            messagingSenderId: "142750401110",
+            appId: "1:142750401110:web:cd1a0494b731d11a2a71f7"
+        };
+
         const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
         const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
 
-        // DATA STORE MATRICES
-        let cachedPipelineRecords = [];
-        let systemActiveOperators = new Set();
-        let currentUserEmail = "";
-        let globalDataStreamUnsubscribe = null;
+        let localLeadsArray = [];
+        let localTasksArray = [];
+        let localInteractionLogsArray = [];
+        let selectedRecordId = null;
+        let pipelineChartInstance = null;
+        let activityChartInstance = null;
+        let agentVelocityChartInstance = null;
+        let agentStageChartInstance = null;
+        
+        let currentTaskScopeTab = 'Pending'; 
+        let urgencyQuickFilterState = null;  
+        let currentAnalyticsSubTab = 'heatmap';
+        
+        let unsubscribeLeads = null;
+        let unsubscribeTasks = null;
+        let unsubscribeLogs = null;
 
-        // VISUAL MAP HANDLERS
-        let instanceTimelineChart = null;
-        let instanceFunnelChart = null;
-
-        // AUTH MECHANICS CONTROLLER
-        window.handleAuthentication = function() {
-            const emailInput = document.getElementById('authEmail').value.trim().toLowerCase();
-            const messageBadge = document.getElementById('authMessage');
-
-            if (!emailInput || !emailInput.endsWith('@brightchamps.com')) {
-                messageBadge.textContent = "CRITICAL FAILURE: Invalid routing node format.";
-                messageBadge.className = "p-3 rounded-xl text-xs mb-4 font-bold border bg-rose-500/10 border-rose-500/20 text-rose-400 block";
+        window.autoCalculateFeeRange = function(inputValue) {
+            const rangeSelect = document.getElementById('schoolFeesRange');
+            if (!inputValue) {
+                rangeSelect.innerHTML = `<option value="">Awaiting Fee Entry...</option>`;
                 return;
             }
+            let cleanInput = inputValue.toLowerCase().replace(/,/g, '').trim();
+            let numericalFee = 0;
+            if (cleanInput.includes('lakh') || cleanInput.includes('l')) {
+                let parsedNum = parseFloat(cleanInput.replace(/[^\d.]/g, ''));
+                if (!isNaN(parsedNum)) numericalFee = parsedNum * 100000;
+            } else {
+                numericalFee = parseFloat(cleanInput);
+            }
+            if (isNaN(numericalFee) || numericalFee <= 0) {
+                rangeSelect.innerHTML = `<option value="">Awaiting Fee Entry...</option>`;
+                return;
+            }
+            let calculatedRangeStr = "";
+            if (numericalFee <= 5000) { calculatedRangeStr = "5k and 5k+ till 1 lakh"; } 
+            else if (numericalFee <= 100000) { calculatedRangeStr = "5k and 5k+ till 1 lakh"; } 
+            else if (numericalFee <= 200000) { calculatedRangeStr = "10k till 2 lakh"; }
+            else if (numericalFee <= 2000000) { calculatedRangeStr = "add 1 lakh till 20 lakh"; }
+            else { calculatedRangeStr = "20l +"; }
 
-            currentUserEmail = emailInput;
-            messageBadge.className = "hidden";
-            
-            document.getElementById('authScreen').classList.add('opacity-0');
-            setTimeout(() => {
-                document.getElementById('authScreen').classList.add('hidden');
-                const appLayout = document.getElementById('appDashboard');
-                appLayout.classList.remove('hidden');
-                setTimeout(() => { appLayout.classList.add('opacity-100'); }, 50);
-                
-                document.getElementById('userProfileBadge').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Authorized: ${currentUserEmail}`;
-                
-                // ROUTING INTERFACE SECURITY RULES
-                if (TEAM_LEADERS_LIST.includes(currentUserEmail)) {
-                    document.getElementById('tlControlPanel').classList.remove('hidden');
-                    document.getElementById('adminImportSection').classList.remove('hidden'); // Expose bulk CSV tool to admin
-                } else {
-                    document.getElementById('tlControlPanel').classList.add('hidden');
-                    document.getElementById('adminImportSection').classList.add('hidden'); // Protect bulk CSV tool from users
-                }
-
-                initializeDataStreams();
-            }, 500);
+            rangeSelect.innerHTML = `<option value="${calculatedRangeStr}">${calculatedRangeStr}</option>`;
+            rangeSelect.value = calculatedRangeStr;
         };
 
-        window.triggerSystemSignOut = function() {
-            if (globalDataStreamUnsubscribe) globalDataStreamUnsubscribe();
-            currentUserEmail = "";
-            cachedPipelineRecords = [];
-            systemActiveOperators.clear();
-            
-            const appLayout = document.getElementById('appDashboard');
-            appLayout.classList.remove('opacity-100');
-            setTimeout(() => {
-                appLayout.classList.add('hidden');
-                document.getElementById('authEmail').value = "";
-                const authScreen = document.getElementById('authScreen');
-                authScreen.classList.remove('hidden');
-                setTimeout(() => { authScreen.classList.remove('opacity-0'); }, 50);
-            }, 500);
-        };
+        function showAuthMessage(text, type = 'error') {
+            const msgEl = document.getElementById('authMessage');
+            msgEl.innerText = text;
+            msgEl.classList.remove('hidden', 'bg-rose-950/30', 'text-rose-400', 'border-rose-900/30', 'bg-amber-950/30', 'text-amber-400', 'border-amber-900/30');
+            if (type === 'error') { msgEl.classList.add('bg-rose-950/30', 'text-rose-400', 'border', 'border-rose-900/30'); } 
+            else { msgEl.classList.add('bg-amber-950/30', 'text-amber-400', 'border', 'border-amber-900/30'); }
+            msgEl.classList.remove('hidden');
+        }
 
-        // STREAM REALTIME MANAGEMENT ENGINE
-        function initializeDataStreams() {
-            const dataQuery = query(collection(db, "leads"));
-            
-            globalDataStreamUnsubscribe = onSnapshot(dataQuery, (snapshot) => {
-                cachedPipelineRecords = [];
-                systemActiveOperators.clear();
-
-                snapshot.forEach((documentNode) => {
-                    const payload = documentNode.data();
-                    cachedPipelineRecords.push({
-                        id: documentNode.id,
-                        ...payload
-                    });
-
-                    if (payload.operator && payload.operator !== "None") {
-                        systemActiveOperators.add(payload.operator);
+        onAuthStateChanged(auth, (user) => {
+            const authScreen = document.getElementById('authScreen');
+            const mainDashboard = document.getElementById('mainDashboard');
+            if (user) {
+                const userDomain = (user.email || '').split('@')[1];
+                if (userDomain === ALLOWED_DOMAIN) {
+                    document.getElementById('authMessage').classList.add('hidden');
+                    authScreen.classList.add('opacity-0', 'pointer-events-none');
+                    mainDashboard.classList.remove('hidden');
+                    document.getElementById('userNameProfile').innerText = user.displayName || 'Agent User';
+                    document.getElementById('userEmailProfile').innerText = user.email;
+                    document.getElementById('userInitial').innerText = (user.displayName || 'A').charAt(0);
+                    
+                    // --- SECURITY INTERFACE VISIBILITY CONTROLS ---
+                    const routingPanel = document.getElementById('tlRoutingPanel');
+                    if (TEAM_LEADERS_LIST.includes(user.email.toLowerCase())) {
+                        routingPanel.classList.remove('hidden');
+                    } else {
+                        routingPanel.classList.add('hidden');
                     }
-                });
-
-                // RESTRAIN NON-ADMIN CLUSTER PERMISSIONS FROM ACQUIRING GLOBAL ROWS
-                if (!TEAM_LEADERS_LIST.includes(currentUserEmail)) {
-                    cachedPipelineRecords = cachedPipelineRecords.filter(lead => lead.operator === currentUserEmail);
+                    
+                    initializeDataStreams();
+                } else {
+                    showAuthMessage(`Access Denied: Please authorize via a professional @${ALLOWED_DOMAIN} workspace alias profile.`, 'warning');
+                    killActiveSnapshots();
+                    signOut(auth);
+                    mainDashboard.classList.add('hidden');
+                    authScreen.classList.remove('opacity-0', 'pointer-events-none');
                 }
+            } else {
+                killActiveSnapshots();
+                mainDashboard.classList.add('hidden');
+                authScreen.classList.remove('opacity-0', 'pointer-events-none');
+            }
+        });
 
-                refreshOperatorSelectionDropdowns();
-                executePipelineFiltering();
-            }, (error) => {
-                console.error("DATA CORE FAULT: Cloud synchronization pipeline aborted.", error);
+        document.getElementById('signInBtn').onclick = () => {
+            showAuthMessage("Contacting authentication endpoint...", "warning");
+            signInWithPopup(auth, provider).catch(err => {
+                console.error("Firebase Auth Error:", err);
+                showAuthMessage(`Handshake dropped: ${err.message}`);
             });
-        }
-
-        function refreshOperatorSelectionDropdowns() {
-            const operatorDropdown = document.getElementById('filterOperatorDropdown');
-            const deskDropdown = document.getElementById('assignmentDeskOperatorSelect');
-            
-            const selectedVal = operatorDropdown.value;
-            
-            operatorDropdown.innerHTML = '<option value="ALL">All Routing Vectors</option><option value="None">None (Unassigned)</option>';
-            deskDropdown.innerHTML = '<option value="">Select Target Routing Node...</option>';
-
-            const sortedOperators = Array.from(systemActiveOperators).sort();
-            sortedOperators.forEach(operatorEmail => {
-                operatorDropdown.innerHTML += `<option value="${operatorEmail}">${operatorEmail}</option>`;
-                deskDropdown.innerHTML += `<option value="${operatorEmail}">${operatorEmail}</option>`;
-            });
-
-            if (Array.from(systemActiveOperators).has(selectedVal) || selectedVal === "None") {
-                operatorDropdown.value = selectedVal;
-            }
-        }
-
-        // COMPREHENSIVE RE-FILTER ROUTINE
-        window.executePipelineFiltering = function() {
-            const queryToken = document.getElementById('globalSearchInput').value.toLowerCase().trim();
-            const statusToken = document.getElementById('filterStatusDropdown').value;
-            const operatorToken = document.getElementById('filterOperatorDropdown').value;
-
-            let recordsSubset = cachedPipelineRecords;
-
-            if (statusToken !== "ALL") {
-                recordsSubset = recordsSubset.filter(r => r.status === statusToken);
-            }
-            if (operatorToken !== "ALL") {
-                recordsSubset = recordsSubset.filter(r => r.operator === operatorToken);
-            }
-            if (queryToken) {
-                recordsSubset = recordsSubset.filter(r => 
-                    (r.school && r.school.toLowerCase().includes(queryToken)) ||
-                    (r.city && r.city.toLowerCase().includes(queryToken)) ||
-                    (r.state && r.state.toLowerCase().includes(queryToken)) ||
-                    (r.mainEmailId && r.mainEmailId.toLowerCase().includes(queryToken)) ||
-                    (r.uniqueSchoolId && r.uniqueSchoolId.toLowerCase().includes(queryToken))
-                );
-            }
-
-            renderPipelineTable(recordsSubset);
-            compileMetricsAndAnalytics(recordsSubset);
         };
 
-        // CENTRAL PIPELINE RECORD RENDER BOARD ENGINE
-        function renderPipelineTable(records) {
-            const tbody = document.getElementById('pipelineTableBody');
-            document.getElementById('totalRecordsCounter').textContent = `Displaying ${records.length} items from compiled telemetry constraints.`;
+        document.getElementById('signOutBtn').onclick = () => signOut(auth);
 
-            if (records.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="py-16 text-center text-slate-500 font-semibold uppercase tracking-wider">Zero entries returned within query boundaries.</td></tr>`;
-                return;
-            }
+        function killActiveSnapshots() {
+            if (unsubscribeLeads) unsubscribeLeads();
+            if (unsubscribeTasks) unsubscribeTasks();
+            if (unsubscribeLogs) unsubscribeLogs();
+        }
 
-            records.sort((x, y) => {
-                const tx = x.timestamp?.seconds || 0;
-                const ty = y.timestamp?.seconds || 0;
-                return ty - tx;
+        function initializeDataStreams() {
+            unsubscribeLeads = onSnapshot(query(collection(db, "leads"), orderBy("timestamp", "desc")), (snapshot) => {
+                localLeadsArray = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
+                populateTeamLeadRoutingControls();
+                calculateVelocityDifferentials();
+                executeDataGridFilters();
+                if(selectedRecordId) loadWorkspaceDrawerRecord(selectedRecordId);
+                if (!document.getElementById('analytics-tab').classList.contains('hidden')) generateChartAnalytics();
             });
 
-            tbody.innerHTML = "";
-            records.forEach(lead => {
+            unsubscribeTasks = onSnapshot(query(collection(db, "crm_tasks"), orderBy("dueDate", "asc")), (snapshot) => {
+                localTasksArray = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
+                calculateActiveTaskWorkflowCounters();
+                executeDataGridFilters(); 
+                renderTaskCenterConsole();
+            });
+
+            unsubscribeLogs = onSnapshot(query(collection(db, "lead_calls"), orderBy("timestamp", "desc")), (snapshot) => {
+                localInteractionLogsArray = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
+                calculateVelocityDifferentials();
+                if(selectedRecordId) renderLeadSpecificTimeline(selectedRecordId);
+                executeDataGridFilters();
+                if (!document.getElementById('analytics-tab').classList.contains('hidden')) generateChartAnalytics();
+            });
+        }
+
+        // COMPILES ACTIVE OPERATORS FOR TEAM LEAD ROUTING DESK
+        function populateTeamLeadRoutingControls() {
+            const selectEl = document.getElementById('tlAgentSelectDropdown');
+            if(!selectEl) return;
+            const uniqueAgents = new Set();
+            localLeadsArray.forEach(l => { if(l.operator && l.operator !== "None") uniqueAgents.add(l.operator); });
+            localInteractionLogsArray.forEach(c => { if(c.agent) uniqueAgents.add(c.agent); });
+            
+            const currentSelected = selectEl.value;
+            selectEl.innerHTML = '<option value="">Select Target Agent...</option>';
+            Array.from(uniqueAgents).sort().forEach(agentEmail => {
+                selectEl.innerHTML += `<option value="${agentEmail}">${agentEmail.split('@')[0]} (${agentEmail})</option>`;
+            });
+            selectEl.value = currentSelected;
+        }
+
+        function getNormalizedTodayString() {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+
+        function getNormalizedYesterdayString() {
+            const d = new Date();
+            d.setDate(d.getDate() - 1);
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+
+        function calculateVelocityDifferentials() {
+            const todayStr = getNormalizedTodayString();
+            const ydayStr = getNormalizedYesterdayString();
+            const userEmail = auth.currentUser ? auth.currentUser.email : '';
+
+            const myLeads = localLeadsArray.filter(l => l.operator === userEmail);
+            const myCalls = localInteractionLogsArray.filter(c => c.agent === userEmail);
+
+            const todayReachouts = myLeads.filter(l => l.dateStr === todayStr).length;
+            const ydayReachouts = myLeads.filter(l => l.dateStr === ydayStr).length;
+            const todayCalls = myCalls.filter(c => c.dateString === todayStr).length;
+            const ydayCalls = myCalls.filter(c => c.dateString === ydayStr).length;
+
+            document.getElementById('sidebarTodayReachouts').innerText = todayReachouts;
+            document.getElementById('sidebarYdayReachouts').innerText = ydayReachouts;
+            document.getElementById('sidebarTodayCalls').innerText = todayCalls;
+            document.getElementById('sidebarYdayCalls').innerText = ydayCalls;
+        }
+
+        function calculateActiveTaskWorkflowCounters() {
+            const todayStr = getNormalizedTodayString();
+            const userEmail = auth.currentUser ? auth.currentUser.email : '';
+            let overdue = 0, today = 0, upcoming = 0, completed = 0, sidebarTodayCount = 0;
+
+            localTasksArray.forEach(t => {
+                const isMyTask = (t.operator === userEmail);
+                if (t.taskStatus === 'Completed') { if (isMyTask) completed++; } 
+                else {
+                    if (t.dueDate < todayStr) { if (isMyTask) overdue++; } 
+                    else if (t.dueDate === todayStr) { if (isMyTask) { today++; sidebarTodayCount++; } } 
+                    else { if (isMyTask) upcoming++; }
+                }
+            });
+
+            document.getElementById('metricOverdue').innerText = overdue;
+            document.getElementById('metricToday').innerText = today;
+            document.getElementById('metricUpcoming').innerText = upcoming;
+            document.getElementById('metricCompleted').innerText = completed;
+            document.getElementById('sidebarTaskCount').innerText = sidebarTodayCount;
+        }
+
+        window.setTaskViewTab = function(tabScope) {
+            currentTaskScopeTab = tabScope;
+            const pendingBtn = document.getElementById('taskTabPending');
+            const completedBtn = document.getElementById('taskTabCompleted');
+
+            if(tabScope === 'Pending') {
+                pendingBtn.className = "px-4 py-1.5 rounded-lg text-[11px] font-bold transition bg-blue-600 text-white shadow-md";
+                completedBtn.className = "px-4 py-1.5 rounded-lg text-[11px] font-bold transition text-slate-400 hover:text-slate-200";
+                if(urgencyQuickFilterState === 'COMPLETED') urgencyQuickFilterState = null;
+            } else {
+                completedBtn.className = "px-4 py-1.5 rounded-lg text-[11px] font-bold transition bg-emerald-600 text-white shadow-md";
+                pendingBtn.className = "px-4 py-1.5 rounded-lg text-[11px] font-bold transition text-slate-400 hover:text-slate-200";
+                urgencyQuickFilterState = 'COMPLETED';
+            }
+            renderTaskCenterConsole();
+        };
+
+        window.setUrgencyQuickFilter = function(filterType) {
+            urgencyQuickFilterState = filterType;
+            setTaskViewTab(filterType === 'COMPLETED' ? 'Completed' : 'Pending');
+            document.getElementById('clearUrgencyFilterBtn').classList.remove('hidden');
+            renderTaskCenterConsole();
+        };
+
+        window.clearUrgencyQuickFilter = function() {
+            urgencyQuickFilterState = null;
+            document.getElementById('clearUrgencyFilterBtn').classList.add('hidden');
+            renderTaskCenterConsole();
+        };
+
+        window.toggleMasterCheckboxSelections = function(isChecked) {
+            document.querySelectorAll('.row-select-checkbox').forEach(cb => cb.checked = isChecked);
+        };
+
+        // EXECUTED BY TEAM LEAD TO ALLOCATE / ROUTE MULTIPLE LEADS IN BULK
+        window.executeTlBulkAssignmentOperation = function() {
+            // BACK-END FUNCTION SECURITY GUARDFENCE
+            const currentUserEmail = auth.currentUser ? auth.currentUser.email.toLowerCase() : '';
+            if (!TEAM_LEADERS_LIST.includes(currentUserEmail)) {
+                return alert("Access Denied: Your terminal session does not carry high-level Lead Routing privileges.");
+            }
+
+            const targetAgent = document.getElementById('tlAgentSelectDropdown').value;
+            if(!targetAgent) return alert("Please select a valid destination agent profile.");
+            
+            const checkedBoxes = document.querySelectorAll('.row-select-checkbox:checked');
+            if(checkedBoxes.length === 0) return alert("No school profiles selected for allocation.");
+
+            if(!confirm(`Route ${checkedBoxes.length} asset entries directly to ${targetAgent.split('@')[0]}?`)) return;
+
+            const batch = writeBatch(db);
+            checkedBoxes.forEach(cb => {
+                const leadId = cb.getAttribute('data-id');
+                const leadRef = doc(db, "leads", leadId);
+                // Transitions status from Unassigned to Assigned/New if currently unassigned
+                const currentStatus = cb.getAttribute('data-status');
+                const nextStatus = (currentStatus === 'Unassigned') ? 'Assigned / New' : currentStatus;
+                batch.update(leadRef, { operator: targetAgent, status: nextStatus, timestamp: serverTimestamp() });
+            });
+
+            batch.commit().then(() => {
+                alert(`Successfully allocated ${checkedBoxes.length} records.`);
+                document.getElementById('masterTableSelectCheckbox').checked = false;
+                executeDataGridFilters();
+            }).catch(err => alert("Allocation engine fault: " + err.message));
+        };
+
+        window.executeDataGridFilters = function() {
+            const search = document.getElementById('filterSearch').value.toLowerCase().trim();
+            const stage = document.getElementById('filterStage').value;
+            const ownerScope = document.getElementById('filterAccountOwner').value;
+            const currentUserEmail = auth.currentUser ? auth.currentUser.email : '';
+
+            let filtered = localLeadsArray.filter(l => {
+                const matchSearch = (!search || (l.school || '').toLowerCase().includes(search));
+                const matchStage = (!stage || l.status === stage);
+                
+                let matchOwner = true;
+                if (ownerScope === 'MINE') {
+                    matchOwner = (l.operator === currentUserEmail);
+                }
+                return matchSearch && matchStage && matchOwner;
+            });
+            renderDataTable(filtered);
+        };
+
+        function renderDataTable(subset) {
+            const tbody = document.getElementById('dataTableBody');
+            tbody.innerHTML = subset.length === 0 ? '<tr><td colspan="5" class="p-8 text-center text-slate-500">No active matrix records map to filter rules.</td></tr>' : '';
+            
+            const todayStr = getNormalizedTodayString();
+            const fortyEightHoursAgo = Date.now() - (48 * 60 * 60 * 1000);
+
+            subset.forEach(lead => {
+                const followUpCount = lead.followUpCount || 0;
+                let isStaleDroppedBall = false, staleReason = "";
+
+                if (lead.status !== 'Webinar Agreed' && lead.status !== 'Not Interested' && lead.status !== 'Unassigned') {
+                    const openTasks = localTasksArray.filter(t => t.leadId === lead.id && t.taskStatus === 'Pending');
+                    if (openTasks.length > 0) {
+                        if (openTasks.some(t => t.dueDate < todayStr)) { isStaleDroppedBall = true; staleReason = "Overdue task loop"; }
+                    } else {
+                        const checkTime = lead.lastFollowUpTimestamp ? (lead.lastFollowUpTimestamp.seconds * 1000 || lead.lastFollowUpTimestamp.toMillis?.()) : (lead.timestamp?.seconds * 1000 || lead.timestamp?.toMillis?.());
+                        if (checkTime && checkTime < fortyEightHoursAgo) { isStaleDroppedBall = true; staleReason = "No track loop set"; }
+                    }
+                }
+
                 const tr = document.createElement('tr');
-                tr.className = "border-b border-slate-900/40 hover:bg-slate-900/10 font-medium transition duration-150";
-
-                let statusVisualClass = "bg-slate-800 text-slate-400 border-slate-700/50";
-                if (lead.status === "Unassigned") statusVisualClass = "bg-purple-500/10 text-purple-400 border-purple-500/20";
-                else if (lead.status === "Assigned / New") statusVisualClass = "bg-blue-500/10 text-blue-400 border-blue-500/20";
-                else if (lead.status === "Contacted") statusVisualClass = "bg-amber-500/10 text-amber-400 border-amber-500/20";
-                else if (lead.status === "Webinar Agreed") statusVisualClass = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
-                else if (lead.status === "Not Interested") statusVisualClass = "bg-rose-500/10 text-rose-400 border-rose-500/20";
-
+                tr.className = `border-b border-slate-900/30 transition text-slate-300 ${selectedRecordId === lead.id ? 'bg-blue-600/15 border-l-2 border-l-blue-500 text-white font-semibold' : 'hover:bg-slate-800/40'} ${isStaleDroppedBall ? 'bg-rose-950/10 border-l-2 border-l-rose-600' : ''}`;
+                
                 tr.innerHTML = `
-                    <td class="py-3 px-4 max-w-xs truncate">
-                        <div class="font-bold text-slate-200 text-sm tracking-tight">${lead.school || 'Unknown Institution'}</div>
-                        <div class="text-[10px] font-bold text-slate-500 tracking-wide mt-0.5 uppercase">${lead.uniqueSchoolId || 'No ID'} • ${lead.city || 'N/A'}, ${lead.state || 'N/A'}</div>
+                    <td class="p-4 pl-6" onclick="event.stopPropagation();">
+                        <input type="checkbox" class="row-select-checkbox cursor-pointer" data-id="${lead.id}" data-status="${lead.status}">
                     </td>
-                    <td class="py-3 px-4">
-                        <div class="text-slate-300 font-semibold">${lead.mainContactNo || 'No Telecom Route'}</div>
-                        <div class="text-[10px] text-slate-500 font-semibold mt-0.5">${lead.mainEmailId || 'No Email Node'}</div>
+                    <td class="p-4 max-w-xs truncate" onclick="selectLeadRowItem('${lead.id}')">
+                        <div class="font-bold flex items-center space-x-2 ${selectedRecordId === lead.id ? 'text-white' : 'text-slate-200'}">
+                            <span>${lead.school || 'Unnamed Account'}</span>
+                            ${isStaleDroppedBall ? `<span class="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[8px] font-bold tracking-wider px-1.5 py-0.5 rounded-md uppercase" title="${staleReason}">STALE</span>` : ''}
+                        </div>
                     </td>
-                    <td class="py-3 px-4 text-center">
-                        <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black tracking-wide uppercase border ${statusVisualClass}">${lead.status || 'Unassigned'}</span>
+                    <td class="p-4" onclick="selectLeadRowItem('${lead.id}')">
+                        <div class="font-bold ${selectedRecordId === lead.id ? 'text-slate-100' : 'text-slate-300'}">${lead.scoutedFor || 'Outreach Metric'}</div>
+                        <div class="text-[10px] text-slate-500 font-semibold truncate mt-0.5">👤 Owner: ${lead.operator && lead.operator !== "None" ? lead.operator.split('@')[0] : '<span class="text-amber-500/80 font-black">UNASSIGNED POOL</span>'}</div>
                     </td>
-                    <td class="py-3 px-4">
-                        <div class="text-slate-300 font-bold max-w-[180px] truncate">${lead.operator || 'None'}</div>
-                        <div class="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mt-0.5">Vector Allocation</div>
+                    <td class="p-4" onclick="selectLeadRowItem('${lead.id}')">
+                        <span class="text-slate-400 bg-slate-900/60 px-2 py-0.5 rounded-md border border-slate-800 font-bold text-[11px] ${followUpCount > 0 ? 'text-amber-400 border-amber-900/20 bg-amber-950/10' : ''}">
+                            🔄 ${followUpCount} Touches
+                        </span>
                     </td>
-                    <td class="py-3 px-4 text-center">
-                        <button onclick="openCommentsModal('${lead.id}', '${escape(lead.school)}', '${lead.status}')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-black tracking-wider uppercase text-[9px] px-2.5 py-1 rounded-lg border border-slate-700/50 transition">Audit</button>
+                    <td class="p-4 pr-6" onclick="selectLeadRowItem('${lead.id}')">
+                        <span class="px-2 py-0.5 text-[9px] font-bold tracking-wider rounded border uppercase ${
+                            lead.status === 'Webinar Agreed' ? 'bg-emerald-950/30 text-emerald-400 border-emerald-900/30' : 
+                            lead.status === 'Not Interested' ? 'bg-slate-900 text-slate-500 border-slate-800' : 
+                            lead.status === 'Contacted' ? 'bg-amber-950/30 text-amber-400 border-amber-900/30' : 
+                            lead.status === 'Unassigned' ? 'bg-slate-950 text-slate-400 border-slate-800' :
+                            'bg-blue-950/30 text-blue-400 border-blue-900/30'
+                        }">${lead.status}</span>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        // COMPILATION METRICS HUB CALCULATOR
-        function compileMetricsAndAnalytics(records) {
-            let totalRows = records.length;
-            let securedLinks = 0;
-            let pendingContacts = 0;
-            let unassignedCount = 0;
+        window.selectLeadRowItem = function(id) {
+            selectedRecordId = id;
+            executeDataGridFilters();
+            loadWorkspaceDrawerRecord(id);
+        };
 
-            let statusTallies = {
-                "Unassigned": 0, "Assigned / New": 0, "Contacted": 0,
-                "Follow-up": 0, "Webinar Agreed": 0, "Webinar Postponed": 0, "Not Interested": 0
-            };
+        window.evaluateDrawerCallFields = function(status) {
+            document.getElementById('drawerCallFollowUpWrapper').classList.toggle('hidden', status === 'Not Interested');
+            document.getElementById('drawerCallWebinarWrapper').classList.toggle('hidden', status !== 'Webinar Agreed');
+        };
 
-            let territoryMap = {};
-            let timelineChronology = {};
+        function loadWorkspaceDrawerRecord(id) {
+            const lead = localLeadsArray.find(l => l.id === id);
+            if(!lead) return;
+            document.getElementById('drawerEmptyState').classList.add('hidden');
+            document.getElementById('drawerActiveState').classList.remove('hidden');
+            
+            document.getElementById('drawerSchoolId').innerText = lead.uniqueSchoolId || 'BC-SCH-LEGACY';
+            document.getElementById('drawerSchoolName').innerText = lead.school;
+            document.getElementById('dSchoolType').innerText = lead.schoolType || 'Not Specified';
+            document.getElementById('dSchoolFees').innerText = lead.schoolFees ? "₹ " + lead.schoolFees : 'Not Specified';
+            document.getElementById('dSchoolFeesRange').innerText = lead.schoolFeesRange || 'Not Specified';
+            
+            document.getElementById('dContactNo').innerText = lead.mainContactNo || 'N/A';
+            document.getElementById('dContactEmail').innerText = lead.mainEmailId || 'N/A';
 
-            records.forEach(r => {
-                if (r.status === "Webinar Agreed") securedLinks++;
-                if (["Assigned / New", "Contacted", "Follow-up", "Webinar Postponed"].includes(r.status)) pendingContacts++;
-                if (r.status === "Unassigned" || !r.operator || r.operator === "None") unassignedCount++;
-
-                if (statusTallies[r.status] !== undefined) statusTallies[r.status]++;
-
-                const region = r.state || "Undefined Territory";
-                if (!territoryMap[region]) territoryMap[region] = { inflow: 0, secured: 0 };
-                territoryMap[region].inflow++;
-                if (r.status === "Webinar Agreed") territoryMap[region].secured++;
-
-                const plotDate = r.dateStr || new Date().toISOString().split('T')[0];
-                if (!timelineChronology[plotDate]) timelineChronology[plotDate] = { inflow: 0, closed: 0 };
-                timelineChronology[plotDate].inflow++;
-                if (r.status === "Webinar Agreed") timelineChronology[plotDate].closed++;
-            });
-
-            document.getElementById('metricTotalRows').textContent = totalRows;
-            document.getElementById('metricLinksSecured').textContent = securedLinks;
-            document.getElementById('metricPendingContacts').textContent = pendingContacts;
-            document.getElementById('metricUnassignedQueue').textContent = unassignedCount;
-
-            const ratioPct = totalRows > 0 ? Math.round((securedLinks / totalRows) * 100) : 0;
-            document.getElementById('metricConversionRate').textContent = `${ratioPct}% Inflow Conversion Ratio`;
-
-            renderGeographicLeaderboard(territoryMap);
-            generateAnalyticalCharts(statusTallies, timelineChronology);
-        }
-
-        function renderGeographicLeaderboard(territoryMap) {
-            const tableBody = document.getElementById('territoryTableBody');
-            tableBody.innerHTML = "";
-
-            const sortedRegions = Object.keys(territoryMap).sort((a,b) => territoryMap[b].inflow - territoryMap[a].inflow).slice(0, 5);
-            const maxRegionInflow = sortedRegions.length > 0 ? territoryMap[sortedRegions[0]].inflow : 1;
-
-            if (sortedRegions.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-500">No geographical data captured.</td></tr>`;
-                return;
+            // ENFORCES ASSIGNMENT STRATEGY LOCK FOR UNASSIGNED METRICS
+            if (lead.status === "Unassigned") {
+                document.getElementById('drawerUnassignedLockMessage').classList.remove('hidden');
+                document.getElementById('drawerInteractiveControlsContainer').classList.add('hidden');
+            } else {
+                document.getElementById('drawerUnassignedLockMessage').classList.add('hidden');
+                document.getElementById('drawerInteractiveControlsContainer').classList.remove('hidden');
             }
 
-            sortedRegions.forEach(region => {
-                const data = territoryMap[region];
-                const ratioPct = Math.round((data.secured / data.inflow) * 100);
-                const indicatorWidth = Math.min((data.inflow / maxRegionInflow) * 100, 100);
+            document.getElementById('drawerCallNotesInput').value = '';
+            document.getElementById('drawerCallFollowUpInput').value = '';
+            document.getElementById('drawerCallWebinarInput').value = '';
+            document.getElementById('drawerCallStatusSelect').value = lead.status === 'Assigned / New' ? 'Contacted' : lead.status;
+            evaluateDrawerCallFields(document.getElementById('drawerCallStatusSelect').value);
 
-                const tr = document.createElement('tr');
-                tr.className = "border-b border-slate-900/20 hover:bg-slate-900/10 font-medium";
-                tr.innerHTML = `
-                    <td class="py-3 px-5 font-bold text-slate-200">📍 ${region}</td>
-                    <td class="py-3 text-center text-slate-400 font-semibold">${data.inflow} rows</td>
-                    <td class="py-3 text-center text-amber-500 font-semibold">${data.secured} links</td>
-                    <td class="py-3 text-center font-bold text-emerald-400">${ratioPct}%</td>
-                    <td class="py-3 pr-5">
-                        <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden border border-slate-800">
-                            <div class="bg-gradient-to-r from-emerald-600 to-teal-500 h-full rounded-full" style="width: ${indicatorWidth}%"></div>
-                        </div>
-                    </td>
-                `;
-                tableBody.appendChild(tr);
-            });
-        }
+            renderLeadSpecificTimeline(id);
 
-        function generateAnalyticalCharts(funnelData, timelineData) {
-            const contextFunnel = document.getElementById('statusFunnelChart').getContext('2d');
-            if (instanceFunnelChart) instanceFunnelChart.destroy();
-            instanceFunnelChart = new Chart(contextFunnel, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(funnelData),
-                    datasets: [{
-                        data: Object.values(funnelData),
-                        backgroundColor: ['#a855f7', '#3b82f6', '#f59e0b', '#6366f1', '#10b981', '#ec4899', '#f43f5e'],
-                        borderWidth: 3,
-                        borderColor: '#111827'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 9, weight: 'bold' }, boxWidth: 10 } }
-                    },
-                    cutout: '72%'
-                }
-            });
+            document.getElementById('drawerLogCallBtn').onclick = () => {
+                const nextStage = document.getElementById('drawerCallStatusSelect').value;
+                const notes = document.getElementById('drawerCallNotesInput').value.trim();
+                const followUpDate = document.getElementById('drawerCallFollowUpInput').value;
+                const webinarDate = document.getElementById('drawerCallWebinarInput').value;
 
-            const contextTimeline = document.getElementById('timelineChart').getContext('2d');
-            if (instanceTimelineChart) instanceTimelineChart.destroy();
+                if (!notes) return alert("Interaction notes required.");
+                if (nextStage !== 'Not Interested' && !followUpDate) return alert("Programmatic follow-up timeline required.");
+                if (nextStage === 'Webinar Agreed' && !webinarDate) return alert("Webinar execution date required.");
 
-            const chronologicalLabels = Object.keys(timelineData).sort();
-            const seriesInflow = chronologicalLabels.map(k => timelineData[k].inflow);
-            const seriesClosed = chronologicalLabels.map(k => timelineData[k].closed);
-
-            instanceTimelineChart = new Chart(contextTimeline, {
-                type: 'line',
-                data: {
-                    labels: chronologicalLabels.map(d => d.substring(5)),
-                    datasets: [
-                        {
-                            label: 'Gross Load Capture',
-                            data: seriesInflow,
-                            borderColor: '#3b82f6',
-                            backgroundColor: 'rgba(59, 130, 246, 0.04)',
-                            fill: true,
-                            tension: 0.35,
-                            borderWidth: 2.5
-                        },
-                        {
-                            label: 'Agreed Conversions',
-                            data: seriesClosed,
-                            borderColor: '#10b981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.04)',
-                            fill: true,
-                            tension: 0.35,
-                            borderWidth: 2.5
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10, weight: 'bold' } } } },
-                    scales: {
-                        x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 9, weight: 'bold' } } },
-                        y: { grid: { color: 'rgba(30, 41, 59, 0.5)' }, ticks: { color: '#64748b', font: { size: 9, weight: 'bold' } } }
+                addDoc(collection(db, "lead_calls"), {
+                    leadId: id, agent: auth.currentUser.email, notes: notes, transitionedTo: nextStage, timestamp: serverTimestamp(), dateString: getNormalizedTodayString()
+                }).then(() => {
+                    // Increments Follow-up touches safely on write
+                    const currentTouches = lead.followUpCount || 0;
+                    return updateDoc(doc(db, "leads", id), { 
+                        status: nextStage, 
+                        webinarDate: nextStage === 'Webinar Agreed' ? webinarDate : '', 
+                        followUpCount: currentTouches + 1,
+                        lastFollowUpTimestamp: serverTimestamp(),
+                        timestamp: serverTimestamp() 
+                    });
+                }).then(() => {
+                    localTasksArray.filter(t => t.leadId === id && t.taskStatus !== 'Completed').forEach(t => updateDoc(doc(db, "crm_tasks", t.id), { taskStatus: 'Completed' }));
+                    if (nextStage !== 'Not Interested') {
+                        addDoc(collection(db, "crm_tasks"), { leadId: id, schoolName: lead.school, currentStage: nextStage, dueDate: followUpDate, taskStatus: 'Pending', operator: auth.currentUser.email });
                     }
-                }
-            });
-        }
-
-        // AUTO FEE CALCULATIONS ENGINE INTERFACE HOOK
-        window.autoCalculateFeeRange = function() {
-            const rawVal = parseFloat(document.getElementById('formFees').value) || 0;
-            const outputBox = document.getElementById('formFeesRange');
-
-            if (rawVal === 0) outputBox.value = "";
-            else if (rawVal < 25000) outputBox.value = "Under 25k";
-            else if (rawVal >= 25000 && rawVal <= 50000) outputBox.value = "25k till 50k";
-            else if (rawVal > 50000 && rawVal <= 100000) outputBox.value = "5k and 5k+ till 1 lakh";
-            else outputBox.value = "10k till 2 lakh";
-        };
-
-        // SCOUT MODAL ENGINE WRAPPERS
-        window.openAddLeadModal = function() {
-            document.getElementById('leadGenerationForm').reset();
-            document.getElementById('formFeesRange').value = "";
-            
-            const targetModal = document.getElementById('addLeadModal');
-            targetModal.classList.remove('hidden');
-            setTimeout(() => {
-                targetModal.classList.add('opacity-100');
-                targetModal.querySelector('.transform').classList.remove('scale-95');
-            }, 50);
-        };
-
-        window.closeAddLeadModal = function() {
-            const targetModal = document.getElementById('addLeadModal');
-            targetModal.querySelector('.transform').classList.add('scale-95');
-            targetModal.classList.remove('opacity-100');
-            setTimeout(() => { targetModal.classList.add('hidden'); }, 300);
-        };
-
-        window.commitNewLeadNode = async function(event) {
-            event.preventDefault();
-
-            const schoolName = document.getElementById('formSchool').value.trim();
-            const type = document.getElementById('formSchoolType').value;
-            const addr = document.getElementById('formAddress').value.trim();
-            const city = document.getElementById('formCity').value.trim();
-            const state = document.getElementById('formState').value.trim();
-            const pin = document.getElementById('formPinCode').value.trim();
-            const country = document.getElementById('formCountry').value.trim();
-            const email = document.getElementById('formEmail').value.trim();
-            const contact = document.getElementById('formContact').value.trim();
-            const curriculum = document.getElementById('formCurriculum').value;
-            const fees = document.getElementById('formFees').value;
-            const range = document.getElementById('formFeesRange').value;
-            const campaign = document.getElementById('formScoutedFor').value;
-
-            try {
-                // FIXED ACCESS CONTROL: LOCK NEW LEADS AS UNASSIGNED SO USERS CANNOT MANUALLY ROUTE
-                await addDoc(collection(db, "leads"), {
-                    uniqueSchoolId: "BC-SCH-" + Math.random().toString(36).substr(2, 8).toUpperCase(),
-                    school: schoolName,
-                    schoolType: type,
-                    address: addr,
-                    city: city,
-                    state: state,
-                    pinCode: pin,
-                    country: country,
-                    mainEmailId: email,
-                    mainContactNo: contact,
-                    curriculum: curriculum,
-                    schoolFees: fees,
-                    schoolFeesRange: range,
-                    scoutedFor: campaign,
-                    status: "Unassigned",
-                    operator: "None",
-                    followUpCount: 0,
-                    dateStr: new Date().toISOString().split('T')[0],
-                    timestamp: serverTimestamp(),
-                    scoutedByNode: currentUserEmail
-                });
-
-                closeAddLeadModal();
-            } catch (err) {
-                console.error("INGESTION CRITICAL ERROR:", err);
-                alert("Cloud submission block rejected.");
-            }
-        };
-
-        // AUDIT ROUTINE CONTROL LOGICS
-        window.openCommentsModal = function(id, unescapedSchool, currentStatus) {
-            document.getElementById('commentsTargetDocId').value = id;
-            document.getElementById('commentsModalTargetHeader').textContent = unescape(unescapedSchool);
-            document.getElementById('commentsFieldStatus').value = currentStatus;
-            document.getElementById('commentsFieldNote').value = "";
-
-            const mask = document.getElementById('updateCommentsModal');
-            mask.classList.remove('hidden');
-            setTimeout(() => {
-                mask.classList.add('opacity-100');
-                mask.querySelector('.transform').classList.remove('scale-95');
-            }, 50);
-        };
-
-        window.closeCommentsModal = function() {
-            const mask = document.getElementById('updateCommentsModal');
-            mask.querySelector('.transform').classList.add('scale-95');
-            mask.classList.remove('opacity-100');
-            setTimeout(() => { mask.classList.add('hidden'); }, 300);
-        };
-
-        window.commitCommentsRecordMutation = async function() {
-            const targetId = document.getElementById('commentsTargetDocId').value;
-            const newStatus = document.getElementById('commentsFieldStatus').value;
-            const appendNote = document.getElementById('commentsFieldNote').value.trim();
-
-            if (!targetId) return;
-
-            try {
-                const docRef = doc(db, "leads", targetId);
-                const executionPayload = {
-                    status: newStatus,
-                    lastMutatedBy: currentUserEmail,
-                    lastMutationTimestamp: serverTimestamp()
-                };
-
-                if (appendNote) {
-                    executionPayload.operatorComments = appendNote;
-                }
-
-                await updateDoc(docRef, executionPayload);
-                closeCommentsModal();
-            } catch (err) {
-                console.error("MUTATION CORE FAILURE:", err);
-                alert("Database mutation rejected by rules.");
-            }
-        };
-
-        // BATCH ASSIGNMENT OPERATION MATRIX HANDLERS
-        window.openAssignmentModal = function() {
-            const unassignedLeads = cachedPipelineRecords.filter(r => r.status === "Unassigned" || !r.operator || r.operator === "None");
-            document.getElementById('assignmentDeskQueueCounter').textContent = `${unassignedLeads.length} nodes`;
-            
-            const mask = document.getElementById('assignmentDeskModal');
-            mask.classList.remove('hidden');
-            setTimeout(() => {
-                mask.classList.add('opacity-100');
-                mask.querySelector('.transform').classList.remove('scale-95');
-            }, 50);
-        };
-
-        window.closeAssignmentModal = function() {
-            const mask = document.getElementById('assignmentDeskModal');
-            mask.querySelector('.transform').classList.add('scale-95');
-            mask.classList.remove('opacity-100');
-            setTimeout(() => { mask.classList.add('hidden'); }, 300);
-        };
-
-        window.executeBulkAssignmentRouting = async function() {
-            const targetOperator = document.getElementById('assignmentDeskOperatorSelect').value;
-            const batchAllocationDepth = parseInt(document.getElementById('assignmentDeskBatchSize').value) || 0;
-
-            if (!targetOperator) {
-                alert("Routing specification array missing operator.");
-                return;
-            }
-
-            const availableQueue = cachedPipelineRecords.filter(r => r.status === "Unassigned" || !r.operator || r.operator === "None");
-            if (availableQueue.length === 0) {
-                alert("Queue empty.");
-                return;
-            }
-
-            const elementsToRoute = availableQueue.slice(0, batchAllocationDepth);
-            if (!confirm(`Deploy allocation automation routines for ${elementsToRoute.length} components onto operator vector target: [${targetOperator}]?`)) return;
-
-            closeAssignmentModal();
-
-            try {
-                for (const leadNode of elementsToRoute) {
-                    const documentReference = doc(db, "leads", leadNode.id);
-                    await updateDoc(documentReference, {
-                        operator: targetOperator,
-                        status: "Assigned / New",
-                        routingExecutionTimestamp: serverTimestamp(),
-                        assignedByClusterNode: currentUserEmail
-                    });
-                }
-            } catch (err) {
-                console.error("BATCH MATRIX DISTRIBUTOR FAULT:", err);
-                alert("Automated allocation sequence suffered interruption partition failures.");
-            }
-        };
-
-        // EXCEL EXPORT SCRIPT EXECUTION ENGINE
-        window.exportToCSV = function() {
-            if (cachedPipelineRecords.length === 0) {
-                alert("Export baseline configuration error: Empty target tracking register array.");
-                return;
-            }
-
-            const headerRow = ["School ID", "School Name", "Classification", "Address", "City", "State", "ZIP", "Country", "Contact Email", "Contact Phone", "Curriculum Type", "Calculated Fees", "Fee Tiers", "Campaign Engine", "Pipeline Lifecycle Status", "Assigned Allocation Vector", "Follow Up Count", "Registration Stamp"];
-            
-            let dataRowsText = cachedPipelineRecords.map(lead => {
-                return [
-                    `"${(lead.uniqueSchoolId || '').replace(/"/g, '""')}"`,
-                    `"${(lead.school || '').replace(/"/g, '""')}"`,
-                    `"${(lead.schoolType || 'Day').replace(/"/g, '""')}"`,
-                    `"${(lead.address || '').replace(/"/g, '""')}"`,
-                    `"${(lead.city || '').replace(/"/g, '""')}"`,
-                    `"${(lead.state || '').replace(/"/g, '""')}"`,
-                    `"${(lead.pinCode || '').replace(/"/g, '""')}"`,
-                    `"${(lead.country || 'India').replace(/"/g, '""')}"`,
-                    `"${(lead.mainEmailId || '').replace(/"/g, '""')}"`,
-                    `"${(lead.mainContactNo || '').replace(/"/g, '""')}"`,
-                    `"${(lead.curriculum || 'CBSE').replace(/"/g, '""')}"`,
-                    `"${(lead.schoolFees || '').replace(/"/g, '""')}"`,
-                    `"${(lead.schoolFeesRange || '').replace(/"/g, '""')}"`,
-                    `"${(lead.scoutedFor || '').replace(/"/g, '""')}"`,
-                    `"${(lead.status || 'Unassigned').replace(/"/g, '""')}"`,
-                    `"${(lead.operator || 'None').replace(/"/g, '""')}"`,
-                    lead.followUpCount || 0,
-                    `"${(lead.dateStr || '').replace(/"/g, '""')}"`
-                ].join(",");
-            }).join("\n");
-
-            const fullyCompiledStringContent = headerRow.join(",") + "\n" + dataRowsText;
-            const dataBlobInstance = new Blob([fullyCompiledStringContent], { type: 'text/csv;charset=utf-8;' });
-            const temporaryAnchorElement = document.createElement("a");
-            
-            const platformUrlString = URL.createObjectURL(dataBlobInstance);
-            temporaryAnchorElement.setAttribute("href", platformUrlString);
-            temporaryAnchorElement.setAttribute("download", `CRM_PIPELINE_EXPORT_${new Date().toISOString().split('T')[0]}.csv`);
-            temporaryAnchorElement.style.visibility = 'hidden';
-            
-            document.body.appendChild(temporaryAnchorElement);
-            temporaryAnchorElement.click();
-            document.body.removeChild(temporaryAnchorElement);
-        };
-
-        // =========================================================================
-        // CENTRAL RETROACTIVE CSV SYSTEM BULK SYNC ENGINE
-        // =========================================================================
-        window.handleCSVFileSelect = function(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                processCSVData(e.target.result);
+                    alert(`Follow-up committed. Activity matrix updated.`);
+                }).catch(err => alert("Operational sync error: " + err.message));
             };
-            reader.readAsText(file);
-        };
+        }
 
-        async function processCSVData(csvText) {
-            const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== "");
-            if (lines.length <= 1) {
-                alert("The selected spreadsheet payload is empty.");
+        function renderLeadSpecificTimeline(leadId) {
+            const container = document.getElementById('leadSpecificLogsContainer');
+            const filteredLogs = localInteractionLogsArray.filter(log => log.leadId === leadId);
+            document.getElementById('dCallCount').innerText = filteredLogs.length;
+
+            if (filteredLogs.length === 0) {
+                container.innerHTML = `<div class="p-3 border border-dashed border-slate-800 text-center text-slate-500 rounded-xl text-[10px]">No historical follow-ups found.</div>`;
                 return;
             }
+            container.innerHTML = filteredLogs.map(log => `
+                <div class="bg-slate-950/40 border border-slate-800 p-2.5 rounded-xl text-[11px] space-y-1">
+                    <div class="flex items-center justify-between text-[9px] text-slate-500 font-bold">
+                        <span>👤 ${log.agent.split('@')[0]}</span>
+                        <span>${log.dateString || 'Just Now'}</span>
+                    </div>
+                    <p class="text-slate-300 font-medium leading-normal">${log.notes}</p>
+                    <span class="inline-block text-[8px] font-black tracking-wider uppercase bg-blue-950/40 text-blue-400 px-1.5 py-0.5 rounded-md border border-blue-900/20">Stage: ${log.transitionedTo}</span>
+                </div>
+            `).join('');
+        }
 
-            // Extract structural headers from header data row index 0
-            const headers = lines[0].split(',').map(h => h.trim().replace(/^["']|["']$/g, ''));
+        window.closeWorkspaceDrawer = function() { selectedRecordId = null; document.getElementById('drawerActiveState').classList.add('hidden'); document.getElementById('drawerEmptyState').classList.remove('hidden'); executeDataGridFilters(); };
+        window.routeToCallDeskAccount = function(leadId, schoolName) { switchTab('log-tab'); selectedRecordId = leadId; if (document.getElementById('filterSearch')) { document.getElementById('filterSearch').value = schoolName; } executeDataGridFilters(); loadWorkspaceDrawerRecord(leadId); };
+
+        window.renderTaskCenterConsole = function() {
+            const tbody = document.getElementById('taskTableBody');
+            if(!tbody) return;
+
+            const nameQuery = document.getElementById('taskFilterName').value.toLowerCase().trim();
+            const teamScopeVal = document.getElementById('taskTeamFilterSelect').value;
+            const currentUserEmail = auth.currentUser ? auth.currentUser.email : '';
+            const todayStr = getNormalizedTodayString();
+
+            let filtered = localTasksArray.filter(t => currentTaskScopeTab === 'Completed' ? t.taskStatus === 'Completed' : t.taskStatus !== 'Completed');
+            if (teamScopeVal === 'MINE') filtered = filtered.filter(t => t.operator === currentUserEmail);
+
+            if (urgencyQuickFilterState) {
+                if (urgencyQuickFilterState === 'OVERDUE') filtered = filtered.filter(t => t.dueDate < todayStr);
+                else if (urgencyQuickFilterState === 'TODAY') filtered = filtered.filter(t => t.dueDate === todayStr);
+                else if (urgencyQuickFilterState === 'UPCOMING') filtered = filtered.filter(t => t.dueDate > todayStr);
+            }
+            if(nameQuery) filtered = filtered.filter(t => (t.schoolName || '').toLowerCase().includes(nameQuery));
+
+            filtered.sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+            tbody.innerHTML = filtered.length === 0 ? `<tr><td colspan="4" class="p-8 text-center text-slate-500">No active workflow loops matching criteria.</td></tr>` : '';
+
+            filtered.forEach(task => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-900/30 hover:bg-slate-900/20 transition text-slate-300 font-medium";
+                let urgencyBadge = task.taskStatus === 'Completed' ? `<span class="bg-emerald-950/20 border border-emerald-900/30 text-emerald-400 text-[9px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">Completed</span>` : (task.dueDate < todayStr ? `<span class="bg-rose-950/20 border border-rose-900/30 text-rose-400 text-[9px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">Overdue</span>` : (task.dueDate === todayStr ? `<span class="bg-amber-950/20 border border-amber-900/30 text-amber-400 text-[9px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">Due Today</span>` : `<span class="bg-blue-950/20 border border-blue-900/30 text-blue-400 text-[9px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">Upcoming</span>`));
+
+                tr.innerHTML = `
+                    <td class="p-4 pl-6 font-bold text-slate-200">
+                        <div>${task.schoolName}</div>
+                        <div class="text-[10px] text-slate-500 font-normal mt-0.5">Owner: ${task.operator ? task.operator.split('@')[0] : 'System'}</div>
+                    </td>
+                    <td class="p-4"><span class="px-2 py-0.5 text-[9px] font-bold tracking-wider uppercase bg-slate-900 border border-slate-800 text-slate-400 rounded-md">${task.currentStage || 'Lead Setup'}</span></td>
+                    <td class="p-4"><div class="flex items-center space-x-3"><span class="font-semibold tracking-tight text-slate-200">${task.dueDate}</span>${urgencyBadge}</div></td>
+                    <td class="p-4 pr-6 text-right">${task.taskStatus !== 'Completed' ? `<button onclick="routeToCallDeskAccount('${task.leadId}', '${(task.schoolName || '').replace(/'/g, "\\'")}')" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-1.5 rounded-lg text-[10px] transition shadow-md shadow-blue-600/5">Execute Loop</button>` : `<span class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Record Locked</span>`}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+
+        window.handleFormSubmit = function(e) {
+            e.preventDefault();
+            const schoolName = document.getElementById('schoolName').value.trim();
+            if (localLeadsArray.some(l => (l.school || '').toLowerCase() === schoolName.toLowerCase())) return alert("Operational overlap: Active matching profile snapshot detected.");
+
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+
+            // NEW UPLOAD LOGIC: HARDCODES NEW INGESTIONS AS "UNASSIGNED" INTO HOLDING POOL
+            addDoc(collection(db, "leads"), {
+                uniqueSchoolId: "BC-SCH-" + Math.random().toString(36).substr(2, 8).toUpperCase(),
+                school: schoolName,
+                schoolType: document.getElementById('schoolType').value,
+                address: document.getElementById('address').value.trim(),
+                pinCode: document.getElementById('pinCode').value.trim(),
+                city: document.getElementById('city').value.trim(),
+                state: document.getElementById('state').value.trim(),
+                country: document.getElementById('country').value.trim(),
+                mainEmailId: document.getElementById('mainEmailId').value.trim(),
+                mainContactNo: document.getElementById('mainContactNo').value.trim(),
+                curriculum: document.getElementById('curriculum').value,
+                schoolFees: document.getElementById('schoolFees').value.trim(),
+                schoolFeesRange: document.getElementById('schoolFeesRange').value,
+                scoutedFor: document.getElementById('scoutedFor').value,
+                status: "Unassigned", 
+                operator: "None", 
+                followUpCount: 0,
+                dateStr: getNormalizedTodayString(), 
+                timestamp: serverTimestamp()
+            }).then(() => { 
+                document.getElementById('outreachForm').reset(); 
+                document.getElementById('schoolFeesRange').innerHTML = `<option value="">Awaiting Fee Entry...</option>`;
+                btn.disabled = false; 
+                document.querySelector('details').open = false; 
+            }).catch(err => { 
+                alert("Data mapping write crash: " + err.message); 
+                btn.disabled = false; 
+            });
+        };
+
+        window.switchTab = function(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
             
-            if (!confirm(`Initialize pipeline ingestion for ${lines.length - 1} records into active database cluster?`)) return;
+            document.querySelectorAll('nav button').forEach(b => b.className = "w-full text-left px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-900/60 hover:text-slate-200 font-bold text-xs transition flex items-center space-x-3");
+            document.getElementById(`btn-${tabId}`).className = "w-full text-left px-3 py-2.5 rounded-xl bg-blue-600 text-white font-bold text-xs transition flex items-center space-x-3 shadow-lg shadow-blue-600/10";
+            
+            if (tabId === 'analytics-tab') generateChartAnalytics();
+            if (tabId === 'tasks-tab') renderTaskCenterConsole();
+        };
 
-            let successCount = 0;
-            let errorCount = 0;
+        window.switchAnalyticsSubView = function(subTabId) {
+            currentAnalyticsSubTab = subTabId;
+            document.querySelectorAll('.sub-analytics-view').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`subView-${subTabId}`).classList.remove('hidden');
+            
+            document.querySelectorAll('[id^="subBtn-"]').forEach(btn => btn.className = "px-4 py-2 rounded-xl text-slate-400 hover:text-slate-200 transition");
+            document.getElementById(`subBtn-${subTabId}`).className = "px-4 py-2 rounded-xl bg-blue-600 text-white shadow-md transition";
+            
+            generateChartAnalytics();
+        };
 
-            for (let i = 1; i < lines.length; i++) {
-                // Multi-character delimiter loop logic handles inline cell commas
-                const csvRegex = /(".*?"|[^",\s]+)(?=\s*,|\s*$)/g;
-                const rowData = lines[i].match(csvRegex) || lines[i].split(',');
-                const row = rowData.map(val => val.trim().replace(/^["']|["']$/g, ''));
+        function generateChartAnalytics() {
+            const dateScope = document.getElementById('analyticsDateScope').value;
+            const ownerScope = document.getElementById('analyticsOwnerScope').value;
+            const currentUserEmail = auth.currentUser ? auth.currentUser.email : '';
+            const todayStr = getNormalizedTodayString();
 
-                const leadMap = {};
-                headers.forEach((header, index) => {
-                    leadMap[header] = row[index] || "";
+            let filteredLeads = [...localLeadsArray];
+            let filteredCalls = [...localInteractionLogsArray];
+
+            if (ownerScope === 'MINE') {
+                filteredLeads = filteredLeads.filter(l => l.operator === currentUserEmail);
+                filteredCalls = filteredCalls.filter(c => c.agent === currentUserEmail);
+            }
+            if (dateScope !== 'ALL') {
+                const limitDate = new Date(); limitDate.setDate(limitDate.getDate() - parseInt(dateScope));
+                const limitDateStr = limitDate.toISOString().split('T')[0];
+                filteredLeads = filteredLeads.filter(l => (l.dateStr || todayStr) >= limitDateStr);
+                filteredCalls = filteredCalls.filter(c => (c.dateString || todayStr) >= limitDateStr);
+            }
+
+            const totalAccounts = filteredLeads.length;
+            const webinarsAgreedCount = filteredLeads.filter(l => l.status === 'Webinar Agreed').length;
+            
+            document.getElementById('statTotalAccounts').innerText = totalAccounts;
+            document.getElementById('statWebinarsAgreed').innerText = webinarsAgreedCount;
+            document.getElementById('statTotalCalls').innerText = filteredCalls.length;
+            document.getElementById('statConversionRate').innerText = totalAccounts > 0 ? Math.round((webinarsAgreedCount / totalAccounts) * 100) + "%" : "0%";
+
+            if (currentAnalyticsSubTab === 'heatmap') {
+                const pipeMetrics = { 'Unassigned': 0, 'Assigned / New': 0, 'Contacted': 0, 'Webinar Agreed': 0, 'Not Interested': 0 };
+                filteredLeads.forEach(l => { if(pipeMetrics[l.status] !== undefined) pipeMetrics[l.status]++; });
+
+                if (pipelineChartInstance) pipelineChartInstance.destroy();
+                const ctxPie = document.getElementById('pipelineChart');
+                if(ctxPie) {
+                    pipelineChartInstance = new Chart(ctxPie.getContext('2d'), {
+                        type: 'pie',
+                        data: { labels: Object.keys(pipeMetrics), datasets: [{ data: Object.values(pipeMetrics), backgroundColor: ['#374151', '#3b82f6', '#ca8a04', '#059669', '#ef4444'], borderWidth: 1, borderColor: '#111827' }] },
+                        options: { plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10 } } } }, responsive: true, maintainAspectRatio: false }
+                    });
+                }
+
+                const daywiseMap = {};
+                const lookbackDays = dateScope === 'ALL' ? 14 : parseInt(dateScope);
+                for (let i = lookbackDays - 1; i >= 0; i--) {
+                    const d = new Date(); d.setDate(d.getDate() - i);
+                    daywiseMap[d.toISOString().split('T')[0]] = { scouts: 0, followups: 0 };
+                }
+                filteredLeads.forEach(l => { if (daywiseMap[l.dateStr]) daywiseMap[l.dateStr].scouts++; });
+                filteredCalls.forEach(c => { if (daywiseMap[c.dateString]) daywiseMap[c.dateString].followups++; });
+
+                const sortedLabels = Object.keys(daywiseMap).sort();
+                if (activityChartInstance) activityChartInstance.destroy();
+                const ctxAct = document.getElementById('activityChart');
+                if(ctxAct) {
+                    activityChartInstance = new Chart(ctxAct.getContext('2d'), {
+                        data: {
+                            labels: sortedLabels,
+                            datasets: [
+                                { type: 'bar', label: 'Master Inflow Base', data: sortedLabels.map(k => daywiseMap[k].scouts), backgroundColor: '#3b82f6', borderRadius: 4, barPercentage: 0.5 },
+                                { type: 'line', label: 'Follow-up Call Logs', data: sortedLabels.map(k => daywiseMap[k].followups), borderColor: '#f59e0b', backgroundColor: 'transparent', tension: 0.2, borderWidth: 2, pointBackgroundColor: '#f59e0b' }
+                            ]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            scales: {
+                                x: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { size: 9 } } },
+                                y: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { size: 9 }, stepSize: 1 }, beginAtZero: true }
+                            },
+                            plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10 } } } }
+                        }
+                    });
+                }
+
+                const hourlyMap = {};
+                for(let h=0; h<24; h++) { hourlyMap[h] = { totalAttempts: 0, uniqueLeads: new Set(), scoutsInflow: 0 }; }
+                
+                filteredCalls.forEach(log => {
+                    if (log.timestamp) {
+                        const dateObj = log.timestamp.seconds ? new Date(log.timestamp.seconds * 1000) : (log.timestamp.toMillis ? new Date(log.timestamp.toMillis()) : null);
+                        if (dateObj) {
+                            const hr = dateObj.getHours();
+                            if (hourlyMap[hr]) {
+                                hourlyMap[hr].totalAttempts++;
+                                hourlyMap[hr].uniqueLeads.add(log.leadId);
+                            }
+                        }
+                    }
+                });
+                filteredLeads.forEach(lead => {
+                    if (lead.timestamp) {
+                        const dateObj = lead.timestamp.seconds ? new Date(lead.timestamp.seconds * 1000) : (lead.timestamp.toMillis ? new Date(lead.timestamp.toMillis()) : null);
+                        if (dateObj) {
+                            const hr = dateObj.getHours();
+                            if (hourlyMap[hr]) hourlyMap[hr].scoutsInflow++;
+                        }
+                    }
                 });
 
-                // Structural validation criteria check
-                if (!leadMap['school']) continue;
-
-                try {
-                    // Synchronize time points to avoid breaking the conversion charts
-                    const historicalDate = leadMap['dateStr'] ? new Date(leadMap['dateStr']) : new Date();
-
-                    await addDoc(collection(db, "leads"), {
-                        uniqueSchoolId: "BC-SCH-" + Math.random().toString(36).substr(2, 8).toUpperCase(),
-                        school: leadMap['school'],
-                        schoolType: leadMap['schoolType'] || "Day",
-                        address: leadMap['address'] || "",
-                        pinCode: leadMap['pinCode'] || "",
-                        city: leadMap['city'] || "",
-                        state: leadMap['state'] || "",
-                        country: leadMap['country'] || "India",
-                        mainEmailId: leadMap['mainEmailId'] || "",
-                        mainContactNo: leadMap['mainContactNo'] || "",
-                        curriculum: leadMap['curriculum'] || "CBSE",
-                        schoolFees: leadMap['schoolFees'] || "",
-                        schoolFeesRange: leadMap['schoolFeesRange'] || "",
-                        scoutedFor: leadMap['scoutedFor'] || "Free Coding Webinar",
-                        status: leadMap['status'] || "Unassigned", 
-                        operator: leadMap['operator'] || "None", 
-                        followUpCount: parseInt(leadMap['followUpCount']) || 0,
-                        dateStr: leadMap['dateStr'] || new Date().toISOString().split('T')[0], 
-                        timestamp: historicalDate
-                    });
-
-                    successCount++;
-                } catch (err) {
-                    console.error(`Failed uploading data matrix row index [${i}]:`, err);
-                    errorCount++;
+                const maxAttempts = Math.max(...Object.values(hourlyMap).map(h => h.totalAttempts), 1);
+                const hourlyTableBody = document.getElementById('hourlyMetricsTableBody');
+                hourlyTableBody.innerHTML = '';
+                
+                for(let h=8; h<=20; h++) {
+                    const metrics = hourlyMap[h];
+                    const labelHour = h === 12 ? '12:00 PM' : (h > 12 ? `${h-12}:00 PM` : `${h}:00 AM`);
+                    const densityPct = Math.min((metrics.totalAttempts / maxAttempts) * 100, 100);
+                    
+                    const row = document.createElement('tr');
+                    row.className = "border-b border-slate-900/20 hover:bg-slate-900/10 font-medium";
+                    row.innerHTML = `
+                        <td class="py-2.5 font-bold text-slate-200">${labelHour}</td>
+                        <td class="py-2.5 text-center text-blue-400 font-semibold">${metrics.totalAttempts}</td>
+                        <td class="py-2.5 text-center text-amber-500 font-semibold">${metrics.uniqueLeads.size} unique</td>
+                        <td class="py-2.5 text-center text-emerald-400 font-semibold">+${metrics.scoutsInflow} inbound</td>
+                        <td class="py-2.5 pr-2">
+                            <div class="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden border border-slate-800">
+                                <div class="bg-gradient-to-r from-blue-600 to-indigo-500 h-full rounded-full" style="width: ${densityPct}%"></div>
+                            </div>
+                        </td>
+                    `;
+                    hourlyTableBody.appendChild(row);
                 }
             }
 
-            alert(`🎉 Sync Complete!\nSuccessfully Ingested: ${successCount} entries.\nFault partitions triggered: ${errorCount}`);
-            document.getElementById('csvFileInput').value = "";
-        }
+            else if (currentAnalyticsSubTab === 'agents') {
+                const agentData = {};
+                
+                filteredLeads.forEach(l => {
+                    const email = l.operator || 'None';
+                    if(email === 'None') return;
+                    if (!agentData[email]) { agentData[email] = { scouts: 0, calls: 0, conversions: 0, stages: { 'Assigned / New': 0, 'Contacted': 0, 'Webinar Agreed': 0, 'Not Interested': 0 }, leadTimestamps: [], conversionTimestamps: [] }; }
+                    agentData[email].scouts++;
+                    if (agentData[email].stages[l.status] !== undefined) agentData[email].stages[l.status]++;
+                    
+                    if (l.timestamp) {
+                        const tMillis = l.timestamp.seconds ? l.timestamp.seconds * 1000 : (l.timestamp.toMillis ? l.timestamp.toMillis() : null);
+                        if (tMillis) agentData[email].leadTimestamps.push({ leadId: l.id, time: tMillis });
+                    }
+                });
 
+                filteredCalls.forEach(c => {
+                    const email = c.agent || 'System';
+                    if (!agentData[email]) { agentData[email] = { scouts: 0, calls: 0, conversions: 0, stages: { 'Assigned / New': 0, 'Contacted': 0, 'Webinar Agreed': 0, 'Not Interested': 0 }, leadTimestamps: [], conversionTimestamps: [] }; }
+                    agentData[email].calls++;
+                    
+                    if (c.transitionedTo === 'Webinar Agreed' && c.timestamp) {
+                        const tMillis = c.timestamp.seconds ? c.timestamp.seconds * 1000 : (c.timestamp.toMillis ? c.timestamp.toMillis() : null);
+                        if (tMillis) agentData[email].conversionTimestamps.push({ leadId: c.leadId, time: tMillis });
+                    }
+                });
+
+                const agentLabels = Object.keys(agentData);
+                
+                if (agentVelocityChartInstance) agentVelocityChartInstance.destroy();
+                const ctxAgentVel = document.getElementById('agentVelocityChart');
+                if (ctxAgentVel) {
+                    agentVelocityChartInstance = new Chart(ctxAgentVel.getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels: agentLabels.map(e => e.split('@')[0]),
+                            datasets: [
+                                { label: 'Assigned Lead Assets', data: agentLabels.map(e => agentData[e].scouts), backgroundColor: '#3b82f6', borderRadius: 4 },
+                                { label: 'Follow-ups Completed', data: agentLabels.map(e => agentData[e].calls), backgroundColor: '#f59e0b', borderRadius: 4 }
+                            ]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { display: false }, ticks: { color: '#94a3b8' } }, y: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' } } } }
+                    });
+                }
+
+                if (agentStageChartInstance) agentStageChartInstance.destroy();
+                const ctxAgentStage = document.getElementById('agentStageChart');
+                if (ctxAgentStage) {
+                    agentStageChartInstance = new Chart(ctxAgentStage.getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels: agentLabels.map(e => e.split('@')[0]),
+                            datasets: [
+                                { label: 'Assigned / New', data: agentLabels.map(e => agentData[e].stages['Assigned / New']), backgroundColor: '#3b82f6' },
+                                { label: 'Contacted', data: agentLabels.map(e => agentData[e].stages['Contacted']), backgroundColor: '#ca8a04' },
+                                { label: 'Webinar Agreed', data: agentLabels.map(e => agentData[e].stages['Webinar Agreed']), backgroundColor: '#059669' },
+                                { label: 'Not Interested', data: agentLabels.map(e => agentData[e].stages['Not Interested']), backgroundColor: '#374151' }
+                            ]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, ticks: { color: '#94a3b8' } }, y: { stacked: true, grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' } } } }
+                    });
+                }
+
+                const scorecardTableBody = document.getElementById('agentScorecardTableBody');
+                scorecardTableBody.innerHTML = agentLabels.length === 0 ? '<tr><td colspan="6" class="p-4 text-center text-slate-500">No agent transactions captured in tracking matrix window.</td></tr>' : '';
+                
+                agentLabels.forEach(email => {
+                    const data = agentData[email];
+                    const conversions = data.stages['Webinar Agreed'] || 0;
+                    const efficiencyRate = data.scouts > 0 ? Math.round((conversions / data.scouts) * 100) : 0;
+                    const avgAttempts = data.scouts > 0 ? (data.calls / data.scouts).toFixed(1) : '0.0';
+                    
+                    let totalVelocitySpeedTime = 0;
+                    let speedMilliCounter = 0;
+                    data.conversionTimestamps.forEach(convItem => {
+                        const matchingScout = data.leadTimestamps.find(s => s.leadId === convItem.leadId);
+                        if (matchingScout && convItem.time >= matchingScout.time) {
+                            totalVelocitySpeedTime += (convItem.time - matchingScout.time);
+                            speedMilliCounter++;
+                        }
+                    });
+                    const finalSpeedDays = speedMilliCounter > 0 ? (totalVelocitySpeedTime / (1000 * 60 * 60 * 24 * speedMilliCounter)).toFixed(1) + " days" : "Direct Engagement";
+
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-slate-900/20 hover:bg-slate-900/10 font-medium";
+                    tr.innerHTML = `
+                        <td class="py-3 font-bold text-slate-200">👤 ${email.split('@')[0]}</td>
+                        <td class="py-3 text-center text-slate-400 font-semibold">${data.scouts} handled</td>
+                        <td class="py-3 text-center text-amber-400 font-semibold">${conversions} secure</td>
+                        <td class="py-3 text-center font-bold text-emerald-400">${efficiencyRate}%</td>
+                        <td class="py-3 text-center text-slate-400 font-semibold">${avgAttempts} touches/lead</td>
+                        <td class="py-3 text-center text-blue-400 font-semibold">${finalSpeedDays}</td>
+                    `;
+                    scorecardTableBody.appendChild(tr);
+                });
+            }
+
+            else if (currentAnalyticsSubTab === 'territory') {
+                const territoryMap = {};
+                filteredLeads.forEach(l => {
+                    const marketCity = l.city ? l.city.trim() : '';
+                    const marketState = l.state ? l.state.trim() : '';
+                    const regionLabel = [marketCity, marketState].filter(Boolean).join(', ') || 'Remote Hub Matrix';
+                    
+                    if (!territoryMap[regionLabel]) { territoryMap[regionLabel] = { inflow: 0, secured: 0 }; }
+                    territoryMap[regionLabel].inflow++;
+                    if (l.status === 'Webinar Agreed') territoryMap[regionLabel].secured++;
+                });
+
+                const sortedRegions = Object.keys(territoryMap).sort((a,b) => territoryMap[b].inflow - territoryMap[a].inflow);
+                const maxRegionInflow = Math.max(...Object.values(territoryMap).map(r => r.inflow), 1);
+                const territoryTableBody = document.getElementById('territoryMetricsTableBody');
+                territoryTableBody.innerHTML = sortedRegions.length === 0 ? '<tr><td colspan="5" class="p-4 text-center text-slate-500">No geographical data captured.</td></tr>' : '';
+
+                sortedRegions.forEach(region => {
+                    const data = territoryMap[region];
+                    const ratioPct = Math.round((data.secured / data.inflow) * 100);
+                    const indicatorWidth = Math.min((data.inflow / maxRegionInflow) * 100, 100);
+
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-slate-900/20 hover:bg-slate-900/10 font-medium";
+                    tr.innerHTML = `
+                        <td class="py-3 font-bold text-slate-200">📍 ${region}</td>
+                        <td class="py-3 text-center text-slate-400 font-semibold">${data.inflow} rows</td>
+                        <td class="py-3 text-center text-amber-500 font-semibold">${data.secured} links</td>
+                        <td class="py-3 text-center font-bold text-emerald-400">${ratioPct}%</td>
+                        <td class="py-3 pr-2">
+                            <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden border border-slate-800">
+                                <div class="bg-gradient-to-r from-emerald-600 to-teal-500 h-full rounded-full" style="width: ${indicatorWidth}%"></div>
+                            </div>
+                        </td>
+                    `;
+                    territoryTableBody.appendChild(tr);
+                });
+            }
+        }
     </script>
 </body>
 </html>
