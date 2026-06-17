@@ -4,17 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Webinar Ops CRM Portal</title>
+    <!-- Core UI Framework & Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-[#0b111e] text-slate-100 min-h-screen font-sans select-none antialiased">
 
+    <!-- 1. AUTH GATEWAY VIEW CONTAINER -->
     <div id="authScreen" class="fixed inset-0 bg-[#070b12] flex items-center justify-center z-50 p-4 transition-opacity duration-500">
         <div class="bg-[#111827] border border-slate-800 p-8 rounded-2xl w-full max-w-md text-center shadow-2xl relative">
             <div class="w-16 h-16 bg-blue-600/10 border border-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center mx-auto mb-5 text-2xl shadow-inner">🔒</div>
             <h1 class="text-2xl font-black text-white tracking-tight mb-2">Webinar Ops CRM Portal</h1>
             <p class="text-xs text-slate-400 mb-6 font-medium">Internal execution dashboard. Authorized access checkpoints enabled.</p>
             
+            <!-- Real-time Auth Notification Panel -->
             <div id="authMessage" class="hidden p-3 rounded-xl mb-5 text-left text-xs font-semibold border transition-all duration-300"></div>
             
             <button id="signInBtn" class="w-full bg-blue-600 hover:bg-blue-500 active:scale-[0.99] text-white py-3.5 rounded-xl font-bold tracking-wide transition shadow-lg shadow-blue-600/20">
@@ -23,8 +26,10 @@
         </div>
     </div>
 
+    <!-- 2. CORE WORKSPACE APPLICATION INTERFACE -->
     <div id="mainDashboard" class="hidden flex h-screen overflow-hidden">
         
+        <!-- SIDEBAR MAIN NAVIGATION SYSTEM -->
         <aside class="w-64 bg-[#070b12] border-r border-slate-800/60 p-4 flex flex-col justify-between shrink-0">
             <div>
                 <div class="flex items-center space-x-2.5 px-2 py-4 mb-4">
@@ -32,6 +37,23 @@
                     <div>
                         <h2 class="text-xs font-black tracking-wider text-white uppercase">Webinar Ops CRM</h2>
                         <span class="text-[9px] font-bold text-emerald-500 font-mono tracking-widest uppercase block mt-0.5">CLUSTER ACTIVE</span>
+                    </div>
+                </div>
+
+                <!-- REAL-TIME VELOCITY COUNTER SYSTEM -->
+                <div class="mb-5 p-3 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-2.5">
+                    <div class="text-[9px] font-black tracking-widest text-slate-500 uppercase">Live Velocity Matrix</div>
+                    <div class="grid grid-cols-2 gap-2 text-center">
+                        <div class="bg-[#0b111e] p-2 rounded-lg border border-slate-800/40">
+                            <span class="text-[9px] block text-slate-400 font-semibold uppercase">Today Inflow</span>
+                            <strong id="sidebarTodayReachouts" class="text-sm font-black text-blue-400 font-mono">0</strong>
+                            <span class="text-[8px] block text-slate-500 mt-0.5 font-medium">Ytd: <span id="sidebarYdayReachouts" class="font-mono">0</span></span>
+                        </div>
+                        <div class="bg-[#0b111e] p-2 rounded-lg border border-slate-800/40">
+                            <span class="text-[9px] block text-slate-400 font-semibold uppercase">Today Calls</span>
+                            <strong id="sidebarTodayCalls" class="text-sm font-black text-amber-500 font-mono">0</strong>
+                            <span class="text-[8px] block text-slate-500 mt-0.5 font-medium">Ytd: <span id="sidebarYdayCalls" class="font-mono">0</span></span>
+                        </div>
                     </div>
                 </div>
 
@@ -49,6 +71,7 @@
                 </nav>
             </div>
 
+            <!-- SECURITY SIGN OUT CONTROL FOOTER -->
             <div class="border-t border-slate-800/80 pt-4 px-1">
                 <div class="flex items-center space-x-3 mb-3">
                     <div id="userInitial" class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-xs text-blue-400 font-mono">U</div>
@@ -63,11 +86,14 @@
             </div>
         </aside>
 
+        <!-- CONTENT VIEW ROUTER ATTACHMENT AREA -->
         <main class="flex-1 bg-[#0b111e] flex flex-col overflow-hidden relative">
             
+            <!-- VIEW A: ACCOUNTS LOG & WRAPPER SYSTEM -->
             <div id="log-tab" class="tab-content flex flex-1 overflow-hidden">
                 <div class="flex-1 flex flex-col min-w-0 border-r border-slate-800/40">
                     
+                    <!-- Search Parameters & Operational Filters Header Area -->
                     <header class="p-4 bg-[#0c1424] border-b border-slate-800/40 flex flex-wrap gap-3 items-center justify-between">
                         <div class="flex items-center space-x-3 flex-1 min-w-[280px]">
                             <input id="filterSearch" oninput="executeDataGridFilters()" type="text" placeholder="🔍 Quick Search Target School Profiles..." class="bg-[#111c30] border border-slate-800/80 text-xs px-3.5 py-2 rounded-lg focus:outline-none focus:border-blue-500 text-slate-200 placeholder-slate-500 w-full max-w-sm font-medium">
@@ -84,6 +110,7 @@
                             </select>
                         </div>
 
+                        <!-- Data Ingestion Modal Toggle -->
                         <details class="relative">
                             <summary class="bg-blue-600 hover:bg-blue-500 list-none text-white text-xs font-bold px-4 py-2 rounded-lg cursor-pointer transition shadow-md shadow-blue-600/10 select-none">
                                 ➕ Scout New School
@@ -111,6 +138,7 @@
                         </details>
                     </header>
 
+                    <!-- Scrollable Grid Table -->
                     <div class="flex-1 overflow-y-auto">
                         <table class="w-full text-left text-xs border-collapse">
                             <thead>
@@ -126,13 +154,16 @@
                     </div>
                 </div>
 
-                <div class="w-96 bg-[#0c1424] flex flex-col shrink-0 overflow-hidden">
+                <!-- CALL DESK PANEL WORKSPACE SLIDEOUT DRAWER -->
+                <div class="w-96 bg-[#0c1424] flex flex-col shrink-0 overflow-hidden border-l border-slate-800/40">
+                    <!-- Target Empty Activation Default State View -->
                     <div id="drawerEmptyState" class="flex-1 flex flex-col items-center justify-center p-6 text-center">
                         <span class="text-4xl mb-3 opacity-30 select-none">📞</span>
                         <h4 class="text-sm font-bold text-slate-400 mb-1">Call Desk Workspace Empty</h4>
                         <p class="text-[11px] text-slate-600 max-w-[220px]">Select an active account matrix item from the dashboard index to process structural follow-up actions.</p>
                     </div>
 
+                    <!-- Focused Functional Account Active Execution Form Layout -->
                     <div id="drawerActiveState" class="hidden flex-1 flex flex-col overflow-hidden">
                         <header class="p-4 border-b border-slate-800/40 bg-[#090f1b] flex items-center justify-between">
                             <div>
@@ -142,12 +173,34 @@
                             <button onclick="closeWorkspaceDrawer()" class="text-slate-500 hover:text-slate-300 text-lg p-1">✕</button>
                         </header>
 
+                        <!-- Interactive Content Blocks Inside Slideout Panel -->
                         <div class="flex-1 overflow-y-auto p-4 space-y-4">
-                            <div class="bg-[#111c30] rounded-xl border border-slate-800/80 p-3 grid grid-cols-2 gap-2 text-[11px]">
-                                <div><span class="text-slate-500 block">Decision Maker</span><strong id="dContactName" class="text-slate-200 font-semibold">Principal Executive</strong></div>
-                                <div><span class="text-slate-500 block">Phone Target Line</span><strong id="dContactNo" class="text-slate-200 font-semibold font-mono">000000000</strong></div>
+                            
+                            <!-- COMPLETE COLLECTION MATRIX: Shows everything safely -->
+                            <div class="bg-[#111c30] rounded-xl border border-slate-800/80 p-3 grid grid-cols-2 gap-3 text-[11px]">
+                                <div>
+                                    <span class="text-slate-500 block font-semibold uppercase text-[9px] tracking-wider">Decision Maker</span>
+                                    <strong id="dContactName" class="text-slate-200 font-semibold truncate block">N/A</strong>
+                                </div>
+                                <div>
+                                    <span class="text-slate-500 block font-semibold uppercase text-[9px] tracking-wider">Designation Role</span>
+                                    <strong id="dContactDesignation" class="text-slate-200 font-semibold truncate block">N/A</strong>
+                                </div>
+                                <div class="col-span-2 border-t border-slate-800/40 pt-1.5">
+                                    <span class="text-slate-500 block font-semibold uppercase text-[9px] tracking-wider">Phone Target Line</span>
+                                    <strong id="dContactNo" class="text-blue-400 font-mono tracking-wide font-bold block">N/A</strong>
+                                </div>
+                                <div class="col-span-2 border-t border-slate-800/40 pt-1.5">
+                                    <span class="text-slate-500 block font-semibold uppercase text-[9px] tracking-wider">Primary Email Address</span>
+                                    <strong id="dContactEmail" class="text-slate-300 font-medium truncate block">N/A</strong>
+                                </div>
+                                <div class="col-span-2 border-t border-slate-800/40 pt-1.5">
+                                    <span class="text-slate-500 block font-semibold uppercase text-[9px] tracking-wider">Active Campaign Context</span>
+                                    <span id="dScoutedCampaign" class="inline-block mt-1 px-2 py-0.5 rounded font-bold text-[10px] bg-slate-900 border border-slate-800 text-amber-500">N/A</span>
+                                </div>
                             </div>
 
+                            <!-- Execution Transaction Notes Entry Fields -->
                             <div class="space-y-3 border-t border-slate-800/40 pt-3">
                                 <div>
                                     <label class="block text-[11px] text-slate-400 font-semibold uppercase tracking-wider mb-1.5">Action Logging Status Disposition</label>
@@ -163,6 +216,7 @@
                                     <textarea id="drawerCallNotesInput" rows="3" placeholder="Document specific operational variables discussed, context tracking details, resistance objections etc..." class="w-full bg-[#111c30] border border-slate-800 text-xs p-2.5 rounded-lg text-slate-200 focus:outline-none focus:border-blue-500 placeholder-slate-600 font-medium leading-relaxed"></textarea>
                                 </div>
 
+                                <!-- Conditional Deadline Input Selectors -->
                                 <div id="drawerCallFollowUpWrapper" class="transition-all duration-200">
                                     <label class="block text-[11px] text-slate-400 font-semibold uppercase tracking-wider mb-1.5 text-amber-400">📅 Set Next Task Loop Deadline</label>
                                     <input type="date" id="drawerCallFollowUpInput" class="w-full bg-[#111c30] border border-slate-800 text-xs p-2.5 rounded-lg text-slate-200 focus:outline-none focus:border-blue-500 font-mono font-bold">
@@ -178,6 +232,7 @@
                                 </button>
                             </div>
 
+                            <!-- Historical Interaction Tracking Component -->
                             <div class="border-t border-slate-800/40 pt-3">
                                 <h4 class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2.5 flex items-center justify-between">
                                     <span>Historical Log Loops Matrix</span>
@@ -190,11 +245,13 @@
                 </div>
             </div>
 
+            <!-- VIEW B: TASK MANAGEMENT CONTROL CENTER -->
             <div id="tasks-tab" class="tab-content hidden flex-1 flex flex-col overflow-hidden">
                 <header class="p-6 bg-[#0c1424] border-b border-slate-800/40 shrink-0">
                     <h2 class="text-xl font-black text-white tracking-tight mb-1">Task Operational Center</h2>
                     <p class="text-xs text-slate-500">Looping pipeline engine. Complete a task instantly by launching the Call Desk panel below.</p>
                     
+                    <!-- KPI Counter Cards Grid -->
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-5">
                         <div onclick="setUrgencyQuickFilter('OVERDUE')" class="bg-[#111c30] border border-slate-800/80 p-3.5 rounded-xl cursor-pointer hover:border-rose-900/50 group transition flex items-center justify-between shadow-lg">
                             <div><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">🚨 Overdue Tasks</span><strong id="metricOverdue" class="text-xl font-black text-rose-500 font-mono">0</strong></div>
@@ -214,6 +271,7 @@
                         </div>
                     </div>
 
+                    <!-- Scope Filtering Controls Layout Row -->
                     <div class="flex flex-wrap items-center gap-2.5 mt-5 pt-4 border-t border-slate-800/40 text-xs">
                         <div class="bg-[#111c30] p-1 rounded-lg border border-slate-800/60 inline-flex items-center">
                             <button id="taskTabPending" onclick="setTaskViewTab('Pending')" class="px-4 py-1.5 rounded-md text-xs font-bold transition bg-blue-600 text-white shadow-md">Pending Actions</button>
@@ -248,6 +306,7 @@
                 </div>
             </div>
 
+            <!-- VIEW C: DATA ANALYTICS & PERFORMANCE MODELING -->
             <div id="analytics-tab" class="tab-content hidden flex-1 flex flex-col overflow-hidden p-6 space-y-6">
                 <header class="flex flex-wrap items-center justify-between gap-4 bg-[#0c1424] border border-slate-800/60 p-4 rounded-xl shrink-0 shadow-lg">
                     <div>
@@ -268,6 +327,7 @@
                     </div>
                 </header>
 
+                <!-- Analytics High Metrics Widget Row -->
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 shrink-0">
                     <div class="bg-[#0c1424] border border-slate-800/50 p-4 rounded-xl shadow-lg relative overflow-hidden">
                         <span class="text-[10px] text-slate-500 font-black uppercase tracking-wider block mb-1">Pipeline Inflow</span>
@@ -287,6 +347,7 @@
                     </div>
                 </div>
 
+                <!-- Live Visual Analytics Charts Row Container -->
                 <div class="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-0">
                     <div class="lg:col-span-2 bg-[#0c1424] border border-slate-800/50 rounded-xl p-4 flex flex-col shadow-lg shadow-black/10">
                         <h4 class="text-xs font-black uppercase text-slate-400 tracking-wider mb-3">Activity Volume Over Time (Scouts Inflow vs Calls)</h4>
@@ -301,12 +362,12 @@
         </main>
     </div>
 
+    <!-- 3. CONTROLLER SYSTEM INGESTION ENGINE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Configuration Lock parameters
         const ALLOWED_DOMAIN = 'brightchamps.com'; 
 
         const firebaseConfig = {
@@ -318,14 +379,12 @@
             appId: "1:142750401110:web:cd1a0494b731d11a2a71f7"
         };
 
-        // Initialize Engine Dependencies
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
 
-        // Memory Arrays Runtime Scope State
         let localLeadsArray = [];
         let localTasksArray = [];
         let localInteractionLogsArray = [];
@@ -340,7 +399,6 @@
         let unsubscribeTasks = null;
         let unsubscribeLogs = null;
 
-        // Display errors transparently directly within the auth modal interface frame
         function showAuthMessage(text, type = 'error') {
             const msgEl = document.getElementById('authMessage');
             msgEl.innerText = text;
@@ -354,7 +412,6 @@
             msgEl.classList.remove('hidden');
         }
 
-        // Authentication Monitor Core Hook Listener Thread
         onAuthStateChanged(auth, (user) => {
             const authScreen = document.getElementById('authScreen');
             const mainDashboard = document.getElementById('mainDashboard');
@@ -363,7 +420,6 @@
                 const userDomain = (user.email || '').split('@')[1];
                 
                 if (userDomain === ALLOWED_DOMAIN) {
-                    // CLEAR SYSTEM ERRORS AND UNLOCK MASTER VIEWPORT CANVAS
                     document.getElementById('authMessage').classList.add('hidden');
                     authScreen.classList.add('opacity-0', 'pointer-events-none');
                     mainDashboard.classList.remove('hidden');
@@ -373,7 +429,6 @@
                     document.getElementById('userInitial').innerText = (user.displayName || 'A').charAt(0);
                     initializeDataStreams();
                 } else {
-                    // ENFORCE EXPLICIT ENTERPRISE BLACKLIST DOMAIN ROUTE BLOCK
                     showAuthMessage(`Access Denied: You must sign in with an official @${ALLOWED_DOMAIN} email account.`, 'warning');
                     killActiveSnapshots();
                     signOut(auth);
@@ -381,27 +436,18 @@
                     authScreen.classList.remove('opacity-0', 'pointer-events-none');
                 }
             } else {
-                // RESET DOM VIEW ARTIFACT STRINGS ON NULL TOKEN ENGINES DETECTED
                 killActiveSnapshots();
                 mainDashboard.classList.add('hidden');
                 authScreen.classList.remove('opacity-0', 'pointer-events-none');
             }
         });
 
-        // Click wrappers with robust error interceptors
         document.getElementById('signInBtn').onclick = () => {
             showAuthMessage("Opening authentication portal...", "warning");
-            signInWithPopup(auth, provider)
-                .catch(err => {
-                    console.error("Firebase Auth Exception Trapped:", err);
-                    if (err.code === 'auth/operation-not-supported-in-this-environment') {
-                        showAuthMessage("Environment Error: Firebase popups can't be executed via unhosted file:// systems. Verify domain config rules.");
-                    } else if (err.code === 'auth/popup-closed-by-user') {
-                        showAuthMessage("Verification aborted: Authentication pop-up closed before handshake sequence finalized.");
-                    } else {
-                        showAuthMessage(`Error processing transaction: ${err.message}`);
-                    }
-                });
+            signInWithPopup(auth, provider).catch(err => {
+                console.error("Firebase Auth Error:", err);
+                showAuthMessage(`Error processing transaction: ${err.message}`);
+            });
         };
 
         document.getElementById('signOutBtn').onclick = () => signOut(auth);
@@ -412,10 +458,10 @@
             if (unsubscribeLogs) unsubscribeLogs();
         }
 
-        // Live Firestore Sync Streams
         function initializeDataStreams() {
             unsubscribeLeads = onSnapshot(query(collection(db, "leads"), orderBy("timestamp", "desc")), (snapshot) => {
                 localLeadsArray = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
+                calculateVelocityDifferentials();
                 executeDataGridFilters();
                 if(selectedRecordId) loadWorkspaceDrawerRecord(selectedRecordId);
                 if (!document.getElementById('analytics-tab').classList.contains('hidden')) generateChartAnalytics();
@@ -430,6 +476,7 @@
 
             unsubscribeLogs = onSnapshot(query(collection(db, "lead_calls"), orderBy("timestamp", "desc")), (snapshot) => {
                 localInteractionLogsArray = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
+                calculateVelocityDifferentials();
                 if(selectedRecordId) renderLeadSpecificTimeline(selectedRecordId);
                 executeDataGridFilters();
                 if (!document.getElementById('analytics-tab').classList.contains('hidden')) generateChartAnalytics();
@@ -439,6 +486,34 @@
         function getNormalizedTodayString() {
             const d = new Date();
             return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+
+        function getNormalizedYesterdayString() {
+            const d = new Date();
+            d.setDate(d.getDate() - 1);
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+
+        // DYNAMIC VELOCITY TRACKING LOOKUPS
+        function calculateVelocityDifferentials() {
+            const todayStr = getNormalizedTodayString();
+            const ydayStr = getNormalizedYesterdayString();
+            const userEmail = auth.currentUser ? auth.currentUser.email : '';
+
+            // Filter sets to current user only
+            const myLeads = localLeadsArray.filter(l => l.operator === userEmail);
+            const myCalls = localInteractionLogsArray.filter(c => c.agent === userEmail);
+
+            const todayReachouts = myLeads.filter(l => l.dateStr === todayStr).length;
+            const ydayReachouts = myLeads.filter(l => l.dateStr === ydayStr).length;
+
+            const todayCalls = myCalls.filter(c => c.dateString === todayStr).length;
+            const ydayCalls = myCalls.filter(c => c.dateString === ydayStr).length;
+
+            document.getElementById('sidebarTodayReachouts').innerText = todayReachouts;
+            document.getElementById('sidebarYdayReachouts').innerText = ydayReachouts;
+            document.getElementById('sidebarTodayCalls').innerText = todayCalls;
+            document.getElementById('sidebarYdayCalls').innerText = ydayCalls;
         }
 
         function calculateActiveTaskWorkflowCounters() {
@@ -530,7 +605,7 @@
                     } else {
                         const leadLogs = localInteractionLogsArray.filter(log => log.leadId === lead.id);
                         const checkTime = leadLogs.length > 0 ? (leadLogs[0].timestamp?.seconds * 1000 || leadLogs[0].timestamp?.toMillis?.()) : (lead.timestamp?.seconds * 1000 || lead.timestamp?.toMillis?.());
-                        if (checkTime && checkTime < fortyEightHoursAgo) { isStaleDroppedBall = true; staleReason = "No task & >48h idle"; }
+                        if (checkTime && checkTime < fortyEightHoursAgo) { isStaleDroppedBall = true; staleReason = "No future loop task set"; }
                     }
                 }
 
@@ -542,11 +617,11 @@
                     <td class="p-3 pl-4 max-w-xs truncate">
                         <div class="font-bold text-white flex items-center space-x-1.5">
                             <span>${lead.school || 'Unnamed'}</span>
-                            ${isStaleDroppedBall ? `<span class="bg-rose-500/10 border border-rose-500/30 text-rose-400 text-[9px] px-1.5 py-0.5 rounded font-mono animate-pulse" title="${staleReason}">⚠️ STALE</span>` : ''}
+                            ${isStaleDroppedBall ? `<span class="bg-rose-500/10 border border-rose-500/30 text-rose-400 text-[9px] px-1.5 py-0.5 rounded font-mono" title="${staleReason}">⚠️ STALE</span>` : ''}
                         </div>
                     </td>
                     <td class="p-3">
-                        <div class="font-semibold text-slate-300">${lead.scoutedFor}</div>
+                        <div class="font-semibold text-slate-300">${lead.scoutedFor || ' Outreach Program'}</div>
                         <div class="text-[10px] text-slate-500 truncate">👤 ${lead.operator ? lead.operator.split('@')[0] : 'System'}</div>
                     </td>
                     <td class="p-3"><span class="font-mono bg-slate-900/80 text-slate-400 px-2 py-0.5 rounded border border-slate-800">${totalCalls} Calls</span></td>
@@ -561,16 +636,23 @@
             document.getElementById('drawerCallWebinarWrapper').classList.toggle('hidden', status !== 'Webinar Agreed');
         };
 
+        // Complete Workspace Collector Data Pipeline
         function loadWorkspaceDrawerRecord(id) {
             const lead = localLeadsArray.find(l => l.id === id);
             if(!lead) return;
             document.getElementById('drawerEmptyState').classList.add('hidden');
             document.getElementById('drawerActiveState').classList.remove('hidden');
             
+            // Core Identity Fields
             document.getElementById('drawerSchoolId').innerText = lead.uniqueSchoolId || 'BC-SCH-LEGACY';
             document.getElementById('drawerSchoolName').innerText = lead.school;
-            document.getElementById('dContactName').innerText = lead.mainContactName || 'N/A';
-            document.getElementById('dContactNo').innerText = lead.mainContactNo || 'N/A';
+            
+            // Dynamic Workspace Collector Layout Injection Mapping
+            document.getElementById('dContactName').innerText = lead.mainContactName || 'Not Specified';
+            document.getElementById('dContactDesignation').innerText = lead.mainContactDesignation || 'Not Specified';
+            document.getElementById('dContactNo').innerText = lead.mainContactNo || 'Not Specified';
+            document.getElementById('dContactEmail').innerText = lead.mainEmailId || 'No Email Registered';
+            document.getElementById('dScoutedCampaign').innerText = lead.scoutedFor || 'General Outreach Campaign';
 
             document.getElementById('drawerCallNotesInput').value = '';
             document.getElementById('drawerCallFollowUpInput').value = '';
@@ -653,7 +735,7 @@
             filtered.forEach(task => {
                 const tr = document.createElement('tr');
                 tr.className = "border-b border-slate-900/20 hover:bg-slate-900/20 transition font-medium";
-                let urgencyBadge = task.taskStatus === 'Completed' ? `<span class="bg-emerald-950/40 border border-emerald-900/40 text-emerald-400 text-[10px] px-2 py-0.5 rounded font-bold">🟢 Completed</span>` : (task.dueDate < todayStr ? `<span class="bg-rose-950/40 border border-rose-900/40 text-rose-400 text-[10px] px-2 py-0.5 rounded font-bold animate-pulse">🚨 Overdue</span>` : (task.dueDate === todayStr ? `<span class="bg-amber-950/40 border border-amber-900/40 text-amber-400 text-[10px] px-2 py-0.5 rounded font-bold">⚠️ Due Today</span>` : `<span class="bg-sky-950/40 border border-sky-900/40 text-sky-400 text-[10px] px-2 py-0.5 rounded font-bold">📅 Upcoming</span>`));
+                let urgencyBadge = task.taskStatus === 'Completed' ? `<span class="bg-emerald-950/40 border border-emerald-900/40 text-emerald-400 text-[10px] px-2 py-0.5 rounded font-bold">🟢 Completed</span>` : (task.dueDate < todayStr ? `<span class="bg-rose-950/40 border border-rose-900/40 text-rose-400 text-[10px] px-2 py-0.5 rounded font-bold">🚨 Overdue</span>` : (task.dueDate === todayStr ? `<span class="bg-amber-950/40 border border-amber-900/40 text-amber-400 text-[10px] px-2 py-0.5 rounded font-bold">⚠️ Due Today</span>` : `<span class="bg-sky-950/40 border border-sky-900/40 text-sky-400 text-[10px] px-2 py-0.5 rounded font-bold">📅 Upcoming</span>`));
 
                 tr.innerHTML = `
                     <td class="p-3 pl-6 font-bold text-white">
@@ -722,7 +804,6 @@
             const totalAccounts = filteredLeads.length;
             const webinarsAgreedCount = filteredLeads.filter(l => l.status === 'Webinar Agreed').length;
             
-            // Populate Metric Value Slots Safely
             document.getElementById('statTotalAccounts').innerText = totalAccounts;
             document.getElementById('statWebinarsAgreed').innerText = webinarsAgreedCount;
             document.getElementById('statTotalCalls').innerText = filteredCalls.length;
@@ -731,7 +812,6 @@
             const pipeMetrics = { 'New Lead': 0, 'Contacted': 0, 'Webinar Agreed': 0, 'Not Interested': 0 };
             filteredLeads.forEach(l => { if(pipeMetrics[l.status] !== undefined) pipeMetrics[l.status]++; });
 
-            // Render/Refresh Pie Chart Structure
             if (pipelineChartInstance) pipelineChartInstance.destroy();
             const ctxPie = document.getElementById('pipelineChart');
             if(ctxPie) {
@@ -742,7 +822,6 @@
                 });
             }
 
-            // Daywise Timeline Parser Loop Matrix
             const daywiseMap = {};
             const lookbackDays = dateScope === 'ALL' ? 14 : parseInt(dateScope);
             for (let i = lookbackDays - 1; i >= 0; i--) {
@@ -754,7 +833,6 @@
 
             const sortedLabels = Object.keys(daywiseMap).sort();
             
-            // Render/Refresh Activity Line/Bar Chart
             if (activityChartInstance) activityChartInstance.destroy();
             const ctxAct = document.getElementById('activityChart');
             if(ctxAct) {
