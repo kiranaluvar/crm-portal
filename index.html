@@ -9,7 +9,6 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased overflow-hidden selection:bg-blue-500 selection:text-white">
 
-    <!-- CLUSTER PROTECTION AUTHENTICATION GATEWAY -->
     <div id="authScreen" class="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center z-50 p-4 transition-all duration-300">
         <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl max-w-md w-full shadow-2xl text-center">
             <div class="h-12 w-12 rounded-xl bg-blue-600/10 flex items-center justify-center mx-auto mb-4 border border-blue-500/20">
@@ -24,10 +23,8 @@
         </div>
     </div>
 
-    <!-- MAIN CRM CORE WRAPPER CONTAINER -->
     <div id="mainDashboard" class="hidden flex h-screen w-screen overflow-hidden">
         
-        <!-- SIDE NAVIGATION BAR PANEL -->
         <aside class="w-64 bg-slate-950 border-r border-slate-800 p-5 flex flex-col justify-between h-full flex-shrink-0 z-40">
             <div>
                 <div class="flex items-center space-x-2 mb-6">
@@ -70,15 +67,11 @@
             </div>
         </aside>
 
-        <!-- DASHBOARD CONTAINER PANEL -->
         <main class="flex-1 bg-slate-900 h-full overflow-hidden relative flex flex-col">
             
-            <!-- ACCOUNTS DASHBOARD TAB CONSOLE -->
             <div id="log-tab" class="tab-content flex-1 flex overflow-hidden h-full">
-                <!-- LEFT SIDEBAR SECTION WORKSPACE -->
                 <div class="flex-1 flex flex-col p-6 overflow-y-auto space-y-4 h-full">
                     
-                    <!-- DYNAMIC DATA CREATION LAYER -->
                     <div class="bg-slate-950 border border-slate-800 p-5 rounded-xl shadow-lg">
                         <details class="group">
                             <summary class="list-none flex items-center justify-between cursor-pointer select-none text-xs font-bold text-slate-400 uppercase tracking-widest">
@@ -124,19 +117,29 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-slate-800/60 items-end">
-                                    <div class="md:col-span-2"></div>
-                                    <div class="md:col-span-3 pt-2">
-                                        <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold p-2.5 rounded-lg transition text-xs shadow-md shadow-blue-600/10 active:scale-[0.98]">
-                                            Commit Account Record
-                                        </button>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Secondary Phone (Optional)</label>
+                                        <input type="text" id="contactNo2" placeholder="Backup phone" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition">
                                     </div>
+                                    <div>
+                                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Secondary Email (Optional)</label>
+                                        <input type="email" id="emailId2" placeholder="backup@school.edu" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Referral Links (Optional)</label>
+                                        <input type="url" id="anyRelatedLinks" placeholder="https://..." class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition">
+                                    </div>
+                                </div>
+                                <div class="pt-2">
+                                    <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold p-2.5 rounded-lg transition text-xs shadow-md shadow-blue-600/10 active:scale-[0.98]">
+                                        Commit Account Record
+                                    </button>
                                 </div>
                             </form>
                         </details>
                     </div>
 
-                    <!-- CONTROL UTILITY BAR PANEL -->
                     <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex flex-wrap gap-2 items-center justify-between">
                         <div class="flex flex-wrap gap-2 flex-1 max-w-5xl">
                             <input type="text" id="filterSearch" oninput="executeDataGridFilters()" placeholder="🔍 Quick Find by Name..." class="bg-slate-900 border border-slate-800 text-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500 w-48 flex-shrink-0">
@@ -164,7 +167,6 @@
                         </button>
                     </div>
 
-                    <!-- CENTRAL DATA GRID VIEW TABLE -->
                     <div class="bg-slate-950 border border-slate-800 rounded-xl shadow-xl overflow-hidden flex-1 min-h-[300px]">
                         <div class="h-full overflow-y-auto">
                             <table class="w-full text-left border-collapse table-fixed">
@@ -186,7 +188,6 @@
                     </div>
                 </div>
 
-                <!-- CONTEXTUAL CONSOLE SLIDE DRAWER (RIGHT PANEL AS PER IMAGE_A6119C.JPG) -->
                 <div id="contextDrawer" class="w-[420px] bg-slate-950 border-l border-slate-800 h-full flex flex-col transform translate-x-0 transition-transform duration-200 shadow-2xl flex-shrink-0">
                     <div id="drawerEmptyState" class="flex-1 flex flex-col items-center justify-center p-6 text-center text-slate-500">
                         <span class="text-3xl mb-2">👈</span>
@@ -194,7 +195,6 @@
                     </div>
                     
                     <div id="drawerActiveState" class="hidden flex-1 flex flex-col h-full overflow-hidden">
-                        <!-- Drawer Header -->
                         <div class="p-4 border-b border-slate-800 bg-slate-900/40 flex items-center justify-between">
                             <div>
                                 <span class="text-[9px] text-blue-400 font-mono tracking-wider uppercase" id="drawerSchoolId">BC-SCH-UNKNOWN</span>
@@ -204,7 +204,6 @@
                         </div>
                         
                         <div class="flex-1 overflow-y-auto p-4 space-y-4">
-                            <!-- METADATA METRIX CAPTURE -->
                             <div class="bg-slate-900/30 border border-slate-800/60 p-3 rounded-lg">
                                 <div class="grid grid-cols-2 gap-2 text-[11px]">
                                     <div><span class="text-slate-500 block">POC Name:</span><span class="text-white font-medium truncate block" id="dContactName">N/A</span></div>
@@ -215,14 +214,13 @@
                                 </div>
                             </div>
 
-                            <!-- LOCKED GATEWAY: LOG CALL ACTIONS TO CHANGE TIER -->
                             <div class="bg-slate-900 border border-slate-800/80 p-4 rounded-xl space-y-3 shadow-inner">
                                 <div class="flex items-center space-x-1.5 text-xs font-bold text-slate-300 uppercase tracking-wider">
-                                    <span>📞</span> <span>Log New Call & Advance Stage</span>
+                                    <span>📞</span> <span>Log Call Outcome to Advance Stage</span>
                                 </div>
                                 
                                 <div>
-                                    <label class="block text-[10px] text-slate-400 font-medium mb-1">Target Next Pipeline Stage *</label>
+                                    <label class="block text-[10px] text-slate-400 font-medium mb-1">Updated Pipeline Stage *</label>
                                     <select id="drawerCallStatusSelect" onchange="evaluateDrawerCallFields(this.value)" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-white focus:outline-none focus:border-blue-500">
                                         <option value="Contacted">Contacted</option>
                                         <option value="Webinar Agreed">Webinar Agreed</option>
@@ -236,26 +234,24 @@
                                 </div>
 
                                 <div id="drawerCallFollowUpWrapper" class="space-y-1">
-                                    <label class="block text-[10px] font-bold text-amber-400 uppercase tracking-wider mb-1">Required Next Call Loop Date *</label>
+                                    <label class="block text-[10px] font-bold text-amber-400 uppercase tracking-wider mb-1">Schedule Next Follow-Up Loop *</label>
                                     <input type="date" id="drawerCallFollowUpInput" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-white focus:outline-none focus:border-blue-500">
                                 </div>
 
                                 <div>
-                                    <label class="block text-[10px] text-slate-400 font-medium mb-1">Call Execution Interaction Notes *</label>
-                                    <textarea id="drawerCallNotesInput" rows="2" placeholder="Spoke with Principal. Discussed webinar scope..." class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-white focus:outline-none focus:border-blue-500 resize-none"></textarea>
+                                    <label class="block text-[10px] text-slate-400 font-medium mb-1">Call Notes / Discussion Summary *</label>
+                                    <textarea id="drawerCallNotesInput" rows="2" placeholder="Enter full notes here. Stage will not submit without written verification." class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-white focus:outline-none focus:border-blue-500 resize-none"></textarea>
                                 </div>
 
                                 <button id="drawerLogCallBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded text-xs transition shadow-md shadow-blue-600/15">
-                                    Commit Call & Update Stage
+                                    Log Call & Commit Stage
                                 </button>
                             </div>
 
-                            <!-- UNIFIED DEDICATED LOG TRAIL SECTION FOR THIS SPECIFIC LEAD -->
                             <div class="space-y-2 flex-1 flex flex-col">
-                                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-1">Call History Timeline Log</h4>
+                                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-1">Call Logs & Activity History</h4>
                                 <div id="leadSpecificLogsContainer" class="space-y-2 max-h-56 overflow-y-auto pr-1">
-                                    <!-- Dynamic historical streams fill here -->
-                                </div>
+                                    </div>
                             </div>
 
                         </div>
@@ -263,11 +259,10 @@
                 </div>
             </div>
 
-            <!-- TASK CENTER TAB CONTAINER -->
             <div id="tasks-tab" class="tab-content hidden flex-1 flex flex-col p-6 overflow-hidden h-full space-y-4">
                 <div>
                     <h2 class="text-base font-bold text-white">Task Operational Center</h2>
-                    <p class="text-slate-400 text-xs">Looping workflow scheduler panel. Actions remain unified to ongoing pipeline calls.</p>
+                    <p class="text-slate-400 text-xs">Looping workflow panel. Completing a task requires routing into the main console workspace to document the active call metrics.</p>
                 </div>
                 
                 <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex flex-wrap gap-3 items-center">
@@ -298,7 +293,7 @@
                             </thead>
                             <tbody id="taskTableBody" class="text-xs divide-y divide-slate-800/60 font-medium">
                                 <tr>
-                                    <td colspan="4" class="p-8 text-center text-slate-500">Awaiting data matrix loads...</td>
+                                    <td colspan="4" class="p-8 text-center text-slate-500">Awaiting database loads...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -306,7 +301,6 @@
                 </div>
             </div>
 
-            <!-- ANALYTICS TAB CONTAINER -->
             <div id="analytics-tab" class="tab-content hidden flex-1 flex flex-col p-6 overflow-y-auto space-y-6 h-full">
                 <div class="bg-slate-950 border border-slate-800 p-5 rounded-xl flex flex-col h-80 max-w-2xl mx-auto w-full">
                     <h3 class="text-xs font-bold text-slate-300 mb-3 uppercase text-center">Pipeline Volume Weight</h3>
@@ -317,7 +311,6 @@
         </main>
     </div>
 
-    <!-- APP CONTROLLER SYSTEM -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -431,7 +424,7 @@
                 tr.innerHTML = `
                     <td class="p-3 pl-4 max-w-xs truncate"><div class="font-bold text-white">${lead.school || 'Unnamed'}</div><div class="text-[10px] text-slate-500 font-mono">${lead.mainContactName || 'N/A'}</div></td>
                     <td class="p-3"><div class="font-semibold text-slate-300">${lead.scoutedFor}</div><div class="text-[10px] text-slate-500">👤 ${lead.operator.split('@')[0]}</div></td>
-                    <td class="p-3"><span class="font-mono bg-slate-900 text-slate-300 px-2 py-0.5 rounded border border-slate-800">${totalCalls} Calls</span></td>
+                    <td class="p-3"><span class="font-mono bg-slate-900 text-slate-300 px-2 py-0.5 rounded border border-slate-800">${totalCalls} Calls Logged</span></td>
                     <td class="p-3 pr-4"><span class="px-2 py-0.5 text-[10px] font-bold rounded border ${lead.status === 'Not Interested' ? 'bg-slate-900 border-slate-800 text-slate-500' : 'bg-blue-950/40 text-blue-400 border-blue-900/30'}">${lead.status}</span></td>
                 `;
                 tbody.appendChild(tr);
@@ -456,12 +449,10 @@
             document.getElementById('dContactNo').innerText = lead.mainContactNo;
             document.getElementById('dCurrentStageBadge').innerText = lead.status;
 
-            // Clear inputs
+            // Reset interaction elements
             document.getElementById('drawerCallNotesInput').value = '';
             document.getElementById('drawerCallFollowUpInput').value = '';
             document.getElementById('drawerCallWebinarInput').value = '';
-            
-            // Set starting state for selection
             document.getElementById('drawerCallStatusSelect').value = "Contacted";
             evaluateDrawerCallFields("Contacted");
 
@@ -473,11 +464,11 @@
                 const followUpDate = document.getElementById('drawerCallFollowUpInput').value;
                 const webinarDate = document.getElementById('drawerCallWebinarInput').value;
 
-                if (!notes) return alert("Validation Guardrail: You cannot process a pipeline shift without logging interaction call notes.");
-                if (nextStage !== 'Not Interested' && !followUpDate) return alert("Validation Guardrail: Please set a future follow-up loop date.");
-                if (nextStage === 'Webinar Agreed' && !webinarDate) return alert("Validation Guardrail: Webinar target parameters require a confirmed execution date.");
+                if (!notes) return alert("System Guardrail: Interactivity requires documentation. Please provide Call Notes.");
+                if (nextStage !== 'Not Interested' && !followUpDate) return alert("System Guardrail: Ongoing workflows mandate choosing a future Loop Date.");
+                if (nextStage === 'Webinar Agreed' && !webinarDate) return alert("System Guardrail: Webinar targets require a selected execution day.");
 
-                // 1. Write the interaction log connection directly
+                // 1. Log call entry directly connected to the focused lead
                 addDoc(collection(db, "lead_calls"), {
                     leadId: id,
                     agent: auth.currentUser.email,
@@ -486,19 +477,19 @@
                     timestamp: serverTimestamp(),
                     dateString: new Date().toLocaleDateString()
                 }).then(() => {
-                    // 2. Update the core record's current tier status
+                    // 2. Adjust core pipeline tier record
                     return updateDoc(doc(db, "leads", id), {
                         status: nextStage,
                         webinarDate: nextStage === 'Webinar Agreed' ? webinarDate : '',
                         timestamp: serverTimestamp()
                     });
                 }).then(() => {
-                    // 3. Close out previous open pending tasks
+                    // 3. Close open operational tasks linked to this segment automatically
                     localTasksArray.filter(t => t.leadId === id && t.taskStatus === 'Pending').forEach(t => {
                         updateDoc(doc(db, "crm_tasks", t.id), { taskStatus: 'Completed' });
                     });
 
-                    // 4. If the track remains active, establish the continuous communication loop task
+                    // 4. Loop workflow generator: Spin up subsequent task unless the account drops into terminal "Not Interested" state
                     if (nextStage !== 'Not Interested') {
                         addDoc(collection(db, "crm_tasks"), {
                             leadId: id,
@@ -509,7 +500,8 @@
                             operator: auth.currentUser.email
                         });
                     }
-                }).catch(err => alert("Operational writing error: " + err.message));
+                    alert(`Call logged successfully! Task closed and stage advanced to [${nextStage}].`);
+                }).catch(err => alert("Operational write failure: " + err.message));
             };
         }
 
@@ -600,6 +592,9 @@
                 mainContactName: document.getElementById('mainContactName').value.trim(),
                 mainContactDesignation: document.getElementById('mainContactDesignation').value.trim(),
                 scoutedFor: document.getElementById('scoutedFor').value,
+                contactNo2: document.getElementById('contactNo2').value.trim(),
+                emailId2: document.getElementById('emailId2').value.trim(),
+                anyRelatedLinks: document.getElementById('anyRelatedLinks').value.trim(),
                 status: "New Lead", operator: auth.currentUser.email, addedDateTimeString: new Date().toLocaleString(), timestamp: serverTimestamp()
             };
 
