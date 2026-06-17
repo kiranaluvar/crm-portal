@@ -1,1043 +1,1020 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webinar Ops CRM Portal</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .font-code { font-family: 'JetBrains Mono', monospace; }
-        /* Smooth custom scrollbar for enterprise feel */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #030712; }
-        ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #374151; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Webinar Ops — Partnerships CRM</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.5.0/dist/tabler-icons.min.css">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        canvas:  '#0a0f1c',
+        surface: '#0f1626',
+        raised:  '#141d30',
+        line:    '#1f2a40',
+        line2:   '#2a3851',
+        ink:     '#e8edf6',
+        sub:     '#9aa7bd',
+        faint:   '#64718a',
+        brand:   '#5b8def',
+        brandhi: '#76a3f6',
+        good:    '#34d399',
+        warn:    '#fbbf24',
+        bad:     '#f87171',
+      }
+    }
+  }
+}
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #1f2a40; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #2a3851; }
+  .nav-item.active { background: #1c2740; color: #e8edf6; }
+  .nav-item.active .ti { color: #76a3f6; }
+  select option { background: #141d30; }
+  details > summary { list-style: none; }
+  details > summary::-webkit-details-marker { display: none; }
+  input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.7); cursor: pointer; }
+  .fade-in { animation: fade .25s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+</style>
 </head>
-<body class="bg-[#030712] text-slate-200 min-h-screen select-none antialiased">
+<body class="bg-canvas text-ink min-h-screen antialiased">
 
-    <div id="authScreen" class="fixed inset-0 bg-[#030712]/95 backdrop-blur-md flex items-center justify-center z-50 p-4 transition-opacity duration-500">
-        <div class="bg-[#090d16] border border-slate-800/80 p-8 rounded-2xl w-full max-w-md shadow-2xl relative">
-            <div class="w-12 h-12 bg-indigo-600/10 border border-indigo-500/30 text-indigo-400 rounded-xl flex items-center justify-center mx-auto mb-5 text-xl">
-                🔒
-            </div>
-            <h1 class="text-xl font-bold text-white tracking-tight text-center mb-1">Webinar Ops CRM Portal</h1>
-            <p class="text-xs text-slate-400 text-center mb-6 font-medium">Internal platform access. Authentication required.</p>
-            
-            <div id="authMessage" class="hidden p-3 rounded-xl mb-5 text-left text-xs font-semibold border transition-all duration-300"></div>
-            
-            <button id="signInBtn" class="w-full bg-indigo-600 hover:bg-indigo-500 active:scale-[0.99] text-white py-3 rounded-xl font-semibold tracking-wide transition shadow-lg shadow-indigo-600/10 text-xs">
-                Sign In with BrightChamps Account
-            </button>
+<!-- ===== AUTH GATE ===== -->
+<div id="authScreen" class="fixed inset-0 bg-canvas flex items-center justify-center z-50 p-4 transition-opacity duration-500">
+  <div class="w-full max-w-sm">
+    <div class="bg-surface border border-line rounded-2xl p-8 shadow-2xl">
+      <div class="w-11 h-11 rounded-xl bg-brand/10 border border-brand/25 text-brandhi flex items-center justify-center mb-5 text-xl">
+        <i class="ti ti-broadcast"></i>
+      </div>
+      <h1 class="text-lg font-semibold tracking-tight">Webinar Ops</h1>
+      <p class="text-sm text-sub mt-1 mb-6">Partnerships CRM. Sign in with your BrightChamps account to continue.</p>
+      <div id="authMessage" class="hidden text-sm font-medium rounded-lg px-3 py-2.5 mb-4 border"></div>
+      <button id="signInBtn" class="w-full bg-brand hover:bg-brandhi active:scale-[.99] text-white py-2.5 rounded-lg font-medium text-sm transition flex items-center justify-center gap-2">
+        <i class="ti ti-brand-google"></i> Sign in
+      </button>
+    </div>
+    <p class="text-center text-xs text-faint mt-4">Access limited to @brightchamps.com</p>
+  </div>
+</div>
+
+<!-- ===== APP ===== -->
+<div id="mainDashboard" class="hidden flex h-screen overflow-hidden">
+
+  <!-- Rail -->
+  <aside class="w-60 bg-surface border-r border-line flex flex-col shrink-0">
+    <div class="flex items-center gap-2.5 px-5 h-16 border-b border-line">
+      <div class="w-7 h-7 rounded-lg bg-brand/15 border border-brand/25 text-brandhi flex items-center justify-center text-sm"><i class="ti ti-broadcast"></i></div>
+      <div class="leading-tight">
+        <div class="text-sm font-semibold">Webinar Ops</div>
+        <div class="text-[11px] text-faint">Partnerships</div>
+      </div>
+    </div>
+
+    <nav class="p-3 space-y-1">
+      <button id="btn-log-tab" onclick="switchTab('log-tab')" class="nav-item active w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-sub transition">
+        <i class="ti ti-layout-grid text-base"></i> Accounts
+      </button>
+      <button id="btn-tasks-tab" onclick="switchTab('tasks-tab')" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-sub transition">
+        <i class="ti ti-checklist text-base"></i> Tasks
+        <span id="sidebarTaskCount" class="ml-auto bg-line text-[11px] mono px-2 py-0.5 rounded-full text-sub">0</span>
+      </button>
+      <button id="btn-analytics-tab" onclick="switchTab('analytics-tab')" class="nav-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-sub transition">
+        <i class="ti ti-chart-histogram text-base"></i> Insights
+      </button>
+    </nav>
+
+    <div class="px-3 mt-2">
+      <div class="bg-raised border border-line rounded-xl p-3">
+        <div class="text-[11px] text-faint font-medium mb-2.5">Your day</div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <div class="text-[11px] text-sub">New schools</div>
+            <div class="text-lg font-semibold mono text-brandhi" id="sidebarTodayReachouts">0</div>
+            <div class="text-[10px] text-faint">yest <span id="sidebarYdayReachouts" class="mono">0</span></div>
+          </div>
+          <div>
+            <div class="text-[11px] text-sub">Calls logged</div>
+            <div class="text-lg font-semibold mono text-warn" id="sidebarTodayCalls">0</div>
+            <div class="text-[10px] text-faint">yest <span id="sidebarYdayCalls" class="mono">0</span></div>
+          </div>
         </div>
+      </div>
     </div>
 
-    <div id="mainDashboard" class="hidden flex h-screen overflow-hidden">
-        
-        <aside class="w-64 bg-[#090d16] border-r border-slate-800/80 p-4 flex flex-col justify-between shrink-0">
-            <div>
-                <div class="flex items-center space-x-3 px-2 py-3 mb-6">
-                    <div class="w-7 h-7 bg-indigo-600/20 border border-indigo-500/30 rounded-lg flex items-center justify-center text-xs">⚡</div>
-                    <div>
-                        <h2 class="text-xs font-bold tracking-wider text-white uppercase">Webinar Ops</h2>
-                        <span class="text-[9px] font-semibold text-emerald-400 font-code tracking-wider block mt-0.5">CLUSTER ACTIVE</span>
-                    </div>
-                </div>
+    <div class="mt-auto p-3 border-t border-line">
+      <div class="flex items-center gap-3 px-1 mb-3">
+        <div id="userInitial" class="w-9 h-9 rounded-full bg-brand/15 border border-brand/25 flex items-center justify-center font-semibold text-sm text-brandhi">U</div>
+        <div class="min-w-0 leading-tight">
+          <div id="userNameProfile" class="text-sm font-medium truncate">Agent</div>
+          <div id="userEmailProfile" class="text-[11px] text-faint truncate">user@domain.com</div>
+        </div>
+      </div>
+      <button id="signOutBtn" class="w-full flex items-center justify-center gap-2 text-xs font-medium text-sub hover:text-bad hover:bg-bad/5 border border-line hover:border-bad/30 py-2 rounded-lg transition">
+        <i class="ti ti-logout"></i> Sign out
+      </button>
+    </div>
+  </aside>
 
-                <div class="mb-6 p-3 rounded-xl bg-slate-900/40 border border-slate-800/60 space-y-3">
-                    <div class="text-[9px] font-bold tracking-wider text-slate-400 uppercase">Live Metrics Matrix</div>
-                    <div class="grid grid-cols-2 gap-2 text-center">
-                        <div class="bg-[#030712]/60 p-2 rounded-lg border border-slate-800/40">
-                            <span class="text-[9px] block text-slate-400 font-medium uppercase">Today Inflow</span>
-                            <strong id="sidebarTodayReachouts" class="text-sm font-bold text-indigo-400 font-code">0</strong>
-                            <span class="text-[8px] block text-slate-500 mt-0.5">Ytd: <span id="sidebarYdayReachouts" class="font-code">0</span></span>
-                        </div>
-                        <div class="bg-[#030712]/60 p-2 rounded-lg border border-slate-800/40">
-                            <span class="text-[9px] block text-slate-400 font-medium uppercase">Today Calls</span>
-                            <strong id="sidebarTodayCalls" class="text-sm font-bold text-amber-500 font-code">0</strong>
-                            <span class="text-[8px] block text-slate-500 mt-0.5">Ytd: <span id="sidebarYdayCalls" class="font-code">0</span></span>
-                        </div>
-                    </div>
-                </div>
+  <!-- Main -->
+  <main class="flex-1 bg-canvas flex flex-col overflow-hidden">
 
-                <nav class="space-y-1">
-                    <button id="btn-log-tab" onclick="switchTab('log-tab')" class="w-full text-left px-3 py-2 rounded-lg bg-indigo-600 text-white font-medium text-xs transition flex items-center space-x-3">
-                        <span class="text-sm">📋</span> <span>Accounts Console</span>
-                    </button>
-                    <button id="btn-tasks-tab" onclick="switchTab('tasks-tab')" class="w-full text-left px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-900/60 hover:text-slate-200 font-medium text-xs transition flex items-center space-x-3">
-                        <span class="text-sm">📅</span> <span>Task Center Loop</span>
-                        <span id="sidebarTaskCount" class="ml-auto bg-slate-800 text-[10px] px-1.5 py-0.5 rounded text-slate-300 font-code">0</span>
-                    </button>
-                    <button id="btn-analytics-tab" onclick="switchTab('analytics-tab')" class="w-full text-left px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-900/60 hover:text-slate-200 font-medium text-xs transition flex items-center space-x-3">
-                        <span class="text-sm">📊</span> <span>Data Modeling & Insights</span>
-                    </button>
-                </nav>
+    <!-- ===== ACCOUNTS ===== -->
+    <div id="log-tab" class="tab-content flex-1 flex flex-col overflow-hidden">
+      <header class="h-16 px-6 border-b border-line flex items-center justify-between shrink-0">
+        <div>
+          <h2 class="text-base font-semibold tracking-tight">Accounts</h2>
+          <p class="text-xs text-faint">Schools in your outreach pipeline</p>
+        </div>
+        <details class="relative">
+          <summary class="flex items-center gap-2 bg-brand hover:bg-brandhi text-white text-sm font-medium px-3.5 py-2 rounded-lg cursor-pointer transition">
+            <i class="ti ti-plus"></i> New school
+          </summary>
+          <form id="outreachForm" onsubmit="handleFormSubmit(event)" class="absolute right-0 mt-2 w-[27rem] max-h-[80vh] overflow-y-auto bg-raised border border-line2 rounded-xl shadow-2xl p-5 z-30 space-y-4 text-sm text-left fade-in">
+            <div class="flex items-center justify-between pb-2 border-b border-line">
+              <h3 class="font-semibold">Add a school</h3>
+              <button type="button" onclick="this.closest('details').open=false" class="text-faint hover:text-ink"><i class="ti ti-x"></i></button>
             </div>
 
-            <div class="border-t border-slate-800/60 pt-4 px-1">
-                <div class="flex items-center space-x-3 mb-3">
-                    <div id="userInitial" class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-xs text-indigo-400 font-code">U</div>
-                    <div class="truncate">
-                        <div id="userNameProfile" class="text-xs font-semibold text-slate-200 truncate">Agent User</div>
-                        <div id="userEmailProfile" class="text-[10px] text-slate-500 truncate font-code">user@domain.com</div>
-                    </div>
+            <div class="space-y-3">
+              <div class="text-[11px] font-semibold text-brandhi uppercase tracking-wide">School</div>
+              <div>
+                <label class="text-sub text-xs block mb-1">School name *</label>
+                <input type="text" id="schoolName" required class="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:outline-none focus:border-brand transition">
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="text-sub text-xs block mb-1">Type</label>
+                  <select id="schoolType" class="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:outline-none focus:border-brand cursor-pointer">
+                    <option value="Day">Day</option><option value="Boarding">Boarding</option><option value="D+B SCHOOL">Day + Boarding</option>
+                  </select>
                 </div>
-                <button id="signOutBtn" class="w-full bg-[#030712] hover:bg-rose-950/20 hover:text-rose-400 hover:border-rose-900/40 border border-slate-800/80 text-slate-400 text-[10px] font-semibold py-2 rounded-lg transition tracking-wide uppercase font-code">
-                    Disconnect Session
+                <div>
+                  <label class="text-sub text-xs block mb-1">Curriculum</label>
+                  <select id="curriculum" class="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:outline-none focus:border-brand cursor-pointer">
+                    <option value="CBSE">CBSE</option><option value="ICSE">ICSE</option><option value="IGCSE">IGCSE</option><option value="IB">IB</option><option value="State Board">State Board</option><option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="text-sub text-xs block mb-1">Annual fee</label>
+                  <input type="text" id="schoolFees" placeholder="e.g. 6000 or 1.2 lakh" oninput="autoCalculateFeeRange(this.value)" class="w-full bg-surface border border-line rounded-lg px-3 py-2 mono focus:outline-none focus:border-brand">
+                </div>
+                <div>
+                  <label class="text-sub text-xs block mb-1">Fee tier</label>
+                  <select id="schoolFeesRange" class="w-full bg-surface border border-line rounded-lg px-3 py-2 text-sub mono text-xs focus:outline-none pointer-events-none">
+                    <option value="">Enter a fee…</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-3 pt-3 border-t border-line">
+              <div class="text-[11px] font-semibold text-warn uppercase tracking-wide">Main contact</div>
+              <div class="grid grid-cols-2 gap-2">
+                <div><label class="text-sub text-xs block mb-1">Phone *</label><input type="text" id="mainContactNo" required class="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:outline-none focus:border-brand"></div>
+                <div><label class="text-sub text-xs block mb-1">Email</label><input type="email" id="mainEmailId" class="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:outline-none focus:border-brand"></div>
+              </div>
+            </div>
+
+            <div class="space-y-3 pt-3 border-t border-line">
+              <div class="text-[11px] font-semibold text-good uppercase tracking-wide">Location</div>
+              <div><label class="text-sub text-xs block mb-1">Address</label><input type="text" id="address" class="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:outline-none focus:border-brand"></div>
+              <div class="grid grid-cols-2 gap-2">
+                <div><label class="text-sub text-xs block mb-1">Pin code</label><input type="text" id="pinCode" class="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:outline-none focus:border-brand"></div>
+                <div><label class="text-sub text-xs block mb-1">City</label><input type="text" id="city" class="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:outline-none focus:border-brand"></div>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div><label class="text-sub text-xs block mb-1">State</label><input type="text" id="state" class="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:outline-none focus:border-brand"></div>
+                <div><label class="text-sub text-xs block mb-1">Country</label><input type="text" id="country" value="India" class="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:outline-none focus:border-brand"></div>
+              </div>
+            </div>
+
+            <div class="space-y-3 pt-3 border-t border-line">
+              <div class="text-[11px] font-semibold text-brandhi uppercase tracking-wide">Contact 1</div>
+              <div class="grid grid-cols-2 gap-2">
+                <div><label class="text-sub text-xs block mb-1">Name</label><input type="text" id="poc1Name" class="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:outline-none focus:border-brand"></div>
+                <div><label class="text-sub text-xs block mb-1">Role</label><input type="text" id="poc1Designation" placeholder="e.g. Principal" class="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:outline-none focus:border-brand"></div>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div><label class="text-sub text-xs block mb-1">Phone</label><input type="text" id="poc1Number" class="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:outline-none focus:border-brand"></div>
+                <div><label class="text-sub text-xs block mb-1">Email</label><input type="email" id="poc1Email" class="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:outline-none focus:border-brand"></div>
+              </div>
+            </div>
+
+            <div class="space-y-3 pt-3 border-t border-line">
+              <div class="text-[11px] font-semibold text-brandhi uppercase tracking-wide">Contact 2</div>
+              <div class="grid grid-cols-2 gap-2">
+                <div><label class="text-sub text-xs block mb-1">Name</label><input type="text" id="poc2Name" class="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:outline-none focus:border-brand"></div>
+                <div><label class="text-sub text-xs block mb-1">Role</label><input type="text" id="poc2Designation" placeholder="e.g. Coordinator" class="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:outline-none focus:border-brand"></div>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div><label class="text-sub text-xs block mb-1">Phone</label><input type="text" id="poc2Number" class="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:outline-none focus:border-brand"></div>
+                <div><label class="text-sub text-xs block mb-1">Email</label><input type="email" id="poc2Email" class="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:outline-none focus:border-brand"></div>
+              </div>
+            </div>
+
+            <div class="pt-3 border-t border-line">
+              <label class="text-sub text-xs block mb-1">Campaign</label>
+              <select id="scoutedFor" class="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:outline-none focus:border-brand cursor-pointer">
+                <option value="Free Coding Webinar">Free coding webinar</option>
+                <option value="Math Olympiad Bootcamp">Math olympiad bootcamp</option>
+                <option value="AI Literacy Seminar">AI literacy seminar</option>
+              </select>
+            </div>
+
+            <div class="flex gap-2 pt-3 border-t border-line">
+              <button type="submit" id="submitBtn" class="flex-1 bg-brand hover:bg-brandhi text-white font-medium py-2 rounded-lg transition">Save school</button>
+              <button type="button" onclick="this.closest('details').open=false" class="px-4 py-2 rounded-lg border border-line text-sub hover:bg-surface transition">Cancel</button>
+            </div>
+          </form>
+        </details>
+      </header>
+
+      <!-- KPI strip -->
+      <div class="px-6 py-4 grid grid-cols-4 gap-3 shrink-0">
+        <div class="bg-surface border border-line rounded-xl px-4 py-3">
+          <div class="text-xs text-sub">Active pipeline</div>
+          <div class="text-2xl font-semibold mono mt-0.5" id="kpiActive">0</div>
+        </div>
+        <div class="bg-surface border border-line rounded-xl px-4 py-3">
+          <div class="text-xs text-sub">Webinars agreed</div>
+          <div class="text-2xl font-semibold mono mt-0.5 text-good" id="kpiAgreed">0</div>
+        </div>
+        <div class="bg-surface border border-line rounded-xl px-4 py-3">
+          <div class="text-xs text-sub">Due today</div>
+          <div class="text-2xl font-semibold mono mt-0.5 text-warn" id="kpiToday">0</div>
+        </div>
+        <div class="bg-surface border border-line rounded-xl px-4 py-3">
+          <div class="text-xs text-sub">Overdue</div>
+          <div class="text-2xl font-semibold mono mt-0.5 text-bad" id="kpiOverdue">0</div>
+        </div>
+      </div>
+
+      <div class="flex-1 flex overflow-hidden px-6 pb-6 gap-4 min-h-0">
+
+        <!-- Grid -->
+        <section class="flex-1 min-w-0 bg-surface border border-line rounded-xl flex flex-col overflow-hidden">
+          <div class="p-3 border-b border-line flex flex-wrap items-center gap-2">
+            <div class="flex items-center gap-2 flex-1 min-w-[240px] bg-canvas border border-line rounded-lg px-3 focus-within:border-brand transition">
+              <i class="ti ti-search text-faint"></i>
+              <input id="filterSearch" oninput="executeDataGridFilters()" type="text" placeholder="Search schools" class="bg-transparent py-2 text-sm w-full focus:outline-none placeholder-faint">
+            </div>
+            <select id="filterStage" onchange="executeDataGridFilters()" class="bg-canvas border border-line rounded-lg px-3 py-2 text-sm text-sub cursor-pointer focus:outline-none focus:border-brand">
+              <option value="">All stages</option>
+              <option value="New Lead">New lead</option>
+              <option value="Contacted">Contacted</option>
+              <option value="Webinar Agreed">Webinar agreed</option>
+              <option value="Not Interested">Not interested</option>
+            </select>
+            <select id="filterAccountOwner" onchange="executeDataGridFilters()" class="bg-canvas border border-line rounded-lg px-3 py-2 text-sm text-sub cursor-pointer focus:outline-none focus:border-brand">
+              <option value="ALL">All owners</option>
+              <option value="MINE">My accounts</option>
+            </select>
+          </div>
+
+          <div class="flex-1 overflow-y-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="sticky top-0 bg-surface z-10">
+                <tr class="text-faint text-[11px] font-medium uppercase tracking-wide border-b border-line">
+                  <th class="py-2.5 px-4">School</th>
+                  <th class="py-2.5 px-3">Campaign</th>
+                  <th class="py-2.5 px-3">Calls</th>
+                  <th class="py-2.5 px-4">Stage</th>
+                </tr>
+              </thead>
+              <tbody id="dataTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Drawer -->
+        <aside class="w-[22rem] shrink-0 bg-surface border border-line rounded-xl flex flex-col overflow-hidden">
+          <div id="drawerEmptyState" class="flex-1 flex flex-col items-center justify-center text-center p-8">
+            <div class="w-12 h-12 rounded-xl bg-raised border border-line flex items-center justify-center text-faint text-xl mb-3"><i class="ti ti-click"></i></div>
+            <h4 class="text-sm font-medium text-sub">Pick a school</h4>
+            <p class="text-xs text-faint mt-1 max-w-[200px]">Select a row to see its details and log a call.</p>
+          </div>
+
+          <div id="drawerActiveState" class="hidden flex-1 flex flex-col overflow-hidden">
+            <header class="p-4 border-b border-line flex items-start justify-between">
+              <div class="min-w-0">
+                <div id="drawerSchoolId" class="mono text-[10px] text-brandhi bg-brand/10 border border-brand/20 px-1.5 py-0.5 rounded inline-block">BC-SCH</div>
+                <h2 id="drawerSchoolName" class="text-base font-semibold tracking-tight mt-1.5 truncate">School</h2>
+              </div>
+              <button onclick="closeWorkspaceDrawer()" class="text-faint hover:text-ink p-1"><i class="ti ti-x"></i></button>
+            </header>
+
+            <div class="flex-1 overflow-y-auto p-4 space-y-4">
+              <div class="bg-raised border border-line rounded-xl p-3.5 space-y-3 text-xs">
+                <div class="space-y-1.5">
+                  <div class="flex justify-between"><span class="text-sub">Type</span><span id="dSchoolType" class="font-medium">—</span></div>
+                  <div class="flex justify-between"><span class="text-sub">Fee</span><span id="dSchoolFees" class="font-medium">—</span></div>
+                  <div class="flex justify-between"><span class="text-sub">Fee tier</span><span id="dSchoolFeesRange" class="mono text-warn font-medium">—</span></div>
+                  <div class="flex justify-between"><span class="text-sub">Curriculum</span><span id="dCurriculum" class="text-brandhi font-medium">—</span></div>
+                </div>
+                <div class="border-t border-line pt-3">
+                  <span class="text-sub block mb-1">Location</span>
+                  <div id="dFullAddress" class="text-sub leading-relaxed">—</div>
+                </div>
+                <div class="border-t border-line pt-3">
+                  <span class="text-sub block mb-1.5">Contact 1</span>
+                  <div class="bg-canvas border border-line rounded-lg p-2.5">
+                    <strong id="dPoc1Name" class="block font-medium">—</strong>
+                    <div id="dPoc1Designation" class="text-sub">—</div>
+                    <div class="mono text-[11px] text-brandhi mt-1"><span id="dPoc1Number">—</span> <span class="text-faint">·</span> <span id="dPoc1Email" class="text-sub">—</span></div>
+                  </div>
+                </div>
+                <div class="border-t border-line pt-3">
+                  <span class="text-sub block mb-1.5">Contact 2</span>
+                  <div class="bg-canvas border border-line rounded-lg p-2.5">
+                    <strong id="dPoc2Name" class="block font-medium">—</strong>
+                    <div id="dPoc2Designation" class="text-sub">—</div>
+                    <div class="mono text-[11px] text-brandhi mt-1"><span id="dPoc2Number">—</span> <span class="text-faint">·</span> <span id="dPoc2Email" class="text-sub">—</span></div>
+                  </div>
+                </div>
+                <div class="border-t border-line pt-3 space-y-1">
+                  <span class="text-sub block mb-1">Main line</span>
+                  <div class="mono text-[11px]">Phone: <span id="dContactNo" class="text-brandhi">—</span></div>
+                  <div class="mono text-[11px] truncate">Email: <span id="dContactEmail" class="text-sub">—</span></div>
+                </div>
+              </div>
+
+              <div class="space-y-3 border-t border-line pt-4">
+                <div>
+                  <label class="block text-xs text-sub font-medium mb-1.5">Outcome</label>
+                  <select id="drawerCallStatusSelect" onchange="evaluateDrawerCallFields(this.value)" class="w-full bg-canvas border border-line rounded-lg px-3 py-2 text-sm cursor-pointer focus:outline-none focus:border-brand">
+                    <option value="Contacted">Contacted — follow up</option>
+                    <option value="Webinar Agreed">Webinar agreed</option>
+                    <option value="Not Interested">Not interested</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs text-sub font-medium mb-1.5">Notes</label>
+                  <textarea id="drawerCallNotesInput" rows="3" placeholder="What was said, who you spoke to, next steps…" class="w-full bg-canvas border border-line rounded-lg p-2.5 text-sm focus:outline-none focus:border-brand placeholder-faint leading-relaxed"></textarea>
+                </div>
+                <div id="drawerCallFollowUpWrapper">
+                  <label class="block text-xs text-warn font-medium mb-1.5">Next follow-up</label>
+                  <input type="date" id="drawerCallFollowUpInput" class="w-full bg-canvas border border-line rounded-lg p-2.5 text-sm mono focus:outline-none focus:border-brand">
+                </div>
+                <div id="drawerCallWebinarWrapper" class="hidden">
+                  <label class="block text-xs text-good font-medium mb-1.5">Webinar date</label>
+                  <input type="date" id="drawerCallWebinarInput" class="w-full bg-canvas border border-line rounded-lg p-2.5 text-sm mono focus:outline-none focus:border-brand">
+                </div>
+                <button id="drawerLogCallBtn" class="w-full bg-brand hover:bg-brandhi text-white font-medium py-2.5 rounded-lg transition flex items-center justify-center gap-2">
+                  <i class="ti ti-check"></i> Save & set follow-up
                 </button>
+              </div>
+
+              <div class="border-t border-line pt-4">
+                <div class="flex items-center justify-between mb-2.5">
+                  <h4 class="text-xs font-medium text-sub">History</h4>
+                  <span id="dCallCount" class="bg-canvas border border-line px-2 py-0.5 text-faint rounded mono text-[11px]">0</span>
+                </div>
+                <div id="leadSpecificLogsContainer" class="space-y-2 max-h-52 overflow-y-auto pr-1"></div>
+              </div>
             </div>
+          </div>
         </aside>
-
-        <main class="flex-1 bg-[#030712] flex flex-col overflow-hidden relative">
-            
-            <div id="log-tab" class="tab-content flex flex-1 overflow-hidden">
-                <div class="flex-1 flex flex-col min-w-0 border-r border-slate-800/60">
-                    
-                    <header class="p-4 bg-[#090d16]/40 border-b border-slate-800/60 flex flex-wrap gap-3 items-center justify-between">
-                        <div class="flex items-center space-x-3 flex-1 min-w-[280px]">
-                            <input id="filterSearch" oninput="executeDataGridFilters()" type="text" placeholder="Search school profiles..." class="bg-[#090d16] border border-slate-800/80 text-xs px-3.5 py-2 rounded-lg focus:outline-none focus:border-indigo-500 text-slate-200 placeholder-slate-500 w-full max-w-sm font-medium transition">
-                            <select id="filterStage" onchange="executeDataGridFilters()" class="bg-[#090d16] border border-slate-800/80 text-xs px-2.5 py-2 rounded-lg focus:outline-none focus:border-indigo-500 text-slate-300 font-medium cursor-pointer transition">
-                                <option value="">All Pipelines</option>
-                                <option value="New Lead">New Lead</option>
-                                <option value="Contacted">Contacted</option>
-                                <option value="Webinar Agreed">Webinar Agreed</option>
-                                <option value="Not Interested">Not Interested</option>
-                            </select>
-                            <select id="filterAccountOwner" onchange="executeDataGridFilters()" class="bg-[#090d16] border border-slate-800/80 text-xs px-2.5 py-2 rounded-lg focus:outline-none focus:border-indigo-500 text-slate-300 font-medium cursor-pointer transition">
-                                <option value="ALL">Entire Board</option>
-                                <option value="MINE">My Accounts</option>
-                            </select>
-                        </div>
-
-                        <details class="relative">
-                            <summary class="bg-indigo-600 hover:bg-indigo-500 list-none text-white text-xs font-semibold px-4 py-2 rounded-lg cursor-pointer transition shadow-lg shadow-indigo-600/5 select-none">
-                                ➕ Scout New School
-                            </summary>
-                            <form id="outreachForm" onsubmit="handleFormSubmit(event)" class="absolute right-0 mt-2 p-5 bg-[#090d16] border border-slate-800 rounded-xl shadow-2xl w-[26rem] max-h-[85vh] overflow-y-auto z-20 space-y-4 text-xs text-left">
-                                <div class="flex items-center justify-between border-b border-slate-800/80 pb-2">
-                                    <h3 class="font-semibold text-white text-sm">Ingest Lead Asset</h3>
-                                    <span class="text-[9px] font-code text-slate-500 uppercase">Automation Engine Build</span>
-                                </div>
-                                
-                                <div class="space-y-3">
-                                    <div class="text-[9px] font-bold tracking-wider text-indigo-400 uppercase">School Information</div>
-                                    <div>
-                                        <label class="text-slate-400 block mb-1">School Name*</label>
-                                        <input type="text" id="schoolName" required class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500 transition">
-                                    </div>
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <div>
-                                            <label class="text-slate-400 block mb-1">School Type</label>
-                                            <select id="schoolType" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer">
-                                                <option value="Day">Day</option>
-                                                <option value="Boarding">Boarding</option>
-                                                <option value="D+B SCHOOL">D+B SCHOOL</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label class="text-slate-400 block mb-1">Curriculum Followed</label>
-                                            <select id="curriculum" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer">
-                                                <option value="CBSE">CBSE</option>
-                                                <option value="ICSE">ICSE</option>
-                                                <option value="IGCSE">IGCSE</option>
-                                                <option value="IB">IB</option>
-                                                <option value="State Board">State Board</option>
-                                                <option value="Other">Other</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <div>
-                                            <label class="text-slate-400 block mb-1">School Fees</label>
-                                            <input type="text" id="schoolFees" placeholder="e.g. 6000 or 1.2 lakh" oninput="autoCalculateFeeRange(this.value)" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500 font-code">
-                                        </div>
-                                        <div>
-                                            <label class="text-slate-400 block mb-1">School Fees Range</label>
-                                            <select id="schoolFeesRange" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-400 focus:outline-none focus:border-indigo-500 text-[11px] font-code bg-slate-900 pointer-events-none">
-                                                <option value="">Awaiting Fee Entry...</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="space-y-3 pt-2 border-t border-slate-800/60">
-                                    <div class="text-[9px] font-bold tracking-wider text-amber-500 uppercase">Primary Contact Lines</div>
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <div><label class="text-slate-400 block mb-1">Phone No*</label><input type="text" id="mainContactNo" required class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
-                                        <div><label class="text-slate-400 block mb-1">Email Address</label><input type="email" id="mainEmailId" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
-                                    </div>
-                                </div>
-
-                                <div class="space-y-3 pt-2 border-t border-slate-800/60">
-                                    <div class="text-[9px] font-bold tracking-wider text-emerald-500 uppercase">Geographical Data</div>
-                                    <div><label class="text-slate-400 block mb-1">Address</label><input type="text" id="address" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <div><label class="text-slate-400 block mb-1">Pin Code</label><input type="text" id="pinCode" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
-                                        <div><label class="text-slate-400 block mb-1">City</label><input type="text" id="city" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
-                                    </div>
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <div><label class="text-slate-400 block mb-1">State</label><input type="text" id="state" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
-                                        <div><label class="text-slate-400 block mb-1">Country</label><input type="text" id="country" value="India" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
-                                    </div>
-                                </div>
-
-                                <div class="space-y-3 pt-2 border-t border-slate-800/60">
-                                    <div class="text-[9px] font-bold tracking-wider text-indigo-400 uppercase">Point of Contact 1</div>
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <div><label class="text-slate-400 block mb-1">Name</label><input type="text" id="poc1Name" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
-                                        <div><label class="text-slate-400 block mb-1">Designation</label><input type="text" id="poc1Designation" placeholder="e.g. Principal" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
-                                    </div>
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <div><label class="text-slate-400 block mb-1">Number</label><input type="text" id="poc1Number" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
-                                        <div><label class="text-slate-400 block mb-1">Email</label><input type="email" id="poc1Email" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
-                                    </div>
-                                </div>
-
-                                <div class="space-y-3 pt-2 border-t border-slate-800/60">
-                                    <div class="text-[9px] font-bold tracking-wider text-purple-400 uppercase">Point of Contact 2</div>
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <div><label class="text-slate-400 block mb-1">Name</label><input type="text" id="poc2Name" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
-                                        <div><label class="text-slate-400 block mb-1">Designation</label><input type="text" id="poc2Designation" placeholder="e.g. Coordinator" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
-                                    </div>
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <div><label class="text-slate-400 block mb-1">Number</label><input type="text" id="poc2Number" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
-                                        <div><label class="text-slate-400 block mb-1">Email</label><input type="email" id="poc2Email" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-indigo-500"></div>
-                                    </div>
-                                </div>
-
-                                <div class="pt-2 border-t border-slate-800/60">
-                                    <label class="text-slate-400 block mb-1">Scouted Campaign Goal</label>
-                                    <select id="scoutedFor" class="w-full bg-[#030712] border border-slate-800 rounded-lg p-2 text-slate-300">
-                                        <option value="Free Coding Webinar">Free Coding Webinar</option>
-                                        <option value="Math Olympiad Bootcamp">Math Olympiad Bootcamp</option>
-                                        <option value="AI Literacy Seminar">AI Literacy Seminar</option>
-                                    </select>
-                                </div>
-                                <div class="flex items-center space-x-2 pt-3 border-t border-slate-800/60">
-                                    <button type="submit" id="submitBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 rounded-lg transition text-xs">Save Record</button>
-                                    <button type="button" onclick="this.closest('details').open = false" class="bg-slate-900 border border-slate-800 text-slate-400 px-3 py-2 rounded-lg hover:bg-slate-800 transition text-xs">Cancel</button>
-                                </div>
-                            </form>
-                        </details>
-                    </header>
-
-                    <div class="flex-1 overflow-y-auto">
-                        <table class="w-full text-left text-xs border-collapse">
-                            <thead>
-                                <tr class="bg-[#090d16]/30 text-slate-400 font-semibold tracking-wider border-b border-slate-800/60 uppercase text-[10px]">
-                                    <th class="p-4 pl-6">School Profile Target</th>
-                                    <th class="p-4">Campaign Context</th>
-                                    <th class="p-4">Interactions</th>
-                                    <th class="p-4 pr-6">Status Pipeline</th>
-                                </tr>
-                            </thead>
-                            <tbody id="dataTableBody" class="divide-y divide-slate-900/40 text-slate-300 font-medium"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="w-96 bg-[#090d16]/40 flex flex-col shrink-0 overflow-hidden border-l border-slate-800/60">
-                    <div id="drawerEmptyState" class="flex-1 flex flex-col items-center justify-center p-6 text-center">
-                        <span class="text-2xl mb-2 opacity-20">📞</span>
-                        <h4 class="text-xs font-semibold text-slate-400 mb-1">Workspace Console Ready</h4>
-                        <p class="text-[11px] text-slate-500 max-w-[200px] leading-relaxed">Select an active school item from the index matrix to access actions.</p>
-                    </div>
-
-                    <div id="drawerActiveState" class="hidden flex-1 flex flex-col overflow-hidden">
-                        <header class="p-4 border-b border-slate-800/60 bg-[#090d16]/80 flex items-center justify-between">
-                            <div>
-                                <span id="drawerSchoolId" class="font-code text-[9px] font-semibold text-indigo-400 tracking-wider bg-indigo-950/40 border border-indigo-900/30 px-1.5 py-0.5 rounded uppercase">BC-SCH-UNKNOWN</span>
-                                <h2 id="drawerSchoolName" class="text-sm font-bold text-white tracking-tight mt-1.5 truncate max-w-[220px]">Sample Academy Complex</h2>
-                            </div>
-                            <button onclick="closeWorkspaceDrawer()" class="text-slate-500 hover:text-slate-300 transition text-sm p-1">✕</button>
-                        </header>
-
-                        <div class="flex-1 overflow-y-auto p-4 space-y-4">
-                            
-                            <div class="bg-[#090d16]/90 rounded-xl border border-slate-800/60 p-4 space-y-3 text-[11px]">
-                                <div>
-                                    <span class="text-slate-500 block font-bold uppercase text-[9px] tracking-wider">Demographic Matrix</span>
-                                    <div class="text-slate-300 font-medium mt-1 space-y-1">
-                                        <div>Type: <span id="dSchoolType" class="text-slate-200 font-semibold">N/A</span> | Fees: <span id="dSchoolFees" class="text-slate-200 font-semibold">N/A</span></div>
-                                        <div class="text-[10px] text-slate-400">Step Range: <span id="dSchoolFeesRange" class="text-amber-400 font-code font-bold">N/A</span></div>
-                                        <div class="text-[10px] text-slate-400">Curriculum: <span id="dCurriculum" class="text-indigo-400 font-semibold">N/A</span></div>
-                                    </div>
-                                </div>
-                                <div class="border-t border-slate-800/40 pt-2.5">
-                                    <span class="text-slate-500 block font-bold uppercase text-[9px] tracking-wider">Geographic Metadata</span>
-                                    <div id="dFullAddress" class="text-slate-400 text-[10px] leading-relaxed mt-1">No metadata address recorded.</div>
-                                </div>
-                                
-                                <div class="border-t border-slate-800/40 pt-2.5 space-y-1">
-                                    <span class="text-slate-400 block font-bold uppercase text-[9px] tracking-wider">Point of Contact 1</span>
-                                    <div class="bg-[#030712]/50 border border-slate-800/50 p-2.5 rounded-lg space-y-0.5">
-                                        <strong id="dPoc1Name" class="text-slate-200 font-semibold block">N/A</strong>
-                                        <div class="text-[10px] text-slate-400 font-medium"><span id="dPoc1Designation">N/A</span></div>
-                                        <div class="text-[10px] font-code text-indigo-400 mt-1"><span id="dPoc1Number">N/A</span> <span class="text-slate-600">|</span> <span id="dPoc1Email" class="text-slate-400">N/A</span></div>
-                                    </div>
-                                </div>
-
-                                <div class="border-t border-slate-800/40 pt-2.5 space-y-1">
-                                    <span class="text-slate-400 block font-bold uppercase text-[9px] tracking-wider">Point of Contact 2</span>
-                                    <div class="bg-[#030712]/50 border border-slate-800/50 p-2.5 rounded-lg space-y-0.5">
-                                        <strong id="dPoc2Name" class="text-slate-200 font-semibold block">N/A</strong>
-                                        <div class="text-[10px] text-slate-400 font-medium"><span id="dPoc2Designation">N/A</span></div>
-                                        <div class="text-[10px] font-code text-purple-400 mt-1"><span id="dPoc2Number">N/A</span> <span class="text-slate-600">|</span> <span id="dPoc2Email" class="text-slate-400">N/A</span></div>
-                                    </div>
-                                </div>
-
-                                <div class="border-t border-slate-800/40 pt-2.5">
-                                    <span class="text-slate-500 block font-bold uppercase text-[9px] tracking-wider">Base Registry Channels</span>
-                                    <div class="text-slate-300 font-code text-[10px] mt-1">Line: <span id="dContactNo" class="text-indigo-400 font-semibold">N/A</span></div>
-                                    <div class="text-slate-400 font-code text-[10px] truncate">Mail: <span id="dContactEmail" class="text-slate-300">N/A</span></div>
-                                </div>
-                            </div>
-
-                            <div class="space-y-3.5 border-t border-slate-800/60 pt-4">
-                                <div>
-                                    <label class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1.5">Action Logging Status Disposition</label>
-                                    <select id="drawerCallStatusSelect" onchange="evaluateDrawerCallFields(this.value)" class="w-full bg-[#090d16] border border-slate-800 text-xs px-3 py-2 rounded-lg text-slate-200 focus:outline-none focus:border-indigo-500 font-medium cursor-pointer">
-                                        <option value="Contacted">Contacted / Pitch Follow-up Loop</option>
-                                        <option value="Webinar Agreed">🎉 Webinar Engagement Agreed</option>
-                                        <option value="Not Interested">❌ Not Interested / Rejected</option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1.5">Agent Context Interaction Notes</label>
-                                    <textarea id="drawerCallNotesInput" rows="3" placeholder="Document conversational metrics, stakeholder responses, custom objectives, etc..." class="w-full bg-[#090d16] border border-slate-800 text-xs p-2.5 rounded-lg text-slate-200 focus:outline-none focus:border-indigo-500 placeholder-slate-600 font-medium leading-relaxed"></textarea>
-                                </div>
-
-                                <div id="drawerCallFollowUpWrapper" class="transition-all duration-200">
-                                    <label class="block text-[10px] text-amber-400 font-bold uppercase tracking-wider mb-1.5">📅 Next Task Pipeline Deadline</label>
-                                    <input type="date" id="drawerCallFollowUpInput" class="w-full bg-[#090d16] border border-slate-800 text-xs p-2.5 rounded-lg text-slate-200 focus:outline-none focus:border-indigo-500 font-code font-semibold">
-                                </div>
-
-                                <div id="drawerCallWebinarWrapper" class="hidden transition-all duration-200">
-                                    <label class="block text-[10px] text-emerald-400 font-bold uppercase tracking-wider mb-1.5">🚀 Scheduled Webinar Execution Date</label>
-                                    <input type="date" id="drawerCallWebinarInput" class="w-full bg-[#090d16] border border-slate-800 text-xs p-2.5 rounded-lg text-slate-200 focus:outline-none focus:border-indigo-500 font-code font-semibold">
-                                </div>
-
-                                <button id="drawerLogCallBtn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 rounded-lg transition text-xs shadow-md shadow-indigo-700/5">
-                                    Commit Log Entry & Close Loop
-                                </button>
-                            </div>
-
-                            <div class="border-t border-slate-800/60 pt-4">
-                                <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2.5 flex items-center justify-between">
-                                    <span>Historical Log Matrix</span>
-                                    <span id="dCallCount" class="bg-[#030712] border border-slate-800/60 px-2 py-0.5 text-slate-400 rounded font-code">0</span>
-                                </h4>
-                                <div id="leadSpecificLogsContainer" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="tasks-tab" class="tab-content hidden flex-1 flex flex-col overflow-hidden">
-                <header class="p-6 bg-[#090d16]/20 border-b border-slate-800/60 shrink-0">
-                    <h2 class="text-lg font-bold text-white tracking-tight mb-0.5">Task Operational Center</h2>
-                    <p class="text-xs text-slate-500 font-medium">Pipeline execution engine and responsive workflow controls.</p>
-                    
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-5">
-                        <div onclick="setUrgencyQuickFilter('OVERDUE')" class="bg-[#090d16] border border-slate-800/80 p-3.5 rounded-xl cursor-pointer hover:border-rose-900/40 group transition flex items-center justify-between shadow-xl">
-                            <div><span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">🚨 Overdue</span><strong id="metricOverdue" class="text-lg font-bold text-rose-500 font-code">0</strong></div>
-                            <span class="text-sm opacity-40 group-hover:opacity-80 transition">⚠️</span>
-                        </div>
-                        <div onclick="setUrgencyQuickFilter('TODAY')" class="bg-[#090d16] border border-slate-800/80 p-3.5 rounded-xl cursor-pointer hover:border-amber-900/40 group transition flex items-center justify-between shadow-xl">
-                            <div><span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">🔔 Due Today</span><strong id="metricToday" class="text-lg font-bold text-amber-500 font-code">0</strong></div>
-                            <span class="text-sm opacity-40 group-hover:opacity-80 transition">🔔</span>
-                        </div>
-                        <div onclick="setUrgencyQuickFilter('UPCOMING')" class="bg-[#090d16] border border-slate-800/80 p-3.5 rounded-xl cursor-pointer hover:border-indigo-900/40 group transition flex items-center justify-between shadow-xl">
-                            <div><span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">⏳ Upcoming</span><strong id="metricUpcoming" class="text-lg font-bold text-indigo-400 font-code">0</strong></div>
-                            <span class="text-sm opacity-40 group-hover:opacity-80 transition">📅</span>
-                        </div>
-                        <div onclick="setUrgencyQuickFilter('COMPLETED')" class="bg-[#090d16] border border-slate-800/80 p-3.5 rounded-xl cursor-pointer hover:border-emerald-900/40 group transition flex items-center justify-between shadow-xl">
-                            <div><span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">✅ Completed</span><strong id="metricCompleted" class="text-lg font-bold text-emerald-400 font-code">0</strong></div>
-                            <span class="text-sm opacity-40 group-hover:opacity-80 transition">🎉</span>
-                        </div>
-                    </div>
-
-                    <div class="flex flex-wrap items-center gap-2.5 mt-5 pt-4 border-t border-slate-800/60 text-xs">
-                        <div class="bg-[#090d16] p-1 rounded-lg border border-slate-800/60 inline-flex items-center">
-                            <button id="taskTabPending" onclick="setTaskViewTab('Pending')" class="px-4 py-1.5 rounded-md text-[11px] font-semibold transition bg-indigo-600 text-white shadow-md">Pending Actions</button>
-                            <button id="taskTabCompleted" onclick="setTaskViewTab('Completed')" class="px-4 py-1.5 rounded-md text-[11px] font-semibold transition text-slate-400 hover:text-slate-200">Completed Logs</button>
-                        </div>
-
-                        <select id="taskTeamFilterSelect" onchange="renderTaskCenterConsole()" class="bg-[#090d16] border border-slate-800/80 px-3 py-1.5 rounded-lg font-semibold text-slate-300 cursor-pointer">
-                            <option value="MINE">My Personal Tasks</option>
-                            <option value="ALL">Entire Team Board</option>
-                        </select>
-
-                        <button id="clearUrgencyFilterBtn" onclick="clearUrgencyQuickFilter()" class="hidden bg-slate-900 hover:bg-slate-800 text-slate-400 font-semibold px-3 py-1.5 rounded-lg border border-slate-800/80 transition text-[11px]">
-                            Clear Filter ✕
-                        </button>
-
-                        <input id="taskFilterName" oninput="renderTaskCenterConsole()" type="text" placeholder="Search accounts..." class="bg-[#090d16] border border-slate-800/80 px-3 py-1.5 rounded-lg focus:outline-none focus:border-indigo-500 ml-auto w-48 text-slate-300 placeholder-slate-600 transition">
-                    </div>
-                </header>
-
-                <div class="flex-1 overflow-y-auto">
-                    <table class="w-full text-left text-xs border-collapse">
-                        <thead>
-                            <tr class="bg-[#090d16]/30 text-slate-400 font-semibold tracking-wider border-b border-slate-800/60 uppercase text-[10px]">
-                                <th class="p-4 pl-6">School Account Target</th>
-                                <th class="p-4">Context Stage</th>
-                                <th class="p-4">Deadline Schedule</th>
-                                <th class="p-4 pr-6 text-right">Action Interface</th>
-                            </tr>
-                        </thead>
-                        <tbody id="taskTableBody" class="divide-y divide-slate-900/30 text-slate-300 font-medium"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div id="analytics-tab" class="tab-content hidden flex-1 flex flex-col overflow-hidden p-6 space-y-6">
-                <header class="flex flex-wrap items-center justify-between gap-4 bg-[#090d16]/20 border border-slate-800/60 p-4 rounded-xl shrink-0 shadow-lg">
-                    <div>
-                        <h2 class="text-base font-bold text-white tracking-tight">Data Modeling & Performance Metrics</h2>
-                        <p class="text-xs text-slate-500 font-medium">Live pipeline metrics generated from system snapshots.</p>
-                    </div>
-                    <div class="flex items-center space-x-2 text-xs">
-                        <select id="analyticsOwnerScope" onchange="generateChartAnalytics()" class="bg-[#090d16] border border-slate-800 text-slate-300 px-3 py-1.5 rounded-lg font-semibold cursor-pointer">
-                            <option value="ALL">Entire Cluster Board</option>
-                            <option value="MINE">My Personal Log Matrix</option>
-                        </select>
-                        <select id="analyticsDateScope" onchange="generateChartAnalytics()" class="bg-[#090d16] border border-slate-800 text-slate-300 px-3 py-1.5 rounded-lg font-semibold font-code cursor-pointer">
-                            <option value="7">Last 7 Days</option>
-                            <option value="14">Last 14 Days</option>
-                            <option value="30">Last 30 Days</option>
-                            <option value="ALL">All Available Metrics</option>
-                        </select>
-                    </div>
-                </header>
-
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 shrink-0">
-                    <div class="bg-[#090d16]/40 border border-slate-800/50 p-4 rounded-xl shadow-lg">
-                        <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider block mb-0.5">Pipeline Inflow</span>
-                        <div id="statTotalAccounts" class="text-xl font-bold text-white font-code">0</div>
-                    </div>
-                    <div class="bg-[#090d16]/40 border border-slate-800/50 p-4 rounded-xl shadow-lg">
-                        <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider block mb-0.5">Conversion Efficiency</span>
-                        <div id="statConversionRate" class="text-xl font-bold text-emerald-400 font-code">0%</div>
-                    </div>
-                    <div class="bg-[#090d16]/40 border border-slate-800/50 p-4 rounded-xl shadow-lg">
-                        <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider block mb-0.5">Logged Interactions</span>
-                        <div id="statTotalCalls" class="text-xl font-bold text-indigo-400 font-code">0</div>
-                    </div>
-                    <div class="bg-[#090d16]/40 border border-slate-800/50 p-4 rounded-xl shadow-lg">
-                        <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider block mb-0.5">Webinars Agreed</span>
-                        <div id="statWebinarsAgreed" class="text-xl font-bold text-amber-500 font-code">0</div>
-                    </div>
-                </div>
-
-                <div class="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-0">
-                    <div class="lg:col-span-2 bg-[#090d16]/20 border border-slate-800/50 rounded-xl p-4 flex flex-col shadow-lg">
-                        <h4 class="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-4">Pipeline Interaction Engine Delta Over Time</h4>
-                        <div class="flex-1 min-h-0 relative"><canvas id="activityChart"></canvas></div>
-                    </div>
-                    <div class="bg-[#090d16]/20 border border-slate-800/50 rounded-xl p-4 flex flex-col shadow-lg">
-                        <h4 class="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-4">Stage Volumetric Distribution Matrix</h4>
-                        <div class="flex-1 min-h-0 relative flex items-center justify-center"><canvas id="pipelineChart"></canvas></div>
-                    </div>
-                </div>
-            </div>
-        </main>
+      </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        const ALLOWED_DOMAIN = 'brightchamps.com'; 
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAYpGUhW9CDWLwuj7ZHVRYFAq-37uS0flU",
-            authDomain: "partnership-outreach-crm.firebaseapp.com",
-            projectId: "partnership-outreach-crm",
-            storageBucket: "partnership-outreach-crm.firebasestorage.app",
-            messagingSenderId: "142750401110",
-            appId: "1:142750401110:web:cd1a0494b731d11a2a71f7"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const provider = new GoogleAuthProvider();
-        provider.setCustomParameters({ prompt: 'select_account' });
-
-        let localLeadsArray = [];
-        let localTasksArray = [];
-        let localInteractionLogsArray = [];
-        let selectedRecordId = null;
-        let pipelineChartInstance = null;
-        let activityChartInstance = null;
-        
-        let currentTaskScopeTab = 'Pending'; 
-        let urgencyQuickFilterState = null;  
-        
-        let unsubscribeLeads = null;
-        let unsubscribeTasks = null;
-        let unsubscribeLogs = null;
-
-        // ACCURATE INFINITE STEPPING RANGE CALCULATOR LOGIC
-        window.autoCalculateFeeRange = function(inputValue) {
-            const rangeSelect = document.getElementById('schoolFeesRange');
-            if (!inputValue) {
-                rangeSelect.innerHTML = `<option value="">Awaiting Fee Entry...</option>`;
-                return;
-            }
-
-            let cleanInput = inputValue.toLowerCase().replace(/,/g, '').trim();
-            let numericalFee = 0;
-
-            if (cleanInput.includes('lakh') || cleanInput.includes('l')) {
-                let parsedNum = parseFloat(cleanInput.replace(/[^\d.]/g, ''));
-                if (!isNaN(parsedNum)) numericalFee = parsedNum * 100000;
-            } else {
-                numericalFee = parseFloat(cleanInput);
-            }
-
-            if (isNaN(numericalFee) || numericalFee <= 0) {
-                rangeSelect.innerHTML = `<option value="">Awaiting Fee Entry...</option>`;
-                return;
-            }
-
-            let calculatedRangeStr = "";
-
-            if (numericalFee <= 5000) {
-                calculatedRangeStr = "5k and 5k+ till 1 lakh";
-            } 
-            else if (numericalFee <= 100000) {
-                calculatedRangeStr = "5k and 5k+ till 1 lakh";
-            } 
-            else if (numericalFee <= 200000) {
-                calculatedRangeStr = "10k till 2 lakh";
-            }
-            else if (numericalFee <= 2000000) {
-                calculatedRangeStr = "add 1 lakh till 20 lakh";
-            }
-            else {
-                calculatedRangeStr = "20l +";
-            }
-
-            rangeSelect.innerHTML = `<option value="${calculatedRangeStr}">${calculatedRangeStr}</option>`;
-            rangeSelect.value = calculatedRangeStr;
-        };
-
-        function showAuthMessage(text, type = 'error') {
-            const msgEl = document.getElementById('authMessage');
-            msgEl.innerText = text;
-            msgEl.classList.remove('hidden', 'bg-rose-950/30', 'text-rose-400', 'border-rose-900/30', 'bg-amber-950/30', 'text-amber-400', 'border-amber-900/30');
-            
-            if (type === 'error') {
-                msgEl.classList.add('bg-rose-950/30', 'text-rose-400', 'border', 'border-rose-900/30');
-            } else {
-                msgEl.classList.add('bg-amber-950/30', 'text-amber-400', 'border', 'border-amber-900/30');
-            }
-            msgEl.classList.remove('hidden');
-        }
-
-        onAuthStateChanged(auth, (user) => {
-            const authScreen = document.getElementById('authScreen');
-            const mainDashboard = document.getElementById('mainDashboard');
-            
-            if (user) {
-                const userDomain = (user.email || '').split('@')[1];
-                
-                if (userDomain === ALLOWED_DOMAIN) {
-                    document.getElementById('authMessage').classList.add('hidden');
-                    authScreen.classList.add('opacity-0', 'pointer-events-none');
-                    mainDashboard.classList.remove('hidden');
-                    
-                    document.getElementById('userNameProfile').innerText = user.displayName || 'Agent User';
-                    document.getElementById('userEmailProfile').innerText = user.email;
-                    document.getElementById('userInitial').innerText = (user.displayName || 'A').charAt(0);
-                    initializeDataStreams();
-                } else {
-                    showAuthMessage(`Access Denied: Please authorize via a professional @${ALLOWED_DOMAIN} workspace alias profile.`, 'warning');
-                    killActiveSnapshots();
-                    signOut(auth);
-                    mainDashboard.classList.add('hidden');
-                    authScreen.classList.remove('opacity-0', 'pointer-events-none');
-                }
-            } else {
-                killActiveSnapshots();
-                mainDashboard.classList.add('hidden');
-                authScreen.classList.remove('opacity-0', 'pointer-events-none');
-            }
-        });
-
-        document.getElementById('signInBtn').onclick = () => {
-            showAuthMessage("Contacting authentication endpoint...", "warning");
-            signInWithPopup(auth, provider).catch(err => {
-                console.error("Firebase Auth Error:", err);
-                showAuthMessage(`Handshake dropped: ${err.message}`);
-            });
-        };
-
-        document.getElementById('signOutBtn').onclick = () => signOut(auth);
-
-        function killActiveSnapshots() {
-            if (unsubscribeLeads) unsubscribeLeads();
-            if (unsubscribeTasks) unsubscribeTasks();
-            if (unsubscribeLogs) unsubscribeLogs();
-        }
-
-        function initializeDataStreams() {
-            unsubscribeLeads = onSnapshot(query(collection(db, "leads"), orderBy("timestamp", "desc")), (snapshot) => {
-                localLeadsArray = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
-                calculateVelocityDifferentials();
-                executeDataGridFilters();
-                if(selectedRecordId) loadWorkspaceDrawerRecord(selectedRecordId);
-                if (!document.getElementById('analytics-tab').classList.contains('hidden')) generateChartAnalytics();
-            });
-
-            unsubscribeTasks = onSnapshot(query(collection(db, "crm_tasks"), orderBy("dueDate", "asc")), (snapshot) => {
-                localTasksArray = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
-                calculateActiveTaskWorkflowCounters();
-                executeDataGridFilters(); 
-                renderTaskCenterConsole();
-            });
-
-            unsubscribeLogs = onSnapshot(query(collection(db, "lead_calls"), orderBy("timestamp", "desc")), (snapshot) => {
-                localInteractionLogsArray = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
-                calculateVelocityDifferentials();
-                if(selectedRecordId) renderLeadSpecificTimeline(selectedRecordId);
-                executeDataGridFilters();
-                if (!document.getElementById('analytics-tab').classList.contains('hidden')) generateChartAnalytics();
-            });
-        }
-
-        function getNormalizedTodayString() {
-            const d = new Date();
-            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        }
-
-        function getNormalizedYesterdayString() {
-            const d = new Date();
-            d.setDate(d.getDate() - 1);
-            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        }
-
-        function calculateVelocityDifferentials() {
-            const todayStr = getNormalizedTodayString();
-            const ydayStr = getNormalizedYesterdayString();
-            const userEmail = auth.currentUser ? auth.currentUser.email : '';
-
-            const myLeads = localLeadsArray.filter(l => l.operator === userEmail);
-            const myCalls = localInteractionLogsArray.filter(c => c.agent === userEmail);
-
-            const todayReachouts = myLeads.filter(l => l.dateStr === todayStr).length;
-            const ydayReachouts = myLeads.filter(l => l.dateStr === ydayStr).length;
-
-            const todayCalls = myCalls.filter(c => c.dateString === todayStr).length;
-            const ydayCalls = myCalls.filter(c => c.dateString === ydayStr).length;
-
-            document.getElementById('sidebarTodayReachouts').innerText = todayReachouts;
-            document.getElementById('sidebarYdayReachouts').innerText = ydayReachouts;
-            document.getElementById('sidebarTodayCalls').innerText = todayCalls;
-            document.getElementById('sidebarYdayCalls').innerText = ydayCalls;
-        }
-
-        function calculateActiveTaskWorkflowCounters() {
-            const todayStr = getNormalizedTodayString();
-            const userEmail = auth.currentUser ? auth.currentUser.email : '';
-            let overdue = 0, today = 0, upcoming = 0, completed = 0, sidebarTodayCount = 0;
-
-            localTasksArray.forEach(t => {
-                const isMyTask = (t.operator === userEmail);
-                if (t.taskStatus === 'Completed') {
-                    if (isMyTask) completed++;
-                } else {
-                    if (t.dueDate < todayStr) {
-                        if (isMyTask) overdue++;
-                    } else if (t.dueDate === todayStr) {
-                        if (isMyTask) { today++; sidebarTodayCount++; }
-                    } else {
-                        if (isMyTask) upcoming++;
-                    }
-                }
-            });
-
-            document.getElementById('metricOverdue').innerText = overdue;
-            document.getElementById('metricToday').innerText = today;
-            document.getElementById('metricUpcoming').innerText = upcoming;
-            document.getElementById('metricCompleted').innerText = completed;
-            document.getElementById('sidebarTaskCount').innerText = sidebarTodayCount;
-        }
-
-        window.setTaskViewTab = function(tabScope) {
-            currentTaskScopeTab = tabScope;
-            const pendingBtn = document.getElementById('taskTabPending');
-            const completedBtn = document.getElementById('taskTabCompleted');
-
-            if(tabScope === 'Pending') {
-                pendingBtn.className = "px-4 py-1.5 rounded-md text-[11px] font-semibold transition bg-indigo-600 text-white shadow-md";
-                completedBtn.className = "px-4 py-1.5 rounded-md text-[11px] font-semibold transition text-slate-400 hover:text-slate-200";
-                if(urgencyQuickFilterState === 'COMPLETED') urgencyQuickFilterState = null;
-            } else {
-                completedBtn.className = "px-4 py-1.5 rounded-md text-[11px] font-semibold transition bg-emerald-600 text-white shadow-md";
-                pendingBtn.className = "px-4 py-1.5 rounded-md text-[11px] font-semibold transition text-slate-400 hover:text-slate-200";
-                urgencyQuickFilterState = 'COMPLETED';
-            }
-            renderTaskCenterConsole();
-        };
-
-        window.setUrgencyQuickFilter = function(filterType) {
-            urgencyQuickFilterState = filterType;
-            setTaskViewTab(filterType === 'COMPLETED' ? 'Completed' : 'Pending');
-            document.getElementById('clearUrgencyFilterBtn').classList.remove('hidden');
-            renderTaskCenterConsole();
-        };
-
-        window.clearUrgencyQuickFilter = function() {
-            urgencyQuickFilterState = null;
-            document.getElementById('clearUrgencyFilterBtn').classList.add('hidden');
-            renderTaskCenterConsole();
-        };
-
-        window.executeDataGridFilters = function() {
-            const search = document.getElementById('filterSearch').value.toLowerCase().trim();
-            const stage = document.getElementById('filterStage').value;
-            const ownerScope = document.getElementById('filterAccountOwner').value;
-            const currentUserEmail = auth.currentUser ? auth.currentUser.email : '';
-
-            let filtered = localLeadsArray.filter(l => {
-                return (!search || (l.school || '').toLowerCase().includes(search)) &&
-                       (!stage || l.status === stage) &&
-                       (ownerScope === 'ALL' || l.operator === currentUserEmail);
-            });
-            renderDataTable(filtered);
-        };
-
-        function renderDataTable(subset) {
-            const tbody = document.getElementById('dataTableBody');
-            tbody.innerHTML = subset.length === 0 ? '<tr><td colspan="4" class="p-8 text-center text-slate-500">No active matrix records map to filter rules.</td></tr>' : '';
-            
-            const todayStr = getNormalizedTodayString();
-            const fortyEightHoursAgo = Date.now() - (48 * 60 * 60 * 1000);
-
-            subset.forEach(lead => {
-                const totalCalls = localInteractionLogsArray.filter(log => log.leadId === lead.id).length;
-                let isStaleDroppedBall = false, staleReason = "";
-
-                if (lead.status !== 'Webinar Agreed' && lead.status !== 'Not Interested') {
-                    const openTasks = localTasksArray.filter(t => t.leadId === lead.id && t.taskStatus === 'Pending');
-                    if (openTasks.length > 0) {
-                        if (openTasks.some(t => t.dueDate < todayStr)) { isStaleDroppedBall = true; staleReason = "Overdue task loop"; }
-                    } else {
-                        const leadLogs = localInteractionLogsArray.filter(log => log.leadId === lead.id);
-                        const checkTime = leadLogs.length > 0 ? (leadLogs[0].timestamp?.seconds * 1000 || leadLogs[0].timestamp?.toMillis?.()) : (lead.timestamp?.seconds * 1000 || lead.timestamp?.toMillis?.());
-                        if (checkTime && checkTime < fortyEightHoursAgo) { isStaleDroppedBall = true; staleReason = "No track loop set"; }
-                    }
-                }
-
-                const tr = document.createElement('tr');
-                
-                // FIXED: Embedded high-contrast selection highlights (bg-indigo-500/15 + clear left border indicator + white text focus layout block)
-                tr.className = `cursor-pointer border-b border-slate-900/30 transition text-slate-300 ${
-                    selectedRecordId === lead.id 
-                    ? 'bg-indigo-500/15 border-l-2 border-l-indigo-500 text-white' 
-                    : 'hover:bg-slate-800/40'
-                } ${isStaleDroppedBall ? 'bg-rose-950/5 border-l-2 border-l-rose-600' : ''}`;
-                
-                tr.onclick = () => { selectedRecordId = lead.id; executeDataGridFilters(); loadWorkspaceDrawerRecord(lead.id); };
-                
-                tr.innerHTML = `
-                    <td class="p-4 pl-6 max-w-xs truncate">
-                        <div class="font-semibold flex items-center space-x-2 ${selectedRecordId === lead.id ? 'text-white' : 'text-slate-200'}">
-                            <span>${lead.school || 'Unnamed Account'}</span>
-                            ${isStaleDroppedBall ? `<span class="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[8px] font-bold tracking-wider px-1.5 py-0.5 rounded uppercase font-code" title="${staleReason}">STALE</span>` : ''}
-                        </div>
-                    </td>
-                    <td class="p-4">
-                        <div class="font-medium ${selectedRecordId === lead.id ? 'text-slate-200' : 'text-slate-300'}">${lead.scoutedFor || 'Outreach Metric'}</div>
-                        <div class="text-[10px] text-slate-500 font-code truncate mt-0.5">👤 ${lead.operator ? lead.operator.split('@')[0] : 'System'}</div>
-                    </td>
-                    <td class="p-4"><span class="font-code text-slate-400 bg-slate-900/60 px-2 py-0.5 rounded border border-slate-800/80">${totalCalls} Calls</span></td>
-                    <td class="p-4 pr-6">
-                        <span class="px-2 py-0.5 text-[9px] font-bold tracking-wider rounded border uppercase font-code ${
-                            lead.status === 'Webinar Agreed' ? 'bg-emerald-950/30 text-emerald-400 border-emerald-900/30' : 
-                            lead.status === 'Not Interested' ? 'bg-slate-900 text-slate-500 border-slate-800' : 
-                            lead.status === 'Contacted' ? 'bg-amber-950/30 text-amber-400 border-amber-900/30' : 
-                            'bg-indigo-950/30 text-indigo-400 border-indigo-900/30'
-                        }">${lead.status}</span>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        window.evaluateDrawerCallFields = function(status) {
-            document.getElementById('drawerCallFollowUpWrapper').classList.toggle('hidden', status === 'Not Interested');
-            document.getElementById('drawerCallWebinarWrapper').classList.toggle('hidden', status !== 'Webinar Agreed');
-        };
-
-        function loadWorkspaceDrawerRecord(id) {
-            const lead = localLeadsArray.find(l => l.id === id);
-            if(!lead) return;
-            document.getElementById('drawerEmptyState').classList.add('hidden');
-            document.getElementById('drawerActiveState').classList.remove('hidden');
-            
-            document.getElementById('drawerSchoolId').innerText = lead.uniqueSchoolId || 'BC-SCH-LEGACY';
-            document.getElementById('drawerSchoolName').innerText = lead.school;
-            
-            document.getElementById('dSchoolType').innerText = lead.schoolType || 'Not Specified';
-            document.getElementById('dSchoolFees').innerText = lead.schoolFees ? "₹ " + lead.schoolFees : 'Not Specified';
-            document.getElementById('dSchoolFeesRange').innerText = lead.schoolFeesRange || 'Not Specified';
-            document.getElementById('dCurriculum').innerText = lead.curriculum || 'Not Specified';
-            
-            const fullAddr = [lead.address, lead.city, lead.state, lead.pinCode, lead.country].filter(Boolean).join(', ');
-            document.getElementById('dFullAddress').innerText = fullAddr || 'No corporate metadata logged.';
-
-            document.getElementById('dPoc1Name').innerText = lead.poc1Name || 'Not Specified';
-            document.getElementById('dPoc1Designation').innerText = lead.poc1Designation || 'Not Specified';
-            document.getElementById('dPoc1Number').innerText = lead.poc1Number || 'No Phone';
-            document.getElementById('dPoc1Email').innerText = lead.poc1Email || 'No Email';
-
-            document.getElementById('dPoc2Name').innerText = lead.poc2Name || 'Not Specified';
-            document.getElementById('dPoc2Designation').innerText = lead.poc2Designation || 'Not Specified';
-            document.getElementById('dPoc2Number').innerText = lead.poc2Number || 'No Phone';
-            document.getElementById('dPoc2Email').innerText = lead.poc2Email || 'No Email';
-
-            document.getElementById('dContactNo').innerText = lead.mainContactNo || 'N/A';
-            document.getElementById('dContactEmail').innerText = lead.mainEmailId || 'N/A';
-
-            document.getElementById('drawerCallNotesInput').value = '';
-            document.getElementById('drawerCallFollowUpInput').value = '';
-            document.getElementById('drawerCallWebinarInput').value = '';
-            document.getElementById('drawerCallStatusSelect').value = "Contacted";
-            evaluateDrawerCallFields("Contacted");
-
-            renderLeadSpecificTimeline(id);
-
-            document.getElementById('drawerLogCallBtn').onclick = () => {
-                const nextStage = document.getElementById('drawerCallStatusSelect').value;
-                const notes = document.getElementById('drawerCallNotesInput').value.trim();
-                const followUpDate = document.getElementById('drawerCallFollowUpInput').value;
-                const webinarDate = document.getElementById('drawerCallWebinarInput').value;
-
-                if (!notes) return alert("Interaction notes required.");
-                if (nextStage !== 'Not Interested' && !followUpDate) return alert("Pipeline requirements dictate a programmatic follow-up target date.");
-                if (nextStage === 'Webinar Agreed' && !webinarDate) return alert("Webinar operational targets require an activation schedule day.");
-
-                addDoc(collection(db, "lead_calls"), {
-                    leadId: id, agent: auth.currentUser.email, notes: notes, transitionedTo: nextStage, timestamp: serverTimestamp(), dateString: getNormalizedTodayString()
-                }).then(() => {
-                    return updateDoc(doc(db, "leads", id), { status: nextStage, webinarDate: nextStage === 'Webinar Agreed' ? webinarDate : '', timestamp: serverTimestamp() });
-                }).then(() => {
-                    localTasksArray.filter(t => t.leadId === id && t.taskStatus !== 'Completed').forEach(t => updateDoc(doc(db, "crm_tasks", t.id), { taskStatus: 'Completed' }));
-                    if (nextStage !== 'Not Interested') {
-                        addDoc(collection(db, "crm_tasks"), { leadId: id, schoolName: lead.school, currentStage: nextStage, dueDate: followUpDate, taskStatus: 'Pending', operator: auth.currentUser.email });
-                    }
-                    alert(`Action processing sequence updated.`);
-                }).catch(err => alert("Operational sync aborted: " + err.message));
-            };
-        }
-
-        function renderLeadSpecificTimeline(leadId) {
-            const container = document.getElementById('leadSpecificLogsContainer');
-            const filteredLogs = localInteractionLogsArray.filter(log => log.leadId === leadId);
-            document.getElementById('dCallCount').innerText = filteredLogs.length;
-
-            if (filteredLogs.length === 0) {
-                container.innerHTML = `<div class="p-3 border border-dashed border-slate-800 text-center text-slate-500 rounded-xl text-[10px]">No interactions logged in historical index.</div>`;
-                return;
-            }
-            container.innerHTML = filteredLogs.map(log => `
-                <div class="bg-[#030712]/50 border border-slate-800/80 p-2.5 rounded-lg text-[11px] space-y-1">
-                    <div class="flex items-center justify-between font-code text-[9px] text-slate-500">
-                        <span>👤 ${log.agent.split('@')[0]}</span>
-                        <span>${log.dateString || 'Just Now'}</span>
-                    </div>
-                    <p class="text-slate-300 font-medium leading-normal">${log.notes}</p>
-                    <span class="inline-block text-[8px] font-bold tracking-wider uppercase font-code bg-indigo-950/40 text-indigo-400 px-1.5 py-0.5 rounded border border-indigo-900/20">Stage: ${log.transitionedTo}</span>
-                </div>
-            `).join('');
-        }
-
-        window.closeWorkspaceDrawer = function() { selectedRecordId = null; document.getElementById('drawerActiveState').classList.add('hidden'); document.getElementById('drawerEmptyState').classList.remove('hidden'); executeDataGridFilters(); };
-        window.routeToCallDeskAccount = function(leadId, schoolName) { switchTab('log-tab'); selectedRecordId = leadId; if (document.getElementById('filterSearch')) { document.getElementById('filterSearch').value = schoolName; } executeDataGridFilters(); loadWorkspaceDrawerRecord(leadId); };
-
-        window.renderTaskCenterConsole = function() {
-            const tbody = document.getElementById('taskTableBody');
-            if(!tbody) return;
-
-            const nameQuery = document.getElementById('taskFilterName').value.toLowerCase().trim();
-            const teamScope = document.getElementById('taskTeamFilterSelect').value;
-            const currentUserEmail = auth.currentUser ? auth.currentUser.email : '';
-            const todayStr = getNormalizedTodayString();
-
-            let filtered = localTasksArray.filter(t => currentTaskScopeTab === 'Completed' ? t.taskStatus === 'Completed' : t.taskStatus !== 'Completed');
-            if (teamScope === 'MINE') filtered = filtered.filter(t => t.operator === currentUserEmail);
-
-            if (urgencyQuickFilterState) {
-                if (urgencyQuickFilterState === 'OVERDUE') filtered = filtered.filter(t => t.dueDate < todayStr);
-                else if (urgencyQuickFilterState === 'TODAY') filtered = filtered.filter(t => t.dueDate === todayStr);
-                else if (urgencyQuickFilterState === 'UPCOMING') filtered = filtered.filter(t => t.dueDate > todayStr);
-            }
-            if(nameQuery) filtered = filtered.filter(t => (t.schoolName || '').toLowerCase().includes(nameQuery));
-
-            filtered.sort((a, b) => a.dueDate.localeCompare(b.dueDate));
-            tbody.innerHTML = filtered.length === 0 ? `<tr><td colspan="4" class="p-8 text-center text-slate-500">No active tasks logged.</td></tr>` : '';
-
-            filtered.forEach(task => {
-                const tr = document.createElement('tr');
-                tr.className = "border-b border-slate-900/30 hover:bg-[#090d16]/20 transition text-slate-300 font-medium";
-                let urgencyBadge = task.taskStatus === 'Completed' ? `<span class="bg-emerald-950/20 border border-emerald-900/30 text-emerald-400 text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider font-code">Completed</span>` : (task.dueDate < todayStr ? `<span class="bg-rose-950/20 border border-rose-900/30 text-rose-400 text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider font-code">Overdue</span>` : (task.dueDate === todayStr ? `<span class="bg-amber-950/20 border border-amber-900/30 text-amber-400 text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider font-code">Due Today</span>` : `<span class="bg-indigo-950/20 border border-indigo-900/30 text-indigo-400 text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider font-code">Upcoming</span>`));
-
-                tr.innerHTML = `
-                    <td class="p-4 pl-6 font-semibold text-slate-200">
-                        <div>${task.schoolName}</div>
-                        <div class="text-[10px] text-slate-500 font-code font-normal mt-0.5">Owner: ${task.operator ? task.operator.split('@')[0] : 'System'}</div>
-                    </td>
-                    <td class="p-4"><span class="px-2 py-0.5 text-[9px] font-bold tracking-wider uppercase font-code bg-slate-900 border border-slate-800 text-slate-400">${task.currentStage || 'Lead Setup'}</span></td>
-                    <td class="p-4"><div class="flex items-center space-x-3"><span class="font-code font-semibold tracking-tight text-slate-200">${task.dueDate}</span>${urgencyBadge}</div></td>
-                    <td class="p-4 pr-6 text-right">${task.taskStatus !== 'Completed' ? `<button onclick="routeToCallDeskAccount('${task.leadId}', '${(task.schoolName || '').replace(/'/g, "\\'")}')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-3 py-1.5 rounded-lg text-[10px] transition shadow-md shadow-indigo-600/5">Execute Loop</button>` : `<span class="text-[10px] text-slate-500 font-code">Record Locked</span>`}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        };
-
-        window.handleFormSubmit = function(e) {
-            e.preventDefault();
-            const schoolName = document.getElementById('schoolName').value.trim();
-            if (localLeadsArray.some(l => (l.school || '').toLowerCase() === schoolName.toLowerCase())) return alert("Operational overlap: Active profile snapshot detected matching this entity title.");
-
-            const btn = document.getElementById('submitBtn');
-            btn.disabled = true;
-
-            addDoc(collection(db, "leads"), {
-                uniqueSchoolId: "BC-SCH-" + Math.random().toString(36).substr(2, 8).toUpperCase(),
-                school: schoolName,
-                schoolType: document.getElementById('schoolType').value,
-                address: document.getElementById('address').value.trim(),
-                pinCode: document.getElementById('pinCode').value.trim(),
-                city: document.getElementById('city').value.trim(),
-                state: document.getElementById('state').value.trim(),
-                country: document.getElementById('country').value.trim(),
-                mainEmailId: document.getElementById('mainEmailId').value.trim(),
-                mainContactNo: document.getElementById('mainContactNo').value.trim(),
-                curriculum: document.getElementById('curriculum').value,
-                schoolFees: document.getElementById('schoolFees').value.trim(),
-                schoolFeesRange: document.getElementById('schoolFeesRange').value,
-                
-                poc1Designation: document.getElementById('poc1Designation').value.trim(),
-                poc1Email: document.getElementById('poc1Email').value.trim(),
-                poc1Name: document.getElementById('poc1Name').value.trim(),
-                poc1Number: document.getElementById('poc1Number').value.trim(),
-                
-                poc2Designation: document.getElementById('poc2Designation').value.trim(),
-                poc2Email: document.getElementById('poc2Email').value.trim(),
-                poc2Name: document.getElementById('poc2Name').value.trim(),
-                poc2Number: document.getElementById('poc2Number').value.trim(),
-
-                scoutedFor: document.getElementById('scoutedFor').value,
-                status: "New Lead", operator: auth.currentUser.email, dateStr: getNormalizedTodayString(), addedDateTimeString: new Date().toLocaleString(), timestamp: serverTimestamp()
-            }).then(() => { 
-                document.getElementById('outreachForm').reset(); 
-                document.getElementById('schoolFeesRange').innerHTML = `<option value="">Awaiting Fee Entry...</option>`;
-                btn.disabled = false; 
-                document.querySelector('details').open = false; 
-            }).catch(err => { 
-                alert("Data mapping write crash: " + err.message); 
-                btn.disabled = false; 
-            });
-        };
-
-        window.switchTab = function(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById(tabId).classList.remove('hidden');
-            
-            document.querySelectorAll('nav button').forEach(b => b.className = "w-full text-left px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-900/60 hover:text-slate-200 font-medium text-xs transition flex items-center space-x-3");
-            document.getElementById(`btn-${tabId}`).className = "w-full text-left px-3 py-2 rounded-lg bg-indigo-600 text-white font-medium text-xs transition flex items-center space-x-3";
-            
-            if (tabId === 'analytics-tab') generateChartAnalytics();
-            if (tabId === 'tasks-tab') renderTaskCenterConsole();
-        };
-
-        function generateChartAnalytics() {
-            const dateScope = document.getElementById('analyticsDateScope').value;
-            const ownerScope = document.getElementById('analyticsOwnerScope').value;
-            const currentUserEmail = auth.currentUser ? auth.currentUser.email : '';
-            const todayStr = getNormalizedTodayString();
-
-            let filteredLeads = [...localLeadsArray];
-            let filteredCalls = [...localInteractionLogsArray];
-
-            if (ownerScope === 'MINE') {
-                filteredLeads = filteredLeads.filter(l => l.operator === currentUserEmail);
-                filteredCalls = filteredCalls.filter(c => c.agent === currentUserEmail);
-            }
-            if (dateScope !== 'ALL') {
-                const limitDate = new Date(); limitDate.setDate(limitDate.getDate() - parseInt(dateScope));
-                const limitDateStr = limitDate.toISOString().split('T')[0];
-                filteredLeads = filteredLeads.filter(l => (l.dateStr || todayStr) >= limitDateStr);
-                filteredCalls = filteredCalls.filter(c => (c.dateString || todayStr) >= limitDateStr);
-            }
-
-            const totalAccounts = filteredLeads.length;
-            const webinarsAgreedCount = filteredLeads.filter(l => l.status === 'Webinar Agreed').length;
-            
-            document.getElementById('statTotalAccounts').innerText = totalAccounts;
-            document.getElementById('statWebinarsAgreed').innerText = webinarsAgreedCount;
-            document.getElementById('statTotalCalls').innerText = filteredCalls.length;
-            document.getElementById('statConversionRate').innerText = totalAccounts > 0 ? Math.round((webinarsAgreedCount / totalAccounts) * 100) + "%" : "0%";
-
-            const pipeMetrics = { 'New Lead': 0, 'Contacted': 0, 'Webinar Agreed': 0, 'Not Interested': 0 };
-            filteredLeads.forEach(l => { if(pipeMetrics[l.status] !== undefined) pipeMetrics[l.status]++; });
-
-            if (pipelineChartInstance) pipelineChartInstance.destroy();
-            const ctxPie = document.getElementById('pipelineChart');
-            if(ctxPie) {
-                pipelineChartInstance = new Chart(ctxPie.getContext('2d'), {
-                    type: 'pie',
-                    data: { labels: Object.keys(pipeMetrics), datasets: [{ data: Object.values(pipeMetrics), backgroundColor: ['#ca8a04', '#4f46e5', '#059669', '#374151'], borderWidth: 1, borderColor: '#090d16' }] },
-                    options: { plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10, family: 'Plus Jakarta Sans' } } } }, responsive: true, maintainAspectRatio: false }
-                });
-            }
-
-            const daywiseMap = {};
-            const lookbackDays = dateScope === 'ALL' ? 14 : parseInt(dateScope);
-            for (let i = lookbackDays - 1; i >= 0; i--) {
-                const d = new Date(); d.setDate(d.getDate() - i);
-                daywiseMap[d.toISOString().split('T')[0]] = { scouts: 0, followups: 0 };
-            }
-            filteredLeads.forEach(l => { if (daywiseMap[l.dateStr]) daywiseMap[l.dateStr].scouts++; });
-            filteredCalls.forEach(c => { if (daywiseMap[c.dateString]) daywiseMap[c.dateString].followups++; });
-
-            const sortedLabels = Object.keys(daywiseMap).sort();
-            
-            if (activityChartInstance) activityChartInstance.destroy();
-            const ctxAct = document.getElementById('activityChart');
-            if(ctxAct) {
-                activityChartInstance = new Chart(ctxAct.getContext('2d'), {
-                    data: {
-                        labels: sortedLabels,
-                        datasets: [
-                            { type: 'bar', label: 'New Scouts', data: sortedLabels.map(k => daywiseMap[k].scouts), backgroundColor: '#4f46e5', borderRadius: 4, barPercentage: 0.4 },
-                            { type: 'line', label: 'Call Log Syncs', data: sortedLabels.map(k => daywiseMap[k].followups), borderColor: '#ca8a04', backgroundColor: 'transparent', tension: 0.15, borderWidth: 1.5, pointBackgroundColor: '#ca8a04', pointRadius: 2 }
-                        ]
-                    },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        scales: {
-                            x: { grid: { color: '#1f2937/40' }, ticks: { color: '#64748b', font: { size: 9, family: 'JetBrains Mono' } } },
-                            y: { grid: { color: '#1f2937/40' }, ticks: { color: '#64748b', font: { size: 9, family: 'JetBrains Mono' }, stepSize: 1 }, beginAtZero: true }
-                        },
-                        plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10, family: 'Plus Jakarta Sans' } } } }
-                    }
-                });
-            }
-        }
-    </script>
+    <!-- ===== TASKS ===== -->
+    <div id="tasks-tab" class="tab-content hidden flex-1 flex flex-col overflow-hidden">
+      <header class="h-16 px-6 border-b border-line flex items-center shrink-0">
+        <div>
+          <h2 class="text-base font-semibold tracking-tight">Tasks</h2>
+          <p class="text-xs text-faint">Follow-ups that keep deals moving</p>
+        </div>
+      </header>
+
+      <div class="px-6 py-4 grid grid-cols-4 gap-3 shrink-0">
+        <button onclick="setUrgencyQuickFilter('OVERDUE')" class="text-left bg-surface border border-line hover:border-bad/40 rounded-xl px-4 py-3 transition">
+          <div class="flex items-center justify-between"><span class="text-xs text-sub">Overdue</span><i class="ti ti-alert-triangle text-bad/60"></i></div>
+          <div id="metricOverdue" class="text-2xl font-semibold mono mt-0.5 text-bad">0</div>
+        </button>
+        <button onclick="setUrgencyQuickFilter('TODAY')" class="text-left bg-surface border border-line hover:border-warn/40 rounded-xl px-4 py-3 transition">
+          <div class="flex items-center justify-between"><span class="text-xs text-sub">Due today</span><i class="ti ti-bell text-warn/60"></i></div>
+          <div id="metricToday" class="text-2xl font-semibold mono mt-0.5 text-warn">0</div>
+        </button>
+        <button onclick="setUrgencyQuickFilter('UPCOMING')" class="text-left bg-surface border border-line hover:border-brand/40 rounded-xl px-4 py-3 transition">
+          <div class="flex items-center justify-between"><span class="text-xs text-sub">Upcoming</span><i class="ti ti-calendar text-brand/60"></i></div>
+          <div id="metricUpcoming" class="text-2xl font-semibold mono mt-0.5 text-brandhi">0</div>
+        </button>
+        <button onclick="setUrgencyQuickFilter('COMPLETED')" class="text-left bg-surface border border-line hover:border-good/40 rounded-xl px-4 py-3 transition">
+          <div class="flex items-center justify-between"><span class="text-xs text-sub">Completed</span><i class="ti ti-circle-check text-good/60"></i></div>
+          <div id="metricCompleted" class="text-2xl font-semibold mono mt-0.5 text-good">0</div>
+        </button>
+      </div>
+
+      <div class="px-6 pb-3 flex flex-wrap items-center gap-2 shrink-0">
+        <div class="bg-surface border border-line rounded-lg p-1 inline-flex">
+          <button id="taskTabPending" onclick="setTaskViewTab('Pending')" class="px-3.5 py-1.5 rounded-md text-xs font-medium transition bg-brand text-white">Pending</button>
+          <button id="taskTabCompleted" onclick="setTaskViewTab('Completed')" class="px-3.5 py-1.5 rounded-md text-xs font-medium transition text-sub hover:text-ink">Completed</button>
+        </div>
+        <select id="taskTeamFilterSelect" onchange="renderTaskCenterConsole()" class="bg-surface border border-line rounded-lg px-3 py-1.5 text-xs text-sub cursor-pointer focus:outline-none focus:border-brand">
+          <option value="MINE">My tasks</option>
+          <option value="ALL">Whole team</option>
+        </select>
+        <button id="clearUrgencyFilterBtn" onclick="clearUrgencyQuickFilter()" class="hidden bg-surface hover:bg-raised text-sub border border-line rounded-lg px-3 py-1.5 text-xs font-medium transition flex items-center gap-1.5">
+          <i class="ti ti-x"></i> Clear filter
+        </button>
+        <div class="ml-auto flex items-center gap-2 bg-surface border border-line rounded-lg px-3 focus-within:border-brand transition">
+          <i class="ti ti-search text-faint text-sm"></i>
+          <input id="taskFilterName" oninput="renderTaskCenterConsole()" type="text" placeholder="Search" class="bg-transparent py-1.5 text-xs w-40 focus:outline-none placeholder-faint">
+        </div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto px-6 pb-6">
+        <div class="bg-surface border border-line rounded-xl overflow-hidden">
+          <table class="w-full text-left text-sm">
+            <thead>
+              <tr class="text-faint text-[11px] font-medium uppercase tracking-wide border-b border-line">
+                <th class="py-2.5 px-4">School</th>
+                <th class="py-2.5 px-3">Stage</th>
+                <th class="py-2.5 px-3">Due</th>
+                <th class="py-2.5 px-4 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="taskTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== INSIGHTS ===== -->
+    <div id="analytics-tab" class="tab-content hidden flex-1 flex flex-col overflow-hidden">
+      <header class="h-16 px-6 border-b border-line flex items-center justify-between shrink-0">
+        <div>
+          <h2 class="text-base font-semibold tracking-tight">Insights</h2>
+          <p class="text-xs text-faint">Pipeline and activity over time</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <select id="analyticsOwnerScope" onchange="generateChartAnalytics()" class="bg-surface border border-line rounded-lg px-3 py-2 text-sm text-sub cursor-pointer focus:outline-none focus:border-brand">
+            <option value="ALL">Whole team</option>
+            <option value="MINE">My accounts</option>
+          </select>
+          <select id="analyticsDateScope" onchange="generateChartAnalytics()" class="bg-surface border border-line rounded-lg px-3 py-2 text-sm text-sub mono cursor-pointer focus:outline-none focus:border-brand">
+            <option value="7">Last 7 days</option>
+            <option value="14">Last 14 days</option>
+            <option value="30">Last 30 days</option>
+            <option value="ALL">All time</option>
+          </select>
+        </div>
+      </header>
+
+      <div class="flex-1 overflow-y-auto p-6 space-y-4">
+        <div class="grid grid-cols-4 gap-3">
+          <div class="bg-surface border border-line rounded-xl px-4 py-3"><div class="text-xs text-sub">Schools added</div><div id="statTotalAccounts" class="text-2xl font-semibold mono mt-0.5">0</div></div>
+          <div class="bg-surface border border-line rounded-xl px-4 py-3"><div class="text-xs text-sub">Conversion</div><div id="statConversionRate" class="text-2xl font-semibold mono mt-0.5 text-good">0%</div></div>
+          <div class="bg-surface border border-line rounded-xl px-4 py-3"><div class="text-xs text-sub">Calls logged</div><div id="statTotalCalls" class="text-2xl font-semibold mono mt-0.5 text-brandhi">0</div></div>
+          <div class="bg-surface border border-line rounded-xl px-4 py-3"><div class="text-xs text-sub">Webinars agreed</div><div id="statWebinarsAgreed" class="text-2xl font-semibold mono mt-0.5 text-warn">0</div></div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-4">
+          <div class="col-span-2 bg-surface border border-line rounded-xl p-4 flex flex-col" style="height:340px;">
+            <h4 class="text-xs font-medium text-sub mb-4">New schools vs calls logged</h4>
+            <div class="flex-1 min-h-0 relative"><canvas id="activityChart"></canvas></div>
+          </div>
+          <div class="bg-surface border border-line rounded-xl p-4 flex flex-col" style="height:340px;">
+            <h4 class="text-xs font-medium text-sub mb-4">Pipeline by stage</h4>
+            <div class="flex-1 min-h-0 relative flex items-center justify-center"><canvas id="pipelineChart"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const ALLOWED_DOMAIN = 'brightchamps.com';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAYpGUhW9CDWLwuj7ZHVRYFAq-37uS0flU",
+  authDomain: "partnership-outreach-crm.firebaseapp.com",
+  projectId: "partnership-outreach-crm",
+  storageBucket: "partnership-outreach-crm.firebasestorage.app",
+  messagingSenderId: "142750401110",
+  appId: "1:142750401110:web:cd1a0494b731d11a2a71f7"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
+provider.setCustomParameters({ prompt: 'select_account' });
+
+let localLeadsArray = [];
+let localTasksArray = [];
+let localInteractionLogsArray = [];
+let selectedRecordId = null;
+let pipelineChartInstance = null;
+let activityChartInstance = null;
+let currentTaskScopeTab = 'Pending';
+let urgencyQuickFilterState = null;
+let unsubscribeLeads = null, unsubscribeTasks = null, unsubscribeLogs = null;
+
+const STAGE_CLASS = {
+  'Webinar Agreed': 'bg-good/10 text-good border-good/25',
+  'Not Interested': 'bg-line text-faint border-line2',
+  'Contacted':      'bg-warn/10 text-warn border-warn/25',
+  'New Lead':       'bg-brand/10 text-brandhi border-brand/25'
+};
+const STAGE_LABEL = {
+  'Webinar Agreed': 'Agreed', 'Not Interested': 'Not interested',
+  'Contacted': 'Contacted', 'New Lead': 'New lead'
+};
+
+window.autoCalculateFeeRange = function(inputValue) {
+  const rangeSelect = document.getElementById('schoolFeesRange');
+  if (!inputValue) { rangeSelect.innerHTML = `<option value="">Enter a fee…</option>`; return; }
+  let cleanInput = inputValue.toLowerCase().replace(/,/g, '').trim();
+  let numericalFee = 0;
+  if (cleanInput.includes('lakh') || cleanInput.includes('l')) {
+    let p = parseFloat(cleanInput.replace(/[^\d.]/g, ''));
+    if (!isNaN(p)) numericalFee = p * 100000;
+  } else { numericalFee = parseFloat(cleanInput); }
+  if (isNaN(numericalFee) || numericalFee <= 0) { rangeSelect.innerHTML = `<option value="">Enter a fee…</option>`; return; }
+
+  let r = "";
+  if (numericalFee <= 100000) r = "Up to 1 lakh";
+  else if (numericalFee <= 200000) r = "1–2 lakh";
+  else if (numericalFee <= 2000000) r = "2–20 lakh";
+  else r = "20 lakh+";
+  rangeSelect.innerHTML = `<option value="${r}">${r}</option>`;
+  rangeSelect.value = r;
+};
+
+function showAuthMessage(text, type = 'error') {
+  const m = document.getElementById('authMessage');
+  m.innerText = text;
+  m.className = "text-sm font-medium rounded-lg px-3 py-2.5 mb-4 border " +
+    (type === 'error' ? "bg-bad/10 text-bad border-bad/25" : "bg-warn/10 text-warn border-warn/25");
+}
+
+onAuthStateChanged(auth, (user) => {
+  const authScreen = document.getElementById('authScreen');
+  const mainDashboard = document.getElementById('mainDashboard');
+  if (user) {
+    const userDomain = (user.email || '').split('@')[1];
+    if (userDomain === ALLOWED_DOMAIN) {
+      document.getElementById('authMessage').classList.add('hidden');
+      authScreen.classList.add('opacity-0', 'pointer-events-none');
+      mainDashboard.classList.remove('hidden');
+      document.getElementById('userNameProfile').innerText = user.displayName || 'Agent';
+      document.getElementById('userEmailProfile').innerText = user.email;
+      document.getElementById('userInitial').innerText = (user.displayName || 'A').charAt(0).toUpperCase();
+      initializeDataStreams();
+    } else {
+      showAuthMessage(`That account isn't on @${ALLOWED_DOMAIN}. Sign in with your work account.`, 'warning');
+      killActiveSnapshots(); signOut(auth);
+      mainDashboard.classList.add('hidden');
+      authScreen.classList.remove('opacity-0', 'pointer-events-none');
+    }
+  } else {
+    killActiveSnapshots();
+    mainDashboard.classList.add('hidden');
+    authScreen.classList.remove('opacity-0', 'pointer-events-none');
+  }
+});
+
+document.getElementById('signInBtn').onclick = () => {
+  showAuthMessage("Opening sign-in…", "warning");
+  signInWithPopup(auth, provider).catch(err => {
+    console.error("Auth error:", err);
+    showAuthMessage(`Couldn't sign in: ${err.message}`);
+  });
+};
+document.getElementById('signOutBtn').onclick = () => signOut(auth);
+
+function killActiveSnapshots() {
+  if (unsubscribeLeads) unsubscribeLeads();
+  if (unsubscribeTasks) unsubscribeTasks();
+  if (unsubscribeLogs) unsubscribeLogs();
+}
+
+function initializeDataStreams() {
+  unsubscribeLeads = onSnapshot(query(collection(db, "leads"), orderBy("timestamp", "desc")), (snap) => {
+    localLeadsArray = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+    calculateVelocityDifferentials();
+    calculateActiveTaskWorkflowCounters();
+    executeDataGridFilters();
+    if (selectedRecordId) loadWorkspaceDrawerRecord(selectedRecordId);
+    if (!document.getElementById('analytics-tab').classList.contains('hidden')) generateChartAnalytics();
+  });
+  unsubscribeTasks = onSnapshot(query(collection(db, "crm_tasks"), orderBy("dueDate", "asc")), (snap) => {
+    localTasksArray = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+    calculateActiveTaskWorkflowCounters();
+    executeDataGridFilters();
+    renderTaskCenterConsole();
+  });
+  unsubscribeLogs = onSnapshot(query(collection(db, "lead_calls"), orderBy("timestamp", "desc")), (snap) => {
+    localInteractionLogsArray = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+    calculateVelocityDifferentials();
+    if (selectedRecordId) renderLeadSpecificTimeline(selectedRecordId);
+    executeDataGridFilters();
+    if (!document.getElementById('analytics-tab').classList.contains('hidden')) generateChartAnalytics();
+  });
+}
+
+function getNormalizedTodayString() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function getNormalizedYesterdayString() {
+  const d = new Date(); d.setDate(d.getDate()-1);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function calculateVelocityDifferentials() {
+  const todayStr = getNormalizedTodayString();
+  const ydayStr = getNormalizedYesterdayString();
+  const userEmail = auth.currentUser ? auth.currentUser.email : '';
+  const myLeads = localLeadsArray.filter(l => l.operator === userEmail);
+  const myCalls = localInteractionLogsArray.filter(c => c.agent === userEmail);
+  document.getElementById('sidebarTodayReachouts').innerText = myLeads.filter(l => l.dateStr === todayStr).length;
+  document.getElementById('sidebarYdayReachouts').innerText = myLeads.filter(l => l.dateStr === ydayStr).length;
+  document.getElementById('sidebarTodayCalls').innerText = myCalls.filter(c => c.dateString === todayStr).length;
+  document.getElementById('sidebarYdayCalls').innerText = myCalls.filter(c => c.dateString === ydayStr).length;
+}
+
+function calculateActiveTaskWorkflowCounters() {
+  const todayStr = getNormalizedTodayString();
+  const userEmail = auth.currentUser ? auth.currentUser.email : '';
+  let overdue=0, today=0, upcoming=0, completed=0, sidebarTodayCount=0;
+  localTasksArray.forEach(t => {
+    const isMine = (t.operator === userEmail);
+    if (t.taskStatus === 'Completed') { if (isMine) completed++; }
+    else if (t.dueDate < todayStr) { if (isMine) overdue++; }
+    else if (t.dueDate === todayStr) { if (isMine) { today++; sidebarTodayCount++; } }
+    else { if (isMine) upcoming++; }
+  });
+  document.getElementById('metricOverdue').innerText = overdue;
+  document.getElementById('metricToday').innerText = today;
+  document.getElementById('metricUpcoming').innerText = upcoming;
+  document.getElementById('metricCompleted').innerText = completed;
+  document.getElementById('sidebarTaskCount').innerText = sidebarTodayCount;
+
+  // KPI strip on Accounts
+  const activeCount = localLeadsArray.filter(l => l.status !== 'Not Interested').length;
+  const agreedCount = localLeadsArray.filter(l => l.status === 'Webinar Agreed').length;
+  document.getElementById('kpiActive').innerText = activeCount;
+  document.getElementById('kpiAgreed').innerText = agreedCount;
+  document.getElementById('kpiToday').innerText = today;
+  document.getElementById('kpiOverdue').innerText = overdue;
+}
+
+window.setTaskViewTab = function(tabScope) {
+  currentTaskScopeTab = tabScope;
+  const p = document.getElementById('taskTabPending'), c = document.getElementById('taskTabCompleted');
+  if (tabScope === 'Pending') {
+    p.className = "px-3.5 py-1.5 rounded-md text-xs font-medium transition bg-brand text-white";
+    c.className = "px-3.5 py-1.5 rounded-md text-xs font-medium transition text-sub hover:text-ink";
+    if (urgencyQuickFilterState === 'COMPLETED') urgencyQuickFilterState = null;
+  } else {
+    c.className = "px-3.5 py-1.5 rounded-md text-xs font-medium transition bg-good text-white";
+    p.className = "px-3.5 py-1.5 rounded-md text-xs font-medium transition text-sub hover:text-ink";
+    urgencyQuickFilterState = 'COMPLETED';
+  }
+  renderTaskCenterConsole();
+};
+
+window.setUrgencyQuickFilter = function(filterType) {
+  urgencyQuickFilterState = filterType;
+  setTaskViewTab(filterType === 'COMPLETED' ? 'Completed' : 'Pending');
+  document.getElementById('clearUrgencyFilterBtn').classList.remove('hidden');
+  renderTaskCenterConsole();
+};
+window.clearUrgencyQuickFilter = function() {
+  urgencyQuickFilterState = null;
+  document.getElementById('clearUrgencyFilterBtn').classList.add('hidden');
+  renderTaskCenterConsole();
+};
+
+window.executeDataGridFilters = function() {
+  const search = document.getElementById('filterSearch').value.toLowerCase().trim();
+  const stage = document.getElementById('filterStage').value;
+  const ownerScope = document.getElementById('filterAccountOwner').value;
+  const me = auth.currentUser ? auth.currentUser.email : '';
+  const filtered = localLeadsArray.filter(l =>
+    (!search || (l.school || '').toLowerCase().includes(search)) &&
+    (!stage || l.status === stage) &&
+    (ownerScope === 'ALL' || l.operator === me)
+  );
+  renderDataTable(filtered);
+};
+
+function renderDataTable(subset) {
+  const tbody = document.getElementById('dataTableBody');
+  tbody.innerHTML = subset.length === 0
+    ? '<tr><td colspan="4" class="py-12 text-center text-faint text-sm">No schools match these filters. Add one with “New school”.</td></tr>' : '';
+  const todayStr = getNormalizedTodayString();
+  const fortyEightHoursAgo = Date.now() - (48*60*60*1000);
+
+  subset.forEach(lead => {
+    const totalCalls = localInteractionLogsArray.filter(log => log.leadId === lead.id).length;
+    let isStale = false, staleReason = "";
+    if (lead.status !== 'Webinar Agreed' && lead.status !== 'Not Interested') {
+      const openTasks = localTasksArray.filter(t => t.leadId === lead.id && t.taskStatus === 'Pending');
+      if (openTasks.length > 0) {
+        if (openTasks.some(t => t.dueDate < todayStr)) { isStale = true; staleReason = "Overdue follow-up"; }
+      } else {
+        const leadLogs = localInteractionLogsArray.filter(log => log.leadId === lead.id);
+        const checkTime = leadLogs.length > 0
+          ? (leadLogs[0].timestamp?.seconds*1000 || leadLogs[0].timestamp?.toMillis?.())
+          : (lead.timestamp?.seconds*1000 || lead.timestamp?.toMillis?.());
+        if (checkTime && checkTime < fortyEightHoursAgo) { isStale = true; staleReason = "No follow-up set"; }
+      }
+    }
+    const selected = selectedRecordId === lead.id;
+    const tr = document.createElement('tr');
+    tr.className = "cursor-pointer border-b border-line/60 transition " +
+      (selected ? "bg-brand/10 border-l-2 border-l-brand" : "hover:bg-raised border-l-2 border-l-transparent");
+    tr.onclick = () => { selectedRecordId = lead.id; executeDataGridFilters(); loadWorkspaceDrawerRecord(lead.id); };
+    const stageCls = STAGE_CLASS[lead.status] || STAGE_CLASS['New Lead'];
+    tr.innerHTML = `
+      <td class="py-3 px-4 max-w-xs">
+        <div class="font-medium flex items-center gap-2 ${selected ? 'text-ink' : 'text-ink'}">
+          <span class="truncate">${lead.school || 'Unnamed'}</span>
+          ${isStale ? `<span class="bg-bad/10 border border-bad/25 text-bad text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0" title="${staleReason}">Stale</span>` : ''}
+        </div>
+      </td>
+      <td class="py-3 px-3">
+        <div class="text-sub">${lead.scoutedFor || '—'}</div>
+        <div class="text-[11px] text-faint mono mt-0.5">${lead.operator ? lead.operator.split('@')[0] : 'system'}</div>
+      </td>
+      <td class="py-3 px-3"><span class="mono text-xs text-sub">${totalCalls}</span></td>
+      <td class="py-3 px-4">
+        <span class="px-2 py-0.5 text-[11px] font-medium rounded border ${stageCls}">${STAGE_LABEL[lead.status] || lead.status}</span>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+window.evaluateDrawerCallFields = function(status) {
+  document.getElementById('drawerCallFollowUpWrapper').classList.toggle('hidden', status === 'Not Interested');
+  document.getElementById('drawerCallWebinarWrapper').classList.toggle('hidden', status !== 'Webinar Agreed');
+};
+
+function loadWorkspaceDrawerRecord(id) {
+  const lead = localLeadsArray.find(l => l.id === id);
+  if (!lead) return;
+  document.getElementById('drawerEmptyState').classList.add('hidden');
+  const active = document.getElementById('drawerActiveState');
+  active.classList.remove('hidden');
+  active.classList.add('fade-in');
+
+  document.getElementById('drawerSchoolId').innerText = lead.uniqueSchoolId || 'BC-SCH-LEGACY';
+  document.getElementById('drawerSchoolName').innerText = lead.school;
+  document.getElementById('dSchoolType').innerText = lead.schoolType || '—';
+  document.getElementById('dSchoolFees').innerText = lead.schoolFees ? "₹" + lead.schoolFees : '—';
+  document.getElementById('dSchoolFeesRange').innerText = lead.schoolFeesRange || '—';
+  document.getElementById('dCurriculum').innerText = lead.curriculum || '—';
+  const fullAddr = [lead.address, lead.city, lead.state, lead.pinCode, lead.country].filter(Boolean).join(', ');
+  document.getElementById('dFullAddress').innerText = fullAddr || 'No address on file.';
+  document.getElementById('dPoc1Name').innerText = lead.poc1Name || '—';
+  document.getElementById('dPoc1Designation').innerText = lead.poc1Designation || '—';
+  document.getElementById('dPoc1Number').innerText = lead.poc1Number || 'no phone';
+  document.getElementById('dPoc1Email').innerText = lead.poc1Email || 'no email';
+  document.getElementById('dPoc2Name').innerText = lead.poc2Name || '—';
+  document.getElementById('dPoc2Designation').innerText = lead.poc2Designation || '—';
+  document.getElementById('dPoc2Number').innerText = lead.poc2Number || 'no phone';
+  document.getElementById('dPoc2Email').innerText = lead.poc2Email || 'no email';
+  document.getElementById('dContactNo').innerText = lead.mainContactNo || '—';
+  document.getElementById('dContactEmail').innerText = lead.mainEmailId || '—';
+
+  document.getElementById('drawerCallNotesInput').value = '';
+  document.getElementById('drawerCallFollowUpInput').value = '';
+  document.getElementById('drawerCallWebinarInput').value = '';
+  document.getElementById('drawerCallStatusSelect').value = "Contacted";
+  evaluateDrawerCallFields("Contacted");
+  renderLeadSpecificTimeline(id);
+
+  document.getElementById('drawerLogCallBtn').onclick = () => {
+    const nextStage = document.getElementById('drawerCallStatusSelect').value;
+    const notes = document.getElementById('drawerCallNotesInput').value.trim();
+    const followUpDate = document.getElementById('drawerCallFollowUpInput').value;
+    const webinarDate = document.getElementById('drawerCallWebinarInput').value;
+    if (!notes) return alert("Add a note before saving.");
+    if (nextStage !== 'Not Interested' && !followUpDate) return alert("Pick a follow-up date.");
+    if (nextStage === 'Webinar Agreed' && !webinarDate) return alert("Pick the webinar date.");
+
+    addDoc(collection(db, "lead_calls"), {
+      leadId: id, agent: auth.currentUser.email, notes, transitionedTo: nextStage,
+      timestamp: serverTimestamp(), dateString: getNormalizedTodayString()
+    }).then(() =>
+      updateDoc(doc(db, "leads", id), { status: nextStage, webinarDate: nextStage === 'Webinar Agreed' ? webinarDate : '', timestamp: serverTimestamp() })
+    ).then(() => {
+      localTasksArray.filter(t => t.leadId === id && t.taskStatus !== 'Completed')
+        .forEach(t => updateDoc(doc(db, "crm_tasks", t.id), { taskStatus: 'Completed' }));
+      if (nextStage !== 'Not Interested') {
+        addDoc(collection(db, "crm_tasks"), { leadId: id, schoolName: lead.school, currentStage: nextStage, dueDate: followUpDate, taskStatus: 'Pending', operator: auth.currentUser.email });
+      }
+    }).catch(err => alert("Couldn't save: " + err.message));
+  };
+}
+
+function renderLeadSpecificTimeline(leadId) {
+  const container = document.getElementById('leadSpecificLogsContainer');
+  const logs = localInteractionLogsArray.filter(log => log.leadId === leadId);
+  document.getElementById('dCallCount').innerText = logs.length;
+  if (logs.length === 0) {
+    container.innerHTML = `<div class="p-3 border border-dashed border-line rounded-lg text-center text-faint text-xs">No calls logged yet.</div>`;
+    return;
+  }
+  container.innerHTML = logs.map(log => `
+    <div class="bg-raised border border-line rounded-lg p-2.5 text-xs space-y-1">
+      <div class="flex items-center justify-between mono text-[10px] text-faint">
+        <span>${log.agent.split('@')[0]}</span><span>${log.dateString || 'just now'}</span>
+      </div>
+      <p class="text-sub leading-normal">${log.notes}</p>
+      <span class="inline-block text-[10px] font-medium ${STAGE_CLASS[log.transitionedTo] || STAGE_CLASS['New Lead']} px-1.5 py-0.5 rounded border">${STAGE_LABEL[log.transitionedTo] || log.transitionedTo}</span>
+    </div>`).join('');
+}
+
+window.closeWorkspaceDrawer = function() {
+  selectedRecordId = null;
+  document.getElementById('drawerActiveState').classList.add('hidden');
+  document.getElementById('drawerEmptyState').classList.remove('hidden');
+  executeDataGridFilters();
+};
+window.routeToCallDeskAccount = function(leadId, schoolName) {
+  switchTab('log-tab'); selectedRecordId = leadId;
+  const fs = document.getElementById('filterSearch'); if (fs) fs.value = schoolName;
+  executeDataGridFilters(); loadWorkspaceDrawerRecord(leadId);
+};
+
+window.renderTaskCenterConsole = function() {
+  const tbody = document.getElementById('taskTableBody');
+  if (!tbody) return;
+  const nameQuery = document.getElementById('taskFilterName').value.toLowerCase().trim();
+  const teamScope = document.getElementById('taskTeamFilterSelect').value;
+  const me = auth.currentUser ? auth.currentUser.email : '';
+  const todayStr = getNormalizedTodayString();
+
+  let filtered = localTasksArray.filter(t => currentTaskScopeTab === 'Completed' ? t.taskStatus === 'Completed' : t.taskStatus !== 'Completed');
+  if (teamScope === 'MINE') filtered = filtered.filter(t => t.operator === me);
+  if (urgencyQuickFilterState === 'OVERDUE') filtered = filtered.filter(t => t.dueDate < todayStr);
+  else if (urgencyQuickFilterState === 'TODAY') filtered = filtered.filter(t => t.dueDate === todayStr);
+  else if (urgencyQuickFilterState === 'UPCOMING') filtered = filtered.filter(t => t.dueDate > todayStr);
+  if (nameQuery) filtered = filtered.filter(t => (t.schoolName || '').toLowerCase().includes(nameQuery));
+  filtered.sort((a,b) => a.dueDate.localeCompare(b.dueDate));
+
+  tbody.innerHTML = filtered.length === 0 ? `<tr><td colspan="4" class="py-12 text-center text-faint text-sm">Nothing here. You're all caught up.</td></tr>` : '';
+  filtered.forEach(task => {
+    const tr = document.createElement('tr');
+    tr.className = "border-b border-line/60 hover:bg-raised transition";
+    let badge;
+    if (task.taskStatus === 'Completed') badge = `<span class="bg-good/10 border border-good/25 text-good text-[10px] px-2 py-0.5 rounded font-medium">Done</span>`;
+    else if (task.dueDate < todayStr) badge = `<span class="bg-bad/10 border border-bad/25 text-bad text-[10px] px-2 py-0.5 rounded font-medium">Overdue</span>`;
+    else if (task.dueDate === todayStr) badge = `<span class="bg-warn/10 border border-warn/25 text-warn text-[10px] px-2 py-0.5 rounded font-medium">Today</span>`;
+    else badge = `<span class="bg-brand/10 border border-brand/25 text-brandhi text-[10px] px-2 py-0.5 rounded font-medium">Upcoming</span>`;
+    tr.innerHTML = `
+      <td class="py-3 px-4">
+        <div class="font-medium text-ink">${task.schoolName}</div>
+        <div class="text-[11px] text-faint mono mt-0.5">${task.operator ? task.operator.split('@')[0] : 'system'}</div>
+      </td>
+      <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-medium rounded border ${STAGE_CLASS[task.currentStage] || 'bg-line text-sub border-line2'}">${STAGE_LABEL[task.currentStage] || task.currentStage || 'Setup'}</span></td>
+      <td class="py-3 px-3"><div class="flex items-center gap-2"><span class="mono text-xs text-sub">${task.dueDate}</span>${badge}</div></td>
+      <td class="py-3 px-4 text-right">${task.taskStatus !== 'Completed'
+        ? `<button onclick="routeToCallDeskAccount('${task.leadId}', '${(task.schoolName||'').replace(/'/g,"\\'")}')" class="bg-brand hover:bg-brandhi text-white font-medium px-3 py-1.5 rounded-lg text-xs transition inline-flex items-center gap-1.5"><i class="ti ti-arrow-right"></i> Open</button>`
+        : `<span class="text-xs text-faint mono">locked</span>`}</td>`;
+    tbody.appendChild(tr);
+  });
+};
+
+window.handleFormSubmit = function(e) {
+  e.preventDefault();
+  const schoolName = document.getElementById('schoolName').value.trim();
+  if (localLeadsArray.some(l => (l.school || '').toLowerCase() === schoolName.toLowerCase()))
+    return alert("A school with that name already exists.");
+  const btn = document.getElementById('submitBtn'); btn.disabled = true;
+  addDoc(collection(db, "leads"), {
+    uniqueSchoolId: "BC-SCH-" + Math.random().toString(36).substr(2,8).toUpperCase(),
+    school: schoolName,
+    schoolType: document.getElementById('schoolType').value,
+    address: document.getElementById('address').value.trim(),
+    pinCode: document.getElementById('pinCode').value.trim(),
+    city: document.getElementById('city').value.trim(),
+    state: document.getElementById('state').value.trim(),
+    country: document.getElementById('country').value.trim(),
+    mainEmailId: document.getElementById('mainEmailId').value.trim(),
+    mainContactNo: document.getElementById('mainContactNo').value.trim(),
+    curriculum: document.getElementById('curriculum').value,
+    schoolFees: document.getElementById('schoolFees').value.trim(),
+    schoolFeesRange: document.getElementById('schoolFeesRange').value,
+    poc1Designation: document.getElementById('poc1Designation').value.trim(),
+    poc1Email: document.getElementById('poc1Email').value.trim(),
+    poc1Name: document.getElementById('poc1Name').value.trim(),
+    poc1Number: document.getElementById('poc1Number').value.trim(),
+    poc2Designation: document.getElementById('poc2Designation').value.trim(),
+    poc2Email: document.getElementById('poc2Email').value.trim(),
+    poc2Name: document.getElementById('poc2Name').value.trim(),
+    poc2Number: document.getElementById('poc2Number').value.trim(),
+    scoutedFor: document.getElementById('scoutedFor').value,
+    status: "New Lead", operator: auth.currentUser.email,
+    dateStr: getNormalizedTodayString(), addedDateTimeString: new Date().toLocaleString(), timestamp: serverTimestamp()
+  }).then(() => {
+    document.getElementById('outreachForm').reset();
+    document.getElementById('schoolFeesRange').innerHTML = `<option value="">Enter a fee…</option>`;
+    btn.disabled = false;
+    document.querySelector('#log-tab details').open = false;
+  }).catch(err => { alert("Couldn't save: " + err.message); btn.disabled = false; });
+};
+
+window.switchTab = function(tabId) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+  document.getElementById(tabId).classList.remove('hidden');
+  document.querySelectorAll('nav .nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById(`btn-${tabId}`).classList.add('active');
+  if (tabId === 'analytics-tab') generateChartAnalytics();
+  if (tabId === 'tasks-tab') renderTaskCenterConsole();
+};
+
+function generateChartAnalytics() {
+  const dateScope = document.getElementById('analyticsDateScope').value;
+  const ownerScope = document.getElementById('analyticsOwnerScope').value;
+  const me = auth.currentUser ? auth.currentUser.email : '';
+  const todayStr = getNormalizedTodayString();
+
+  let leads = [...localLeadsArray], calls = [...localInteractionLogsArray];
+  if (ownerScope === 'MINE') { leads = leads.filter(l => l.operator === me); calls = calls.filter(c => c.agent === me); }
+  if (dateScope !== 'ALL') {
+    const limit = new Date(); limit.setDate(limit.getDate() - parseInt(dateScope));
+    const limitStr = limit.toISOString().split('T')[0];
+    leads = leads.filter(l => (l.dateStr || todayStr) >= limitStr);
+    calls = calls.filter(c => (c.dateString || todayStr) >= limitStr);
+  }
+
+  const total = leads.length;
+  const agreed = leads.filter(l => l.status === 'Webinar Agreed').length;
+  document.getElementById('statTotalAccounts').innerText = total;
+  document.getElementById('statWebinarsAgreed').innerText = agreed;
+  document.getElementById('statTotalCalls').innerText = calls.length;
+  document.getElementById('statConversionRate').innerText = total > 0 ? Math.round((agreed/total)*100) + "%" : "0%";
+
+  const pipe = { 'New Lead':0, 'Contacted':0, 'Webinar Agreed':0, 'Not Interested':0 };
+  leads.forEach(l => { if (pipe[l.status] !== undefined) pipe[l.status]++; });
+
+  const gridColor = 'rgba(42,56,81,0.4)';
+  const tickColor = '#64718a';
+  if (pipelineChartInstance) pipelineChartInstance.destroy();
+  const ctxPie = document.getElementById('pipelineChart');
+  if (ctxPie) {
+    pipelineChartInstance = new Chart(ctxPie.getContext('2d'), {
+      type: 'doughnut',
+      data: { labels: ['New lead','Contacted','Agreed','Not interested'],
+        datasets: [{ data: Object.values(pipe), backgroundColor: ['#5b8def','#fbbf24','#34d399','#3a4a66'], borderWidth: 2, borderColor: '#0f1626' }] },
+      options: { cutout: '62%', plugins: { legend: { position: 'bottom', labels: { color: '#9aa7bd', font: { size: 11, family: 'Inter' }, padding: 12, boxWidth: 10, boxHeight: 10, usePointStyle: true } } }, responsive: true, maintainAspectRatio: false }
+    });
+  }
+
+  const daymap = {};
+  const lookback = dateScope === 'ALL' ? 14 : parseInt(dateScope);
+  for (let i = lookback-1; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    daymap[d.toISOString().split('T')[0]] = { scouts:0, followups:0 };
+  }
+  leads.forEach(l => { if (daymap[l.dateStr]) daymap[l.dateStr].scouts++; });
+  calls.forEach(c => { if (daymap[c.dateString]) daymap[c.dateString].followups++; });
+  const labels = Object.keys(daymap).sort();
+
+  if (activityChartInstance) activityChartInstance.destroy();
+  const ctxAct = document.getElementById('activityChart');
+  if (ctxAct) {
+    activityChartInstance = new Chart(ctxAct.getContext('2d'), {
+      data: { labels: labels.map(l => l.slice(5)),
+        datasets: [
+          { type:'bar', label:'New schools', data: labels.map(k => daymap[k].scouts), backgroundColor:'#5b8def', borderRadius:4, barPercentage:0.5, categoryPercentage:0.6 },
+          { type:'line', label:'Calls logged', data: labels.map(k => daymap[k].followups), borderColor:'#fbbf24', backgroundColor:'transparent', tension:0.3, borderWidth:2, pointBackgroundColor:'#fbbf24', pointRadius:2.5 }
+        ] },
+      options: { responsive:true, maintainAspectRatio:false,
+        scales: {
+          x: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size:10, family:'JetBrains Mono' } } },
+          y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size:10, family:'JetBrains Mono' }, stepSize:1, precision:0 }, beginAtZero:true }
+        },
+        plugins: { legend: { labels: { color:'#9aa7bd', font:{ size:11, family:'Inter' }, padding:14, boxWidth:10, boxHeight:10, usePointStyle:true } } } }
+    });
+  }
+}
+</script>
 </body>
 </html>
