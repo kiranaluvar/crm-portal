@@ -1,20 +1,3 @@
-Looking closely at the layout in `image_a6119c.jpg`, locking down the stage change mechanism makes complete operational sense.
-
-Right now, an agent can just change the dropdown value arbitrarily in the right panel. We need to eliminate that loophole completely. Instead of a free-floating dropdown, **the stage update must be the direct outcome of logging a call.**
-
-### 🔄 The New Workflow Guardrail
-
-1. **Protected Stage Selection:** The raw dropdown is removed or disabled.
-2. **Log a Call Form:** We add a dedicated quick-entry block inside the right panel (e.g., "Call Outcome/Notes").
-3. **Unified Lead-Specific History:** We replace the generalized data fields with a counter showing exactly how many times this specific school has been reached, followed by a local chronological stream of notes left by the agent for *only* that lead.
-
----
-
-### 💻 Updated Architecture (`index.html`)
-
-Here is your updated script with the unified right panel context, call tracking engine, and locked-down stage updates:
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -658,5 +641,3 @@ Here is your updated script with the unified right panel context, call tracking 
     </script>
 </body>
 </html>
-
-```
