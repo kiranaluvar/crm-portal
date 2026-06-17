@@ -9,7 +9,6 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased overflow-hidden selection:bg-blue-500 selection:text-white">
 
-    <!-- CLUSTER PROTECTION AUTHENTICATION GATEWAY -->
     <div id="authScreen" class="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center z-50 p-4 transition-all duration-300">
         <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl max-w-md w-full shadow-2xl text-center">
             <div class="h-12 w-12 rounded-xl bg-blue-600/10 flex items-center justify-center mx-auto mb-4 border border-blue-500/20">
@@ -24,10 +23,8 @@
         </div>
     </div>
 
-    <!-- MAIN CRM CORE WRAPPER CONTAINER -->
     <div id="mainDashboard" class="hidden flex h-screen w-screen overflow-hidden">
         
-        <!-- SIDE NAVIGATION BAR PANEL -->
         <aside class="w-64 bg-slate-950 border-r border-slate-800 p-5 flex flex-col justify-between h-full flex-shrink-0 z-40">
             <div>
                 <div class="flex items-center space-x-2 mb-6">
@@ -70,10 +67,8 @@
             </div>
         </aside>
 
-        <!-- DASHBOARD CONTAINER PANEL -->
         <main class="flex-1 bg-slate-900 h-full overflow-hidden relative flex flex-col">
             
-            <!-- ACCOUNTS DASHBOARD TAB CONSOLE -->
             <div id="log-tab" class="tab-content flex-1 flex overflow-hidden h-full">
                 <div class="flex-1 flex flex-col p-6 overflow-y-auto space-y-4 h-full">
                     
@@ -169,7 +164,6 @@
                     </div>
                 </div>
 
-                <!-- Drawer Right Side -->
                 <div id="contextDrawer" class="w-[420px] bg-slate-950 border-l border-slate-800 h-full flex flex-col transform translate-x-0 transition-transform duration-200 shadow-2xl flex-shrink-0">
                     <div id="drawerEmptyState" class="flex-1 flex flex-col items-center justify-center p-6 text-center text-slate-500">
                         <span class="text-3xl mb-2">👈</span>
@@ -238,14 +232,12 @@
                 </div>
             </div>
 
-            <!-- TASK CENTER TAB CONTAINER -->
             <div id="tasks-tab" class="tab-content hidden flex-1 flex flex-col p-6 overflow-hidden h-full space-y-4">
                 <div>
                     <h2 class="text-base font-bold text-white">Task Operational Center</h2>
                     <p class="text-slate-400 text-xs">Looping pipeline engine. Complete a task instantly by launching the Call Desk panel below.</p>
                 </div>
                 
-                <!-- METRIC COUNTER ROW -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <button onclick="setUrgencyQuickFilter('OVERDUE')" class="bg-slate-950 hover:bg-slate-900 border border-slate-800/80 rounded-xl p-4 flex items-center justify-between text-left transition focus:ring-1 focus:ring-rose-500/50">
                         <div>
@@ -277,7 +269,6 @@
                     </button>
                 </div>
 
-                <!-- WORKSPACE FILTER & TAB CONTROL BAR -->
                 <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex flex-wrap gap-4 items-center justify-between">
                     <div class="flex flex-wrap items-center gap-3">
                         <div class="flex items-center space-x-2 bg-slate-900 p-1 rounded-lg border border-slate-800">
@@ -325,7 +316,6 @@
                 </div>
             </div>
 
-            <!-- ANALYTICS TAB CONTAINER -->
             <div id="analytics-tab" class="tab-content hidden flex-1 flex flex-col p-6 overflow-y-auto space-y-6 h-full">
                 <div class="bg-slate-950 border border-slate-800 p-5 rounded-xl flex flex-col h-80 max-w-2xl mx-auto w-full">
                     <h3 class="text-xs font-bold text-slate-300 mb-3 uppercase text-center">Pipeline Volume Weight</h3>
@@ -336,7 +326,6 @@
         </main>
     </div>
 
-    <!-- APP CONTROLLER SYSTEM MODULE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -580,7 +569,7 @@
                         timestamp: serverTimestamp()
                     });
                 }).then(() => {
-                    localTasksArray.filter(t => t.leadId === id && t.taskStatus === 'Pending').forEach(t => {
+                    localTasksArray.filter(t => t.leadId === id && t.taskStatus !== 'Completed').forEach(t => {
                         updateDoc(doc(db, "crm_tasks", t.id), { taskStatus: 'Completed' });
                     });
 
@@ -637,7 +626,11 @@
             const currentUserEmail = auth.currentUser ? auth.currentUser.email : '';
             const todayStr = getNormalizedTodayString();
 
-            let filtered = localTasksArray.filter(t => t.taskStatus === currentTaskScopeTab);
+            // FIXED ROW RENDER FILTER LOGIC: Matches counter structure seamlessly
+            let filtered = localTasksArray.filter(t => {
+                const isCompleted = t.taskStatus === 'Completed';
+                return currentTaskScopeTab === 'Completed' ? isCompleted : !isCompleted;
+            });
 
             if (teamScope === 'MINE') {
                 filtered = filtered.filter(t => t.operator === currentUserEmail);
@@ -657,7 +650,7 @@
                 filtered = filtered.filter(t => (t.schoolName || '').toLowerCase().includes(nameQuery));
             }
 
-            // High priority sorting engine: pushes Overdue items straight to the top of your layout
+            // High priority sorting engine
             filtered.sort((a, b) => {
                 if (a.dueDate < todayStr && b.dueDate >= todayStr) return -1;
                 if (a.dueDate >= todayStr && b.dueDate < todayStr) return 1;
@@ -688,7 +681,7 @@
                         <div>${task.schoolName}</div>
                         <div class="text-[10px] text-slate-500 font-normal">Assigned to: ${displayOwner}</div>
                     </td>
-                    <td class="p-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-900 border border-slate-800 text-slate-400">${task.currentStage}</span></td>
+                    <td class="p-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-900 border border-slate-800 text-slate-400">${task.currentStage || 'New Lead'}</span></td>
                     <td class="p-3">
                         <div class="flex items-center space-x-3">
                             <span class="font-mono font-bold tracking-tight text-slate-200">${task.dueDate}</span>
@@ -696,7 +689,7 @@
                         </div>
                     </td>
                     <td class="p-3 pr-4 text-right">
-                        ${task.taskStatus === 'Pending' 
+                        ${task.taskStatus !== 'Completed' 
                             ? `<button onclick="switchTab('log-tab'); selectedRecordId='${task.leadId}'; loadWorkspaceDrawerRecord('${task.leadId}');" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-1.5 rounded text-[10px] transition shadow-md shadow-blue-600/10">Open Call Desk</button>`
                             : `<span class="text-[11px] text-slate-500 font-mono">Archive Verified</span>`
                         }
