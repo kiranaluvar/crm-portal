@@ -29,6 +29,7 @@
     </div>
 
     <div id="appDashboard" class="hidden min-h-screen flex flex-col opacity-0 transition-opacity duration-500">
+        
         <header class="bg-[#111827]/80 backdrop-blur-md border-b border-slate-800/60 sticky top-0 z-40 px-6 py-4 flex items-center justify-between shadow-xl shadow-black/5">
             <div class="flex items-center space-x-3">
                 <div class="w-9 h-9 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-xl flex items-center justify-center text-white text-sm shadow-md font-black">W</div>
@@ -40,13 +41,14 @@
             
             <div class="flex items-center space-x-3">
                 <div id="adminImportSection" class="hidden flex items-center bg-[#070b12] border border-dashed border-purple-500/30 rounded-xl px-3 py-1.5 space-x-3">
-                    <span class="text-[10px] font-black uppercase text-purple-400 tracking-wider">Historical Migration:</span>
+                    <span class="text-[10px] font-black uppercase text-purple-400 tracking-wider">Bulk Tools:</span>
                     <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="handleCSVFileSelect(event)" />
-                    <button onclick="document.getElementById('csvFileInput').click()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg transition uppercase tracking-wider shadow-lg shadow-purple-600/10">
-                        📥 Ingest CSV Matrix
-                    </button>
+                    <button onclick="document.getElementById('csvFileInput').click()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg transition uppercase tracking-wider shadow-lg shadow-purple-600/10">= Ingest CSV Matrix</button>
                 </div>
 
+                <button onclick="openAddLeadModal()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-lg shadow-blue-600/10 flex items-center gap-1.5">
+                    <span>+</span> Scout New Institution
+                </button>
                 <div id="tlControlPanel" class="hidden flex items-center bg-[#070b12] border border-slate-800 rounded-xl p-1 space-x-1">
                     <button onclick="openAssignmentModal()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg transition uppercase tracking-wider shadow-lg shadow-blue-600/10">Assign Leads</button>
                     <button onclick="exportToCSV()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold px-3 py-1.5 rounded-lg transition uppercase tracking-wider">Export CSV</button>
@@ -56,6 +58,7 @@
         </header>
 
         <main class="flex-1 p-6 space-y-6 max-w-[1600px] w-full mx-auto overflow-x-hidden">
+            
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="bg-[#111827] border border-slate-800/80 p-5 rounded-2xl relative overflow-hidden group shadow-lg">
                     <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl transition group-hover:bg-blue-500/10"></div>
@@ -177,17 +180,109 @@
         </main>
     </div>
 
-    <div id="updateAuditModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-[#111827] border border-slate-800 max-w-md w-full rounded-2xl p-6 shadow-2xl relative transform scale-95 transition-transform duration-300">
-            <button onclick="closeUpdateModal()" class="absolute top-4 right-4 text-slate-500 hover:text-slate-300 transition text-lg font-black">×</button>
-            <h3 class="text-sm font-black uppercase text-white tracking-wider mb-1">Audit Record Mutation</h3>
-            <p id="auditModalTargetHeader" class="text-[10px] text-blue-400 font-bold tracking-wide uppercase mb-4"></p>
+    <div id="addLeadModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-[#111827] border border-slate-800 max-w-2xl w-full rounded-2xl p-6 shadow-2xl relative overflow-y-auto max-h-[90vh] transform scale-95 transition-transform duration-300">
+            <button onclick="closeAddLeadModal()" class="absolute top-4 right-4 text-slate-500 hover:text-slate-300 transition text-lg font-black">×</button>
+            <h3 class="text-sm font-black uppercase text-white tracking-wider mb-1">Scout Institution Vector</h3>
+            <p class="text-[10px] text-slate-400 font-medium mb-6">Initialize a tracking row inside the target cloud index pipeline cluster.</p>
             
-            <input type="hidden" id="auditTargetDocId">
+            <form id="leadGenerationForm" onsubmit="commitNewLeadNode(event)" class="space-y-4 text-xs">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1">School Name *</label>
+                        <input type="text" id="formSchool" required class="w-full bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500 font-semibold text-slate-200">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1">School Type</label>
+                        <select id="formSchoolType" class="w-full bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500 font-bold text-slate-300 cursor-pointer">
+                            <option value="Day">Day School</option>
+                            <option value="Boarding">Boarding</option>
+                            <option value="Day-Boarding">Day-Boarding</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1">Address Layout Details</label>
+                    <input type="text" id="formAddress" class="w-full bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500 font-semibold text-slate-200">
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div>
+                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1">City *</label>
+                        <input type="text" id="formCity" required class="w-full bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500 font-semibold text-slate-200">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1">State *</label>
+                        <input type="text" id="formState" required class="w-full bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500 font-semibold text-slate-200">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1">Pin Code</label>
+                        <input type="text" id="formPinCode" class="w-full bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500 font-semibold text-slate-200">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1">Country</label>
+                        <input type="text" id="formCountry" value="India" class="w-full bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500 font-semibold text-slate-200">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1">Primary Email ID</label>
+                        <input type="email" id="formEmail" class="w-full bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500 font-semibold text-slate-200">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1">Primary Contact No *</label>
+                        <input type="tel" id="formContact" required class="w-full bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500 font-semibold text-slate-200">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1">Curriculum Standard</label>
+                        <select id="formCurriculum" class="w-full bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500 font-bold text-slate-300 cursor-pointer">
+                            <option value="CBSE">CBSE</option>
+                            <option value="ICSE">ICSE</option>
+                            <option value="IGCSE">IGCSE</option>
+                            <option value="IB">IB</option>
+                            <option value="State Board">State Board</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1">Annual Fees Estimate</label>
+                        <input type="number" id="formFees" oninput="autoCalculateFeeRange()" class="w-full bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500 font-semibold text-slate-200" placeholder="e.g. 75000">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1">Calculated Fee Category Range</label>
+                        <input type="text" id="formFeesRange" readonly class="w-full bg-[#070b12]/50 border border-slate-800 rounded-xl px-3 py-2 focus:outline-none text-slate-500 font-bold select-none cursor-not-allowed">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1">Target Campaign Pitch / Scouted For</label>
+                    <select id="formScoutedFor" class="w-full bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500 font-bold text-slate-300 cursor-pointer">
+                        <option value="Free Coding Webinar">Free Coding Webinar</option>
+                        <option value="Math Olympiad Bootcamp">Math Olympiad Bootcamp</option>
+                        <option value="AI Awareness Workshop">AI Awareness Workshop</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3 px-4 rounded-xl text-xs uppercase tracking-wider transition shadow-lg shadow-blue-600/10 pt-2">Commit Record Matrix</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="updateCommentsModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-[#111827] border border-slate-800 max-w-md w-full rounded-2xl p-6 shadow-2xl relative transform scale-95 transition-transform duration-300">
+            <button onclick="closeCommentsModal()" class="absolute top-4 right-4 text-slate-500 hover:text-slate-300 transition text-lg font-black">×</button>
+            <h3 class="text-sm font-black uppercase text-white tracking-wider mb-1">Audit Record Mutation</h3>
+            <p id="commentsModalTargetHeader" class="text-[10px] text-blue-400 font-bold tracking-wide uppercase mb-4"></p>
+            
+            <input type="hidden" id="commentsTargetDocId">
             <div class="space-y-4">
                 <div>
                     <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1.5">Modify Lifecycle Status</label>
-                    <select id="auditFieldStatus" class="w-full bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-200 focus:outline-none focus:border-blue-500 transition cursor-pointer">
+                    <select id="commentsFieldStatus" class="w-full bg-[#070b12] border border-slate-800 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-200 focus:outline-none focus:border-blue-500 transition cursor-pointer">
                         <option value="Unassigned">Unassigned Queue</option>
                         <option value="Assigned / New">Assigned / New</option>
                         <option value="Contacted">Contacted</option>
@@ -199,9 +294,9 @@
                 </div>
                 <div>
                     <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1.5">Append Audit Execution Note</label>
-                    <textarea id="auditFieldNote" rows="3" class="w-full bg-[#070b12] border border-slate-800 rounded-xl p-3 text-xs focus:outline-none focus:border-blue-500 font-medium text-slate-300 placeholder-slate-600 transition resize-none" placeholder="Enter diagnostic update strings or interaction logs..."></textarea>
+                    <textarea id="commentsFieldNote" rows="3" class="w-full bg-[#070b12] border border-slate-800 rounded-xl p-3 text-xs focus:outline-none focus:border-blue-500 font-medium text-slate-300 placeholder-slate-600 transition resize-none" placeholder="Enter diagnostic update strings or interaction logs..."></textarea>
                 </div>
-                <button onclick="commitAuditRecordMutation()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs uppercase tracking-wider transition shadow-lg shadow-emerald-600/10 mt-2">Commit Mutation</button>
+                <button onclick="commitCommentsRecordMutation()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs uppercase tracking-wider transition shadow-lg shadow-emerald-600/10 mt-2">Commit Mutation</button>
             </div>
         </div>
     </div>
@@ -236,7 +331,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, onSnapshot, query, doc, updateDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // CENTRALIZED ENVIRONMENT VARIABLE CLUSTERS
+        // FIREBASE CLOUD SYSTEM CONSTANTS
         const firebaseConfig = {
             apiKey: "AIzaSyAs7K-9sUo8X_3jL2M4pQn6Wv1xYz8tEw0",
             authDomain: "webinar-ops-crm.firebaseapp.com",
@@ -251,21 +346,21 @@
             "shubham.rautela@brightchamps.com"
         ];
 
-        // ENGINE INITIALIZATIONS
+        // ENGINE INITS
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // SYSTEM ARRAYS
+        // DATA STORE MATRICES
         let cachedPipelineRecords = [];
         let systemActiveOperators = new Set();
         let currentUserEmail = "";
         let globalDataStreamUnsubscribe = null;
 
-        // VISUAL GRAPH HOOKS
+        // VISUAL MAP HANDLERS
         let instanceTimelineChart = null;
         let instanceFunnelChart = null;
 
-        // AUTHENTICATION SECURITY LAYER HANDLERS
+        // AUTH MECHANICS CONTROLLER
         window.handleAuthentication = function() {
             const emailInput = document.getElementById('authEmail').value.trim().toLowerCase();
             const messageBadge = document.getElementById('authMessage');
@@ -288,13 +383,13 @@
                 
                 document.getElementById('userProfileBadge').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Authorized: ${currentUserEmail}`;
                 
-                // CONDITIONAL ACCESS ELEVATION CHECK
+                // ROUTING INTERFACE SECURITY RULES
                 if (TEAM_LEADERS_LIST.includes(currentUserEmail)) {
                     document.getElementById('tlControlPanel').classList.remove('hidden');
-                    document.getElementById('adminImportSection').classList.remove('hidden'); // Expose bulk CSV panel
+                    document.getElementById('adminImportSection').classList.remove('hidden'); // Expose bulk CSV tool to admin
                 } else {
                     document.getElementById('tlControlPanel').classList.add('hidden');
-                    document.getElementById('adminImportSection').classList.add('hidden'); // Conceal bulk CSV panel
+                    document.getElementById('adminImportSection').classList.add('hidden'); // Protect bulk CSV tool from users
                 }
 
                 initializeDataStreams();
@@ -318,7 +413,7 @@
             }, 500);
         };
 
-        // REAL-TIME FIRESTORE DATA STREAMS INGESTION ENGINE
+        // STREAM REALTIME MANAGEMENT ENGINE
         function initializeDataStreams() {
             const dataQuery = query(collection(db, "leads"));
             
@@ -338,7 +433,7 @@
                     }
                 });
 
-                // RESTRICT RECORD PERSPECTIVES IF NON-ADMIN NODE IS DETECTED
+                // RESTRAIN NON-ADMIN CLUSTER PERMISSIONS FROM ACQUIRING GLOBAL ROWS
                 if (!TEAM_LEADERS_LIST.includes(currentUserEmail)) {
                     cachedPipelineRecords = cachedPipelineRecords.filter(lead => lead.operator === currentUserEmail);
                 }
@@ -346,7 +441,7 @@
                 refreshOperatorSelectionDropdowns();
                 executePipelineFiltering();
             }, (error) => {
-                console.error("DATA CORE FAULT: Core sync connection aborted.", error);
+                console.error("DATA CORE FAULT: Cloud synchronization pipeline aborted.", error);
             });
         }
 
@@ -370,7 +465,7 @@
             }
         }
 
-        // COMPLEX CLIENT-SIDE DATA PIPELINE COMPILING & FILTERING
+        // COMPREHENSIVE RE-FILTER ROUTINE
         window.executePipelineFiltering = function() {
             const queryToken = document.getElementById('globalSearchInput').value.toLowerCase().trim();
             const statusToken = document.getElementById('filterStatusDropdown').value;
@@ -398,7 +493,7 @@
             compileMetricsAndAnalytics(recordsSubset);
         };
 
-        // DOM GRID RENDER LAYER
+        // CENTRAL PIPELINE RECORD RENDER BOARD ENGINE
         function renderPipelineTable(records) {
             const tbody = document.getElementById('pipelineTableBody');
             document.getElementById('totalRecordsCounter').textContent = `Displaying ${records.length} items from compiled telemetry constraints.`;
@@ -408,7 +503,6 @@
                 return;
             }
 
-            // ORDER BY TIMESTAMP REVERSE CHROMATIC DENSITY DEFAULT
             records.sort((x, y) => {
                 const tx = x.timestamp?.seconds || 0;
                 const ty = y.timestamp?.seconds || 0;
@@ -444,14 +538,14 @@
                         <div class="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mt-0.5">Vector Allocation</div>
                     </td>
                     <td class="py-3 px-4 text-center">
-                        <button onclick="openUpdateModal('${lead.id}', '${escape(lead.school)}', '${lead.status}')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-black tracking-wider uppercase text-[9px] px-2.5 py-1 rounded-lg border border-slate-700/50 transition">Audit</button>
+                        <button onclick="openCommentsModal('${lead.id}', '${escape(lead.school)}', '${lead.status}')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-black tracking-wider uppercase text-[9px] px-2.5 py-1 rounded-lg border border-slate-700/50 transition">Audit</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        // COMPUTATIONAL ANALYTIC ENGINE MATRICES
+        // COMPILATION METRICS HUB CALCULATOR
         function compileMetricsAndAnalytics(records) {
             let totalRows = records.length;
             let securedLinks = 0;
@@ -484,7 +578,6 @@
                 if (r.status === "Webinar Agreed") timelineChronology[plotDate].closed++;
             });
 
-            // COMPOSITE DASHBOARD CORE CARD INJECTIONS
             document.getElementById('metricTotalRows').textContent = totalRows;
             document.getElementById('metricLinksSecured').textContent = securedLinks;
             document.getElementById('metricPendingContacts').textContent = pendingContacts;
@@ -531,9 +624,7 @@
             });
         }
 
-        // DATA ANIMATION GRAPH PLOTTINGS VIA CHART.JS INFRASTRUCTURE
         function generateAnalyticalCharts(funnelData, timelineData) {
-            // FUNNEL GRAPH GENERATION ELEMENT
             const contextFunnel = document.getElementById('statusFunnelChart').getContext('2d');
             if (instanceFunnelChart) instanceFunnelChart.destroy();
             instanceFunnelChart = new Chart(contextFunnel, {
@@ -557,7 +648,6 @@
                 }
             });
 
-            // TIMELINE TREND AREA MATRIX PLOT
             const contextTimeline = document.getElementById('timelineChart').getContext('2d');
             if (instanceTimelineChart) instanceTimelineChart.destroy();
 
@@ -602,15 +692,95 @@
             });
         }
 
-        // DATA INTERACTION MODAL MANAGEMENT CORE CONTROL LAYERS
-        window.openUpdateModal = function(id, unescapedSchool, currentStatus) {
-            document.getElementById('auditTargetDocId').value = id;
-            document.getElementById('auditModalTargetHeader').textContent = unescape(unescapedSchool);
-            document.getElementById('auditFieldStatus').value = currentStatus;
-            document.getElementById('auditFieldNote').value = "";
+        // AUTO FEE CALCULATIONS ENGINE INTERFACE HOOK
+        window.autoCalculateFeeRange = function() {
+            const rawVal = parseFloat(document.getElementById('formFees').value) || 0;
+            const outputBox = document.getElementById('formFeesRange');
 
-            const targetModal = document.getElementById('updateUpdateModal');
-            const mask = document.getElementById('updateAuditModal');
+            if (rawVal === 0) outputBox.value = "";
+            else if (rawVal < 25000) outputBox.value = "Under 25k";
+            else if (rawVal >= 25000 && rawVal <= 50000) outputBox.value = "25k till 50k";
+            else if (rawVal > 50000 && rawVal <= 100000) outputBox.value = "5k and 5k+ till 1 lakh";
+            else outputBox.value = "10k till 2 lakh";
+        };
+
+        // SCOUT MODAL ENGINE WRAPPERS
+        window.openAddLeadModal = function() {
+            document.getElementById('leadGenerationForm').reset();
+            document.getElementById('formFeesRange').value = "";
+            
+            const targetModal = document.getElementById('addLeadModal');
+            targetModal.classList.remove('hidden');
+            setTimeout(() => {
+                targetModal.classList.add('opacity-100');
+                targetModal.querySelector('.transform').classList.remove('scale-95');
+            }, 50);
+        };
+
+        window.closeAddLeadModal = function() {
+            const targetModal = document.getElementById('addLeadModal');
+            targetModal.querySelector('.transform').classList.add('scale-95');
+            targetModal.classList.remove('opacity-100');
+            setTimeout(() => { targetModal.classList.add('hidden'); }, 300);
+        };
+
+        window.commitNewLeadNode = async function(event) {
+            event.preventDefault();
+
+            const schoolName = document.getElementById('formSchool').value.trim();
+            const type = document.getElementById('formSchoolType').value;
+            const addr = document.getElementById('formAddress').value.trim();
+            const city = document.getElementById('formCity').value.trim();
+            const state = document.getElementById('formState').value.trim();
+            const pin = document.getElementById('formPinCode').value.trim();
+            const country = document.getElementById('formCountry').value.trim();
+            const email = document.getElementById('formEmail').value.trim();
+            const contact = document.getElementById('formContact').value.trim();
+            const curriculum = document.getElementById('formCurriculum').value;
+            const fees = document.getElementById('formFees').value;
+            const range = document.getElementById('formFeesRange').value;
+            const campaign = document.getElementById('formScoutedFor').value;
+
+            try {
+                // FIXED ACCESS CONTROL: LOCK NEW LEADS AS UNASSIGNED SO USERS CANNOT MANUALLY ROUTE
+                await addDoc(collection(db, "leads"), {
+                    uniqueSchoolId: "BC-SCH-" + Math.random().toString(36).substr(2, 8).toUpperCase(),
+                    school: schoolName,
+                    schoolType: type,
+                    address: addr,
+                    city: city,
+                    state: state,
+                    pinCode: pin,
+                    country: country,
+                    mainEmailId: email,
+                    mainContactNo: contact,
+                    curriculum: curriculum,
+                    schoolFees: fees,
+                    schoolFeesRange: range,
+                    scoutedFor: campaign,
+                    status: "Unassigned",
+                    operator: "None",
+                    followUpCount: 0,
+                    dateStr: new Date().toISOString().split('T')[0],
+                    timestamp: serverTimestamp(),
+                    scoutedByNode: currentUserEmail
+                });
+
+                closeAddLeadModal();
+            } catch (err) {
+                console.error("INGESTION CRITICAL ERROR:", err);
+                alert("Cloud submission block rejected.");
+            }
+        };
+
+        // AUDIT ROUTINE CONTROL LOGICS
+        window.openCommentsModal = function(id, unescapedSchool, currentStatus) {
+            document.getElementById('commentsTargetDocId').value = id;
+            document.getElementById('commentsModalTargetHeader').textContent = unescape(unescapedSchool);
+            document.getElementById('commentsFieldStatus').value = currentStatus;
+            document.getElementById('commentsFieldNote').value = "";
+
+            const mask = document.getElementById('updateCommentsModal');
             mask.classList.remove('hidden');
             setTimeout(() => {
                 mask.classList.add('opacity-100');
@@ -618,17 +788,17 @@
             }, 50);
         };
 
-        window.closeUpdateModal = function() {
-            const mask = document.getElementById('updateAuditModal');
+        window.closeCommentsModal = function() {
+            const mask = document.getElementById('updateCommentsModal');
             mask.querySelector('.transform').classList.add('scale-95');
             mask.classList.remove('opacity-100');
             setTimeout(() => { mask.classList.add('hidden'); }, 300);
         };
 
-        window.commitAuditRecordMutation = async function() {
-            const targetId = document.getElementById('auditTargetDocId').value;
-            const newStatus = document.getElementById('auditFieldStatus').value;
-            const appendNote = document.getElementById('auditFieldNote').value.trim();
+        window.commitCommentsRecordMutation = async function() {
+            const targetId = document.getElementById('commentsTargetDocId').value;
+            const newStatus = document.getElementById('commentsFieldStatus').value;
+            const appendNote = document.getElementById('commentsFieldNote').value.trim();
 
             if (!targetId) return;
 
@@ -645,14 +815,14 @@
                 }
 
                 await updateDoc(docRef, executionPayload);
-                closeUpdateModal();
+                closeCommentsModal();
             } catch (err) {
-                console.error("MUTATION CORE FAILURE: Ingestion to database node rejected.", err);
-                alert("Database mutation rejected by security cluster protocols.");
+                console.error("MUTATION CORE FAILURE:", err);
+                alert("Database mutation rejected by rules.");
             }
         };
 
-        // ADMIN ROUTING MATRIX OPERATION ASSIGNMENT CONTROLLER HOOKS
+        // BATCH ASSIGNMENT OPERATION MATRIX HANDLERS
         window.openAssignmentModal = function() {
             const unassignedLeads = cachedPipelineRecords.filter(r => r.status === "Unassigned" || !r.operator || r.operator === "None");
             document.getElementById('assignmentDeskQueueCounter').textContent = `${unassignedLeads.length} nodes`;
@@ -677,13 +847,13 @@
             const batchAllocationDepth = parseInt(document.getElementById('assignmentDeskBatchSize').value) || 0;
 
             if (!targetOperator) {
-                alert("Routing requirement mapping rule empty: Select destination node operator.");
+                alert("Routing specification array missing operator.");
                 return;
             }
 
             const availableQueue = cachedPipelineRecords.filter(r => r.status === "Unassigned" || !r.operator || r.operator === "None");
             if (availableQueue.length === 0) {
-                alert("Queue empty. Allocation index terminated automatically.");
+                alert("Queue empty.");
                 return;
             }
 
@@ -703,12 +873,12 @@
                     });
                 }
             } catch (err) {
-                console.error("BATCH MATRIX DISTRIBUTOR FAULT: Network block failure.", err);
+                console.error("BATCH MATRIX DISTRIBUTOR FAULT:", err);
                 alert("Automated allocation sequence suffered interruption partition failures.");
             }
         };
 
-        // EXCEL COMPLIANT MATRIX EXPORT SYSTEM RULE
+        // EXCEL EXPORT SCRIPT EXECUTION ENGINE
         window.exportToCSV = function() {
             if (cachedPipelineRecords.length === 0) {
                 alert("Export baseline configuration error: Empty target tracking register array.");
@@ -754,9 +924,9 @@
             document.body.removeChild(temporaryAnchorElement);
         };
 
-        // ==========================================
+        // =========================================================================
         // CENTRAL RETROACTIVE CSV SYSTEM BULK SYNC ENGINE
-        // ==========================================
+        // =========================================================================
         window.handleCSVFileSelect = function(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -775,7 +945,7 @@
                 return;
             }
 
-            // Extract headers and sanitize text quotes out
+            // Extract structural headers from header data row index 0
             const headers = lines[0].split(',').map(h => h.trim().replace(/^["']|["']$/g, ''));
             
             if (!confirm(`Initialize pipeline ingestion for ${lines.length - 1} records into active database cluster?`)) return;
@@ -784,7 +954,7 @@
             let errorCount = 0;
 
             for (let i = 1; i < lines.length; i++) {
-                // Multi-character delimiter parsing loop engine for comma matching
+                // Multi-character delimiter loop logic handles inline cell commas
                 const csvRegex = /(".*?"|[^",\s]+)(?=\s*,|\s*$)/g;
                 const rowData = lines[i].match(csvRegex) || lines[i].split(',');
                 const row = rowData.map(val => val.trim().replace(/^["']|["']$/g, ''));
@@ -794,14 +964,13 @@
                     leadMap[header] = row[index] || "";
                 });
 
-                // Skip iteration entirely if institution identifier constraint breaks
+                // Structural validation criteria check
                 if (!leadMap['school']) continue;
 
                 try {
-                    // Reconstruct date markers so time tracking visual modules stay fully operational
+                    // Synchronize time points to avoid breaking the conversion charts
                     const historicalDate = leadMap['dateStr'] ? new Date(leadMap['dateStr']) : new Date();
 
-                    // Push directly into active cluster collection mapping
                     await addDoc(collection(db, "leads"), {
                         uniqueSchoolId: "BC-SCH-" + Math.random().toString(36).substr(2, 8).toUpperCase(),
                         school: leadMap['school'],
