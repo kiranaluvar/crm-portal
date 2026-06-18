@@ -185,22 +185,45 @@ async function submitActivity(form) {
   if (state.saving) return
   state.saving = true; render()
   const newStage = form.new_stage.value || null
-  const row = {
+  const completed = form.completed.checked
+  const scheduledFor = form.scheduled_for.value || null
+  const activityType = form.activity_type.value
+  const stageNow = newStage || state.currentSchool.current_stage
+
+  // Primary row: the activity being logged (completed now, or scheduled for the date)
+  const primary = {
     school_profile_id: state.currentSchool.school_profile_id,
     user_id: state.session.user.id,
-    activity_type: form.activity_type.value,
+    activity_type: activityType,
     outcome: form.outcome.value.trim() || null,
     notes: form.notes.value.trim() || null,
-    scheduled_for: form.scheduled_for.value || null,
-    completed_at: form.completed.checked ? new Date().toISOString() : null,
-    stage_at_time: newStage || state.currentSchool.current_stage,
+    scheduled_for: scheduledFor,
+    completed_at: completed ? new Date().toISOString() : null,
+    stage_at_time: stageNow,
   }
-  const { error: insErr } = await supabase.from('activities').insert(row)
+  const { error: insErr } = await supabase.from('activities').insert(primary)
   if (insErr) { state.saving = false; flash('err', insErr.message); render(); return }
+
+  // Secondary row: if the primary was a *completed* activity that also set a future
+  // follow-up date, queue a separate pending row so My Follow-ups picks it up.
+  if (completed && scheduledFor) {
+    const followUp = {
+      school_profile_id: state.currentSchool.school_profile_id,
+      user_id: state.session.user.id,
+      activity_type: activityType,
+      outcome: null,
+      notes: 'Follow-up from ' + fmtDateOnly(new Date().toISOString()),
+      scheduled_for: scheduledFor,
+      completed_at: null,
+      stage_at_time: stageNow,
+    }
+    await supabase.from('activities').insert(followUp)
+  }
+
   if (newStage && newStage !== state.currentSchool.current_stage) {
     await supabase.from('schools').update({ current_stage: newStage }).eq('school_profile_id', state.currentSchool.school_profile_id)
   }
-  await Promise.all([loadSchool(state.currentSchool.school_profile_id), loadActivities(state.currentSchool.school_profile_id)])
+  await Promise.all([loadSchool(state.currentSchool.school_profile_id), loadActivities(state.currentSchool.school_profile_id), loadFollowUps()])
   state.saving = false; flash('ok', 'Activity logged'); render()
 }
 
