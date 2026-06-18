@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Webinar CRM — Login Test</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, sans-serif; max-width: 640px; margin: 60px auto; padding: 20px; color: #1f2937; }
+    h1 { margin-bottom: 4px; }
+    .lede { color: #6b7280; margin-top: 0; }
+    button { background: #3b82f6; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 16px; cursor: pointer; }
+    button:hover { background: #2563eb; }
+    .signout-btn { background: #ef4444; }
+    .signout-btn:hover { background: #dc2626; }
+    .card { background: #f9fafb; padding: 20px; border-radius: 8px; margin-top: 20px; border: 1px solid #e5e7eb; }
+    .card p { margin: 8px 0; }
+    pre { background: white; padding: 12px; border-radius: 4px; overflow-x: auto; font-size: 12px; border: 1px solid #e5e7eb; max-height: 240px; }
+    .status { padding: 10px 14px; border-radius: 6px; margin-bottom: 16px; font-size: 14px; }
+    .ok { background: #d1fae5; color: #065f46; }
+    .err { background: #fee2e2; color: #991b1b; }
+    .neutral { background: #f3f4f6; color: #4b5563; }
+    code { background: #f3f4f6; padding: 1px 6px; border-radius: 3px; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <h1>Webinar CRM — Login Test</h1>
+  <p class="lede">If this signs you in and shows your role as <code>agent</code>, the whole auth chain works.</p>
+
+  <div id="status" class="status neutral">Checking session…</div>
+
+  <div id="loggedOut" style="display:none;">
+    <button onclick="login()">Sign in with Google</button>
+  </div>
+
+  <div id="loggedIn" style="display:none;">
+    <div class="card">
+      <p><strong>Email:</strong> <span id="userEmail"></span></p>
+      <p><strong>User ID:</strong> <code id="userId"></code></p>
+      <p><strong>Role (from <code>user_profiles</code>):</strong> <span id="userRole">checking…</span></p>
+      <p><strong>Schools you can read:</strong> <span id="schoolCount">checking…</span></p>
+      <details>
+        <summary style="cursor:pointer; margin: 12px 0;">Raw user object</summary>
+        <pre id="rawUser"></pre>
+      </details>
+      <button class="signout-btn" onclick="signOut()">Sign out</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+
+    const SUPABASE_URL = 'https://kmojqsmfefplfkdkuahy.supabase.co'
+    const SUPABASE_KEY = 'sb_publishable_wQ9M9NiTljrd3W__mMsT0Q_IUMKrWFr'
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+    window.supabase = supabase
+
+    async function checkSession() {
+      const statusEl = document.getElementById('status')
+      const { data: { session }, error } = await supabase.auth.getSession()
+      if (error) {
+        statusEl.textContent = '❌ Session error: ' + error.message
+        statusEl.className = 'status err'
+        return
+      }
+      if (session) {
+        document.getElementById('loggedOut').style.display = 'none'
+        document.getElementById('loggedIn').style.display = 'block'
+        document.getElementById('userEmail').textContent = session.user.email
+        document.getElementById('userId').textContent = session.user.id
+        document.getElementById('rawUser').textContent = JSON.stringify(session.user, null, 2)
+        statusEl.textContent = '✅ Signed in — auth works'
+        statusEl.className = 'status ok'
+
+        // Verify user_profiles trigger fired
+        const { data: profile, error: pErr } = await supabase
+          .from('user_profiles')
+          .select('role, full_name')
+          .eq('user_id', session.user.id)
+          .single()
+        const roleEl = document.getElementById('userRole')
+        if (pErr) {
+          roleEl.textContent = '❌ ' + pErr.message
+          roleEl.style.color = '#991b1b'
+        } else {
+          roleEl.textContent = profile.role + (profile.full_name ? ' • ' + profile.full_name : '')
+        }
+
+        // Verify RLS on schools — should see all 9166
+        const { count, error: cErr } = await supabase
+          .from('schools')
+          .select('*', { count: 'exact', head: true })
+        const countEl = document.getElementById('schoolCount')
+        if (cErr) {
+          countEl.textContent = '❌ ' + cErr.message
+          countEl.style.color = '#991b1b'
+        } else {
+          countEl.textContent = count + ' (expected ~9166)'
+        }
+      } else {
+        document.getElementById('loggedOut').style.display = 'block'
+        document.getElementById('loggedIn').style.display = 'none'
+        statusEl.textContent = 'Not signed in'
+        statusEl.className = 'status neutral'
+      }
+    }
+
+    window.login = async function() {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.href }
+      })
+      if (error) alert('Login error: ' + error.message)
+    }
+
+    window.signOut = async function() {
+      await supabase.auth.signOut()
+      window.location.reload()
+    }
+
+    checkSession()
+    supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') checkSession()
+    })
+  </script>
+</body>
+</html>
