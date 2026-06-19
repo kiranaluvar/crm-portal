@@ -257,21 +257,22 @@ async function logout() { await supabase.auth.signOut(); window.location.hash = 
 async function submitActivity(form) {
   if (state.saving) return
   const newStage = form.new_stage.value || null
-  const completed = form.completed.checked
   const scheduledFor = form.scheduled_for.value || null
   const activityType = form.activity_type.value
   const stageNow = newStage || state.currentSchool.current_stage
   const stageIsTerminal = TERMINAL_STAGES.includes(stageNow)
 
-  // ENFORCE: completing an activity on a non-terminal school requires scheduling a next follow-up
-  if (completed && !stageIsTerminal && !scheduledFor) {
-    flash('err', 'Schedule the next follow-up date, or move stage to Closed / Webinar Done / Not Interested.')
+  // ENFORCE: every logged activity is a completed activity. The school must either
+  // (a) have a next follow-up scheduled, or (b) be moved to a terminal stage.
+  if (!stageIsTerminal && !scheduledFor) {
+    flash('err', 'Set the next follow-up date, or move stage to Closed / Webinar Done / Not Interested.')
     return
   }
 
   state.saving = true; render()
+  const nowIso = new Date().toISOString()
 
-  // 1. Insert the primary activity row
+  // 1. Insert the completed activity
   const primary = {
     school_profile_id: state.currentSchool.school_profile_id,
     user_id: state.session.user.id,
@@ -279,33 +280,28 @@ async function submitActivity(form) {
     outcome: form.outcome.value.trim() || null,
     notes: form.notes.value.trim() || null,
     scheduled_for: scheduledFor,
-    completed_at: completed ? new Date().toISOString() : null,
+    completed_at: nowIso,
     stage_at_time: stageNow,
   }
   const { error: insErr } = await supabase.from('activities').insert(primary)
   if (insErr) { state.saving = false; flash('err', insErr.message); render(); return }
 
-  // 2. If this activity was completed (i.e., agent actually did something),
-  //    auto-close any existing pending follow-up tasks for this school by this user.
-  //    A pending task = same school, same user, completed_at null, scheduled_for not null.
-  if (completed) {
-    await supabase.from('activities')
-      .update({ completed_at: new Date().toISOString(), outcome: 'Closed by ' + activityType + ' activity' })
-      .eq('school_profile_id', state.currentSchool.school_profile_id)
-      .eq('user_id', state.session.user.id)
-      .is('completed_at', null)
-      .not('scheduled_for', 'is', null)
-  }
+  // 2. Auto-close any open follow-up tasks for this school by this user.
+  await supabase.from('activities')
+    .update({ completed_at: nowIso, outcome: 'Closed by ' + activityType + ' activity' })
+    .eq('school_profile_id', state.currentSchool.school_profile_id)
+    .eq('user_id', state.session.user.id)
+    .is('completed_at', null)
+    .not('scheduled_for', 'is', null)
 
-  // 3. If the activity was completed AND a next follow-up date is set,
-  //    create a new pending task. (Unless stage is terminal — then no more tasks.)
-  if (completed && scheduledFor && !stageIsTerminal) {
+  // 3. If a next follow-up date is set and stage isn't terminal, create the next task.
+  if (scheduledFor && !stageIsTerminal) {
     const followUp = {
       school_profile_id: state.currentSchool.school_profile_id,
       user_id: state.session.user.id,
       activity_type: activityType,
       outcome: null,
-      notes: 'Follow-up scheduled from ' + fmtDateOnly(new Date().toISOString()),
+      notes: 'Follow-up scheduled from ' + fmtDateOnly(nowIso),
       scheduled_for: scheduledFor,
       completed_at: null,
       stage_at_time: stageNow,
@@ -313,7 +309,7 @@ async function submitActivity(form) {
     await supabase.from('activities').insert(followUp)
   }
 
-  // 4. If stage changed, update the school
+  // 4. Stage change on the school, if any
   if (newStage && newStage !== state.currentSchool.current_stage) {
     await supabase.from('schools').update({ current_stage: newStage }).eq('school_profile_id', state.currentSchool.school_profile_id)
   }
@@ -324,7 +320,7 @@ async function submitActivity(form) {
     loadFollowUps(),
   ])
   state.saving = false
-  flash('ok', stageIsTerminal && completed ? 'Activity logged · school marked ' + stageNow : 'Activity logged')
+  flash('ok', stageIsTerminal ? 'Activity logged · school marked ' + stageNow : 'Activity logged · next follow-up scheduled')
   render()
 }
 
@@ -545,9 +541,9 @@ function renderSchoolDetail() {
 function renderActivityForm(s) {
   const isTerminal = TERMINAL_STAGES.includes(s.current_stage)
   const hint = isTerminal
-    ? '<div class="text-xs text-stone-500 italic">This school is in a terminal stage. Logged activities won\'t schedule new follow-ups.</div>'
-    : '<div class="text-xs text-stone-500 italic">Schedule a next follow-up date, or move to Closed / Webinar Done / Not Interested.</div>'
-  return '<section class="bg-white border border-stone-200 rounded-lg"><header class="px-4 py-3 border-b border-stone-200"><h2 class="text-sm font-semibold text-stone-900">Log activity</h2></header><form data-action="submit-activity" class="p-4 space-y-3"><div><label class="block text-xs font-medium text-stone-600 mb-1">Type</label><select name="activity_type" required class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md bg-white focus-ring">' + ACTIVITY_TYPES.map(t => '<option>' + esc(t) + '</option>').join('') + '</select></div><div><label class="block text-xs font-medium text-stone-600 mb-1">Outcome <span class="text-stone-400 font-normal">(short)</span></label><input type="text" name="outcome" placeholder="e.g., Spoke to principal" class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring"></div><div><label class="block text-xs font-medium text-stone-600 mb-1">Notes</label><textarea name="notes" rows="3" placeholder="Details, next steps…" class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring resize-none"></textarea></div><div class="grid grid-cols-2 gap-3"><div><label class="block text-xs font-medium text-stone-600 mb-1">Move stage to</label><select name="new_stage" class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md bg-white focus-ring"><option value="">Keep current</option>' + STAGES.map(st => '<option value="' + esc(st) + '"' + (st === s.current_stage ? ' disabled' : '') + '>' + esc(st) + '</option>').join('') + '</select></div><div><label class="block text-xs font-medium text-stone-600 mb-1">Next follow-up</label><input type="date" name="scheduled_for" class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring"></div></div><label class="flex items-center gap-2 text-xs text-stone-600"><input type="checkbox" name="completed" checked class="rounded focus-ring">This already happened (mark completed)</label>' + hint + '<button type="submit"' + (state.saving ? ' disabled' : '') + ' class="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white text-sm font-medium py-2 rounded-md transition">' + (state.saving ? 'Saving…' : 'Log activity') + '</button></form></section>'
+    ? '<div class="text-xs text-stone-500 italic">This school is in a terminal stage — no new follow-up required.</div>'
+    : '<div class="text-xs text-stone-500 italic">Set a next follow-up date, or move stage to Closed / Webinar Done / Not Interested.</div>'
+  return '<section class="bg-white border border-stone-200 rounded-lg"><header class="px-4 py-3 border-b border-stone-200"><h2 class="text-sm font-semibold text-stone-900">Log activity</h2></header><form data-action="submit-activity" class="p-4 space-y-3"><div><label class="block text-xs font-medium text-stone-600 mb-1">Type</label><select name="activity_type" required class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md bg-white focus-ring">' + ACTIVITY_TYPES.map(t => '<option>' + esc(t) + '</option>').join('') + '</select></div><div><label class="block text-xs font-medium text-stone-600 mb-1">Outcome <span class="text-stone-400 font-normal">(short)</span></label><input type="text" name="outcome" placeholder="e.g., Spoke to principal" class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring"></div><div><label class="block text-xs font-medium text-stone-600 mb-1">Notes</label><textarea name="notes" rows="3" placeholder="Details, next steps…" class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring resize-none"></textarea></div><div class="grid grid-cols-2 gap-3"><div><label class="block text-xs font-medium text-stone-600 mb-1">Move stage to</label><select name="new_stage" class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md bg-white focus-ring"><option value="">Keep current</option>' + STAGES.map(st => '<option value="' + esc(st) + '"' + (st === s.current_stage ? ' disabled' : '') + '>' + esc(st) + '</option>').join('') + '</select></div><div><label class="block text-xs font-medium text-stone-600 mb-1">Next follow-up</label><input type="date" name="scheduled_for" class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring"></div></div>' + hint + '<button type="submit"' + (state.saving ? ' disabled' : '') + ' class="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white text-sm font-medium py-2 rounded-md transition">' + (state.saving ? 'Saving…' : 'Log activity') + '</button></form></section>'
 }
 
 function renderAdminPanel(userOpts) {
