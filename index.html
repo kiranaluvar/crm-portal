@@ -68,6 +68,10 @@ const state = {
   currentSchool: null, activities: [], editingSchool: false,
   users: [], schoolCountsByOwner: {},
   followUps: [], followUpsCompleting: null,
+  followUpsFilter: 'open',           // 'open' | 'overdue' | 'closed'
+  followUpsOwnerFilter: 'mine',      // 'mine' | '' (= all team) | user_id
+  followUpsCounts: { open: 0, overdue: 0, closed_7d: 0 },
+  myOverdueCount: 0,                 // sidebar badge (always current user)
   dashboardData: null,
   auditLog: [], auditLogOpen: false,
   exporting: false,
@@ -168,15 +172,46 @@ async function loadActivities(id) {
   const { data } = await supabase.from('activities').select('*').eq('school_profile_id', id).order('created_at', { ascending:false }).limit(100)
   state.activities = data || []
 }
-async function loadFollowUps() {
-  const sevenAhead = new Date(Date.now() + 7*86400000).toISOString().slice(0,10)
-  const { data, error } = await supabase.from('activities')
-    .select('*, school:schools(school_profile_id,school_name,city,state,current_stage)')
+async function loadMyOverdueCount() {
+  const { count } = await supabase.from('activities')
+    .select('*', { count: 'exact', head: true })
     .eq('user_id', state.session.user.id)
     .is('completed_at', null)
-    .not('scheduled_for','is',null)
-    .lte('scheduled_for', sevenAhead)
-    .order('scheduled_for', { ascending:true })
+    .lt('scheduled_for', todayYMD())
+  state.myOverdueCount = count || 0
+}
+
+async function loadFollowUpsView() {
+  const today = todayYMD()
+  const sevenAgoIso = new Date(Date.now() - 7*86400000).toISOString()
+  const owner = state.followUpsOwnerFilter
+  // Default-to-mine for non-admins (safety even though UI enforces it)
+  const effectiveOwner = (owner === 'mine' || (!isAdmin() && owner !== state.session.user.id && owner !== ''))
+    ? state.session.user.id
+    : (owner === '' ? null : owner)
+  const applyOwner = (q) => effectiveOwner ? q.eq('user_id', effectiveOwner) : q
+  const countQ = () => applyOwner(supabase.from('activities').select('*', { count: 'exact', head: true }))
+
+  const [openRes, overdueRes, closedRes] = await Promise.all([
+    countQ().is('completed_at', null).not('scheduled_for', 'is', null),
+    countQ().is('completed_at', null).lt('scheduled_for', today),
+    countQ().gte('completed_at', sevenAgoIso).not('scheduled_for', 'is', null),
+  ])
+  state.followUpsCounts = {
+    open: openRes.count || 0,
+    overdue: overdueRes.count || 0,
+    closed_7d: closedRes.count || 0,
+  }
+
+  let q = applyOwner(supabase.from('activities').select('*, school:schools(school_profile_id,school_name,city,state,current_stage)'))
+  if (state.followUpsFilter === 'open') {
+    q = q.is('completed_at', null).not('scheduled_for', 'is', null).order('scheduled_for', { ascending: true })
+  } else if (state.followUpsFilter === 'overdue') {
+    q = q.is('completed_at', null).lt('scheduled_for', today).order('scheduled_for', { ascending: true })
+  } else {
+    q = q.gte('completed_at', sevenAgoIso).not('scheduled_for', 'is', null).order('completed_at', { ascending: false })
+  }
+  const { data, error } = await q.limit(200)
   if (error) { flash('err', error.message); return }
   state.followUps = data || []
 }
@@ -317,7 +352,7 @@ async function submitActivity(form) {
   await Promise.all([
     loadSchool(state.currentSchool.school_profile_id),
     loadActivities(state.currentSchool.school_profile_id),
-    loadFollowUps(),
+    loadMyOverdueCount(),
   ])
   state.saving = false
   flash('ok', stageIsTerminal ? 'Activity logged · school marked ' + stageNow : 'Activity logged · next follow-up scheduled')
@@ -395,7 +430,7 @@ async function completeFollowUp(activityId, form) {
   const { error } = await supabase.from('activities').update({ completed_at: new Date().toISOString(), outcome, notes: mergedNotes }).eq('id', Number(activityId))
   if (error) { flash('err', error.message); return }
   flash('ok', 'Marked complete'); state.followUpsCompleting = null
-  await loadFollowUps(); render()
+  await loadMyOverdueCount(); render()
 }
 
 async function setUserRole(userId, newRole) {
@@ -443,7 +478,7 @@ function renderSidebar() {
   const onTeam = hash === '/team'
   const onDash = hash === '/dashboard'
   const item = (label, href, active, badge) => '<a href="' + href + '" class="flex items-center justify-between px-3 py-2 rounded-md text-sm transition ' + (active ? 'bg-indigo-500/15 text-white font-medium' : 'text-stone-300 hover:bg-stone-800/50 hover:text-white') + '"><span>' + esc(label) + '</span>' + (badge || '') + '</a>'
-  const overdueCount = state.followUps.filter(f => f.scheduled_for && f.scheduled_for < todayYMD()).length
+  const overdueCount = state.myOverdueCount
   const followBadge = overdueCount > 0 ? '<span class="bg-rose-500 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full">' + overdueCount + '</span>' : ''
   return '<aside class="fixed left-0 top-[3px] bottom-0 w-60 bg-stone-900 text-stone-100 px-4 py-5 flex flex-col"><div class="px-3 mb-6"><div class="text-[10px] font-semibold tracking-widest uppercase gradient-text">BrightChamps</div><div class="text-base font-semibold text-white mt-0.5">Webinar CRM</div></div><nav class="space-y-1 flex-1">' + item('Schools','#/schools', onSchools) + item('My follow-ups','#/follow-ups', onFollow, followBadge) + item('Dashboard','#/dashboard', onDash) + (isAdmin() ? item('Team','#/team', onTeam) : '') + '</nav><div class="border-t border-stone-800 pt-3 px-2"><div class="flex items-center gap-2.5">' + avatar(state.session.user.id, 'md') + '<div class="min-w-0 flex-1"><div class="text-xs text-stone-100 truncate font-medium">' + esc(state.profile?.full_name || state.session.user.email) + '</div><div class="text-[10px] font-semibold uppercase tracking-wider ' + (isAdmin() ? 'text-indigo-300' : 'text-stone-400') + '">' + (isAdmin() ? 'Admin' : 'Agent') + '</div></div></div><button data-action="logout" class="mt-2 w-full text-xs text-stone-400 hover:text-white text-left px-1">Sign out</button></div></aside>'
 }
@@ -490,7 +525,7 @@ function renderSchoolsList() {
   const selectedCount = state.selectedSchoolIds.size
   const filtersActive = state.filters.search || state.filters.stage || state.filters.ownerId || state.filters.mineOnly
 
-  return '<div class="mb-5 flex items-end justify-between"><div><h1 class="text-xl font-semibold tracking-tight text-stone-900">Schools</h1><p class="text-sm text-stone-500 mt-0.5">' + state.schoolsTotal.toLocaleString() + ' ' + (state.filters.mineOnly ? 'assigned to you' : 'total') + '. Click a row to open.</p></div><button data-action="export-csv"' + (state.exporting ? ' disabled' : '') + ' class="text-sm border border-stone-300 hover:border-stone-400 hover:bg-stone-50 disabled:opacity-50 px-3 py-1.5 rounded-md text-stone-700 transition">' + (state.exporting ? 'Exporting…' : '↓ Export CSV') + '</button></div><div class="bg-white border border-stone-200 rounded-lg overflow-hidden"><div class="px-4 py-3 border-b border-stone-200 flex flex-wrap gap-2 items-center"><input type="text" placeholder="Search by name, city, state…" value="' + esc(state.filters.search) + '" class="flex-1 min-w-[200px] text-sm px-3 py-1.5 border border-stone-200 rounded-md focus-ring focus:border-indigo-300" data-action="filter-search-input"><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring" data-action="filter-stage-change"><option value="">All stages</option>' + STAGES.map(s => '<option value="' + esc(s) + '"' + (state.filters.stage === s ? ' selected' : '') + '>' + esc(s) + '</option>').join('') + '</select><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring' + (state.filters.mineOnly ? ' opacity-40 pointer-events-none' : '') + '" data-action="filter-owner-change"><option value="">All owners</option><option value="unassigned"' + (state.filters.ownerId === 'unassigned' ? ' selected' : '') + '>Unassigned</option>' + userOptions + '</select><button data-action="toggle-mine" class="text-sm px-3 py-1.5 rounded-md border transition ' + (state.filters.mineOnly ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50') + '">Mine only</button>' + (filtersActive ? '<button data-action="clear-filters" class="text-xs text-stone-500 hover:text-stone-900 px-2">Clear</button>' : '') + '</div><table class="w-full"><thead class="bg-stone-50 border-b border-stone-200"><tr class="text-left text-xs font-medium text-stone-500 uppercase tracking-wider"><th class="py-2 px-4 w-10"><input type="checkbox" id="cb-all" class="row-checkbox sr-only" data-action="toggle-select-all"' + (allSelected ? ' checked' : '') + '><label for="cb-all" class="cursor-pointer block"><span class="check-box inline-block w-4 h-4 rounded border ' + (someSelected ? 'bg-indigo-100 border-indigo-300' : 'border-stone-300') + ' hover:border-indigo-400 transition align-middle"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M5 10l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></label></th><th class="py-2.5 px-3">ID</th><th class="py-2.5 px-4">School</th><th class="py-2.5 px-4">Stage</th><th class="py-2.5 px-4">Owner</th><th class="py-2.5 px-4">Last activity</th><th class="py-2.5 px-4"></th></tr></thead><tbody>' + rows + '</tbody></table>' + (state.schoolsTotal > PAGE_SIZE ? '<div class="px-4 py-3 border-t border-stone-200 flex items-center justify-between text-sm text-stone-500"><div>' + start.toLocaleString() + '–' + end.toLocaleString() + ' of ' + state.schoolsTotal.toLocaleString() + '</div><div class="flex items-center gap-2"><button data-action="page-prev"' + (page === 1 ? ' disabled' : '') + ' class="px-2.5 py-1 border border-stone-200 rounded hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed">‹</button><span>Page ' + page + ' of ' + totalPages.toLocaleString() + '</span><button data-action="page-next"' + (page >= totalPages ? ' disabled' : '') + ' class="px-2.5 py-1 border border-stone-200 rounded hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed">›</button></div></div>' : '') + '</div>' + (selectedCount > 0 ? renderBulkBar(selectedCount) : '')
+  return '<div class="mb-5 flex items-end justify-between"><div><h1 class="text-xl font-semibold tracking-tight text-stone-900">Schools</h1><p class="text-sm text-stone-500 mt-0.5">' + state.schoolsTotal.toLocaleString() + ' ' + (state.filters.mineOnly ? 'assigned to you' : 'total') + '. Click a row to open.</p></div>' + (isAdmin() ? '<button data-action="export-csv"' + (state.exporting ? ' disabled' : '') + ' class="text-sm border border-stone-300 hover:border-stone-400 hover:bg-stone-50 disabled:opacity-50 px-3 py-1.5 rounded-md text-stone-700 transition">' + (state.exporting ? 'Exporting…' : '↓ Export CSV') + '</button>' : '') + '</div><div class="bg-white border border-stone-200 rounded-lg overflow-hidden"><div class="px-4 py-3 border-b border-stone-200 flex flex-wrap gap-2 items-center"><input type="text" placeholder="Search by name, city, state…" value="' + esc(state.filters.search) + '" class="flex-1 min-w-[200px] text-sm px-3 py-1.5 border border-stone-200 rounded-md focus-ring focus:border-indigo-300" data-action="filter-search-input"><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring" data-action="filter-stage-change"><option value="">All stages</option>' + STAGES.map(s => '<option value="' + esc(s) + '"' + (state.filters.stage === s ? ' selected' : '') + '>' + esc(s) + '</option>').join('') + '</select><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring' + (state.filters.mineOnly ? ' opacity-40 pointer-events-none' : '') + '" data-action="filter-owner-change"><option value="">All owners</option><option value="unassigned"' + (state.filters.ownerId === 'unassigned' ? ' selected' : '') + '>Unassigned</option>' + userOptions + '</select><button data-action="toggle-mine" class="text-sm px-3 py-1.5 rounded-md border transition ' + (state.filters.mineOnly ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50') + '">Mine only</button>' + (filtersActive ? '<button data-action="clear-filters" class="text-xs text-stone-500 hover:text-stone-900 px-2">Clear</button>' : '') + '</div><table class="w-full"><thead class="bg-stone-50 border-b border-stone-200"><tr class="text-left text-xs font-medium text-stone-500 uppercase tracking-wider"><th class="py-2 px-4 w-10"><input type="checkbox" id="cb-all" class="row-checkbox sr-only" data-action="toggle-select-all"' + (allSelected ? ' checked' : '') + '><label for="cb-all" class="cursor-pointer block"><span class="check-box inline-block w-4 h-4 rounded border ' + (someSelected ? 'bg-indigo-100 border-indigo-300' : 'border-stone-300') + ' hover:border-indigo-400 transition align-middle"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M5 10l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></label></th><th class="py-2.5 px-3">ID</th><th class="py-2.5 px-4">School</th><th class="py-2.5 px-4">Stage</th><th class="py-2.5 px-4">Owner</th><th class="py-2.5 px-4">Last activity</th><th class="py-2.5 px-4"></th></tr></thead><tbody>' + rows + '</tbody></table>' + (state.schoolsTotal > PAGE_SIZE ? '<div class="px-4 py-3 border-t border-stone-200 flex items-center justify-between text-sm text-stone-500"><div>' + start.toLocaleString() + '–' + end.toLocaleString() + ' of ' + state.schoolsTotal.toLocaleString() + '</div><div class="flex items-center gap-2"><button data-action="page-prev"' + (page === 1 ? ' disabled' : '') + ' class="px-2.5 py-1 border border-stone-200 rounded hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed">‹</button><span>Page ' + page + ' of ' + totalPages.toLocaleString() + '</span><button data-action="page-next"' + (page >= totalPages ? ' disabled' : '') + ' class="px-2.5 py-1 border border-stone-200 rounded hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed">›</button></div></div>' : '') + '</div>' + (selectedCount > 0 ? renderBulkBar(selectedCount) : '')
 }
 
 function renderBulkBar(count) {
@@ -590,26 +625,68 @@ function renderSchoolNew() {
 
 function renderFollowUps() {
   const today = todayYMD()
-  const groups = { overdue: [], today: [], upcoming: [] }
-  for (const f of state.followUps) {
-    if (!f.scheduled_for) continue
-    if (f.scheduled_for < today) groups.overdue.push(f)
-    else if (f.scheduled_for === today) groups.today.push(f)
-    else groups.upcoming.push(f)
+  const counts = state.followUpsCounts
+  const items = state.followUps
+
+  const kpiCard = (label, value, key, accent) => {
+    const active = state.followUpsFilter === key
+    return '<button data-action="set-fu-filter" data-filter="' + key + '" class="text-left bg-white border rounded-lg p-4 transition ' + (active ? 'border-indigo-500 ring-2 ring-indigo-100' : 'border-stone-200 hover:border-stone-300') + '"><div class="text-xs font-medium uppercase tracking-wider text-stone-500">' + esc(label) + '</div><div class="text-2xl font-semibold mt-1 ' + accent + '">' + value.toLocaleString() + '</div></button>'
   }
-  const renderGroup = (title, items, dotCls) => items.length === 0 ? '' : '<section class="bg-white border border-stone-200 rounded-lg overflow-hidden"><header class="px-4 py-3 border-b border-stone-200 flex items-center justify-between"><h2 class="text-sm font-semibold text-stone-900">' + title + ' <span class="text-stone-400 font-normal">(' + items.length + ')</span></h2><span class="w-2 h-2 rounded-full ' + dotCls + '"></span></header><ul class="divide-y divide-stone-100">' + items.map(f => renderFollowUpItem(f, today)).join('') + '</ul></section>'
-  const empty = state.followUps.length === 0 ? '<div class="bg-white border border-stone-200 rounded-lg px-6 py-12 text-center"><div class="text-3xl mb-2">🎯</div><h2 class="text-base font-semibold text-stone-900">You\'re all caught up</h2><p class="text-sm text-stone-500 mt-1">No pending follow-ups within the next 7 days. Schedule new ones from any school\'s activity log.</p></div>' : ''
-  return '<div class="mb-5"><h1 class="text-xl font-semibold tracking-tight text-stone-900">My follow-ups</h1><p class="text-sm text-stone-500 mt-0.5">Open tasks. Each one stays open until you log an actual activity against the school.</p></div><div class="space-y-6 max-w-3xl">' + renderGroup('Overdue', groups.overdue, 'bg-rose-500') + renderGroup('Due today', groups.today, 'bg-amber-500') + renderGroup('Upcoming this week', groups.upcoming, 'bg-stone-300') + empty + '</div>'
+
+  let ownerOptions
+  if (isAdmin()) {
+    ownerOptions = '<option value="mine"' + (state.followUpsOwnerFilter === 'mine' ? ' selected' : '') + '>Just mine</option>'
+      + '<option value=""' + (state.followUpsOwnerFilter === '' ? ' selected' : '') + '>All team</option>'
+      + state.users.map(u => u.user_id === state.session.user.id ? '' : '<option value="' + esc(u.user_id) + '"' + (state.followUpsOwnerFilter === u.user_id ? ' selected' : '') + '>' + esc(u.full_name || u.email) + '</option>').join('')
+  } else {
+    ownerOptions = '<option value="mine" selected>Just mine</option>'
+  }
+
+  let listHtml
+  if (items.length === 0) {
+    const msg = state.followUpsFilter === 'closed' ? 'No closed tasks in the last 7 days.' : 'No tasks here. Nice work.'
+    listHtml = '<div class="bg-white border border-stone-200 rounded-lg px-6 py-12 text-center"><div class="text-base font-medium text-stone-700">All clear</div><div class="text-sm text-stone-500 mt-1">' + msg + '</div></div>'
+  } else if (state.followUpsFilter === 'closed') {
+    listHtml = '<section class="bg-white border border-stone-200 rounded-lg overflow-hidden"><ul class="divide-y divide-stone-100">' + items.map(f => renderFollowUpItem(f, today)).join('') + '</ul></section>'
+  } else {
+    const groups = { overdue: [], today: [], upcoming: [] }
+    for (const f of items) {
+      if (!f.scheduled_for) continue
+      if (f.scheduled_for < today) groups.overdue.push(f)
+      else if (f.scheduled_for === today) groups.today.push(f)
+      else groups.upcoming.push(f)
+    }
+    const grp = (title, arr, dot) => arr.length === 0 ? '' : '<section class="bg-white border border-stone-200 rounded-lg overflow-hidden"><header class="px-4 py-3 border-b border-stone-200 flex items-center justify-between"><h2 class="text-sm font-semibold text-stone-900">' + title + ' <span class="text-stone-400 font-normal">(' + arr.length + ')</span></h2><span class="w-2 h-2 rounded-full ' + dot + '"></span></header><ul class="divide-y divide-stone-100">' + arr.map(f => renderFollowUpItem(f, today)).join('') + '</ul></section>'
+    listHtml = grp('Overdue', groups.overdue, 'bg-rose-500') + grp('Due today', groups.today, 'bg-amber-500') + grp('Upcoming', groups.upcoming, 'bg-stone-300')
+  }
+
+  const subtitle = isAdmin() ? 'Tasks across the team. Click a card to switch view.' : 'Your open tasks. Each one stays open until you log an activity.'
+
+  return '<div class="mb-5"><h1 class="text-xl font-semibold tracking-tight text-stone-900">Follow-ups</h1><p class="text-sm text-stone-500 mt-0.5">' + subtitle + '</p></div>'
+    + '<div class="grid grid-cols-3 gap-4 mb-5 max-w-2xl">'
+    + kpiCard('Open', counts.open || 0, 'open', 'text-stone-900')
+    + kpiCard('Overdue', counts.overdue || 0, 'overdue', (counts.overdue || 0) > 0 ? 'text-rose-600' : 'text-stone-900')
+    + kpiCard('Closed (7d)', counts.closed_7d || 0, 'closed', 'text-emerald-700')
+    + '</div>'
+    + '<div class="mb-5 flex items-center gap-3"><label class="text-xs font-medium text-stone-600 uppercase tracking-wider">Owner</label><select data-action="fu-owner-change" class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring"' + (isAdmin() ? '' : ' disabled') + '>' + ownerOptions + '</select></div>'
+    + '<div class="space-y-6 max-w-3xl">' + listHtml + '</div>'
 }
 
 function renderFollowUpItem(f, today) {
   const typeStyle = ACTIVITY_TYPE_COLORS[f.activity_type] || ACTIVITY_TYPE_COLORS['Other']
-  const isOverdue = f.scheduled_for < today
-  const isToday = f.scheduled_for === today
   const sch = f.school || {}
-  const dateText = (isOverdue ? 'Overdue · ' : '') + esc(fmtDateOnly(f.scheduled_for))
-  const dateCls = isOverdue ? 'text-rose-600 font-medium' : (isToday ? 'text-amber-700 font-medium' : 'text-stone-500')
-  return '<li><a href="#/schools/' + esc(sch.school_profile_id) + '" class="block px-4 py-3 hover:bg-stone-50 transition"><div class="flex items-start gap-3"><span class="w-2 h-2 rounded-full ' + typeStyle.dot + ' mt-1.5 shrink-0"></span><div class="flex-1 min-w-0"><div class="flex items-center justify-between gap-3 flex-wrap"><span class="font-medium text-stone-900 truncate">' + esc(sch.school_name || 'School') + '</span><div class="text-xs ' + dateCls + '">' + dateText + '</div></div><div class="text-xs text-stone-500 mt-0.5">' + esc(f.activity_type) + (sch.city ? ' · ' + esc(sch.city) : '') + (sch.current_stage ? ' · ' + esc(sch.current_stage) : '') + '</div>' + (f.notes ? '<div class="text-sm text-stone-700 mt-1.5 whitespace-pre-wrap">' + esc(f.notes) + '</div>' : '') + '<div class="text-xs text-indigo-600 mt-2">Open school to log this activity →</div></div></div></a></li>'
+  const isClosed = !!f.completed_at
+  const isOverdue = !isClosed && f.scheduled_for < today
+  const isToday = !isClosed && f.scheduled_for === today
+  let dateText, dateCls
+  if (isClosed) { dateText = 'Closed ' + fmtDate(f.completed_at); dateCls = 'text-emerald-700' }
+  else if (isOverdue) { dateText = 'Overdue · ' + fmtDateOnly(f.scheduled_for); dateCls = 'text-rose-600 font-medium' }
+  else if (isToday) { dateText = 'Today · ' + fmtDateOnly(f.scheduled_for); dateCls = 'text-amber-700 font-medium' }
+  else { dateText = fmtDateOnly(f.scheduled_for); dateCls = 'text-stone-500' }
+  const ownerChip = isAdmin() ? '<div class="text-xs text-stone-500 mt-1 flex items-center gap-1.5">' + avatar(f.user_id, 'xs') + esc(userName(f.user_id) || '—') + '</div>' : ''
+  const cta = !isClosed ? '<div class="text-xs text-indigo-600 mt-2">Open school to log activity →</div>' : ''
+  const outcome = isClosed && f.outcome ? '<div class="text-sm text-stone-700 mt-1">' + esc(f.outcome) + '</div>' : ''
+  return '<li><a href="#/schools/' + esc(sch.school_profile_id) + '" class="block px-4 py-3 hover:bg-stone-50 transition"><div class="flex items-start gap-3"><span class="w-2 h-2 rounded-full ' + typeStyle.dot + ' mt-1.5 shrink-0"></span><div class="flex-1 min-w-0"><div class="flex items-center justify-between gap-3 flex-wrap"><span class="font-medium text-stone-900 truncate">' + esc(sch.school_name || 'School') + '</span><div class="text-xs ' + dateCls + '">' + esc(dateText) + '</div></div><div class="text-xs text-stone-500 mt-0.5">' + esc(f.activity_type) + (sch.city ? ' · ' + esc(sch.city) : '') + (sch.current_stage ? ' · ' + esc(sch.current_stage) : '') + '</div>' + outcome + ownerChip + cta + '</div></div></a></li>'
 }
 
 function renderTeam() {
@@ -768,6 +845,11 @@ function attachHandlers() {
     if (action === 'start-complete-followup') { state.followUpsCompleting = Number(id); render(); return }
     if (action === 'cancel-complete-followup') { state.followUpsCompleting = null; render(); return }
     if (action === 'set-role') { setUserRole(id, el.dataset.role); return }
+    if (action === 'set-fu-filter') {
+      state.followUpsFilter = el.dataset.filter
+      loadFollowUpsView().then(render)
+      return
+    }
     if (action === 'export-csv') { exportSchoolsCsv(); return }
     if (action === 'toggle-audit-log') {
       state.auditLogOpen = !state.auditLogOpen
@@ -820,6 +902,10 @@ function attachHandlers() {
     if (action === 'toggle-select') { const id = el.dataset.id; if (el.checked) state.selectedSchoolIds.add(id); else state.selectedSchoolIds.delete(id); render() }
     if (action === 'toggle-select-all') { if (el.checked) state.schools.forEach(s => state.selectedSchoolIds.add(s.school_profile_id)); else state.schools.forEach(s => state.selectedSchoolIds.delete(s.school_profile_id)); render() }
     if (action === 'bulk-reassign-change') { const v = el.value; if (v === '') return; if (v === 'UNASSIGN') bulkReassign(null); else bulkReassign(v) }
+    if (action === 'fu-owner-change') {
+      state.followUpsOwnerFilter = el.value
+      loadFollowUpsView().then(render)
+    }
   }
 }
 
@@ -841,7 +927,7 @@ async function handleRoute() {
     render()
   } else if (hash === '/follow-ups') {
     state.view = 'follow-ups'; render()
-    await loadFollowUps(); render()
+    await Promise.all([loadMyOverdueCount(), loadFollowUpsView()]); render()
   } else if (hash === '/team') {
     if (!isAdmin()) { window.location.hash = '#/schools'; return }
     state.view = 'team'; render()
@@ -862,12 +948,12 @@ async function init() {
   const { data: { session } } = await supabase.auth.getSession()
   if (session) {
     state.session = session
-    await Promise.all([loadProfile(), loadUsers(), loadFollowUps()])
+    await Promise.all([loadProfile(), loadUsers(), loadMyOverdueCount()])
   }
   supabase.auth.onAuthStateChange(async (event, session) => {
     if (event === 'SIGNED_IN') {
       state.session = session
-      await Promise.all([loadProfile(), loadUsers(), loadFollowUps()])
+      await Promise.all([loadProfile(), loadUsers(), loadMyOverdueCount()])
       handleRoute()
     } else if (event === 'SIGNED_OUT') {
       state.session = null; state.profile = null; state.view = 'login'; render()
