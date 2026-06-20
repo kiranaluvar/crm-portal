@@ -190,14 +190,17 @@ async function loadFilterOptions() {
     cities: data?.cities || [],
     states: data?.states || [],
     countries: data?.countries || [],
+    states_by_country: data?.states_by_country || {},
+    cities_by_state: data?.cities_by_state || {},
+    school_types: data?.school_types || [],
+    curriculums: data?.curriculums || [],
   }
 }
 
 async function loadReports() {
   const today = new Date()
-  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().slice(0,10)
   const todayStr = today.toISOString().slice(0,10)
-  if (!state.reportsFrom) state.reportsFrom = monthStart
+  if (!state.reportsFrom) state.reportsFrom = '2020-01-01'
   if (!state.reportsTo) state.reportsTo = todayStr
   const { data, error } = await supabase.rpc('reports_data', { d_from: state.reportsFrom, d_to: state.reportsTo })
   if (error) { flash('err', error.message); return }
@@ -419,16 +422,28 @@ async function takeOwnership() {
 async function submitNewSchool(form) {
   if (state.saving) return
   state.saving = true; render()
-  const row = {}
-  const fields = ['school_profile_id','school_name','school_type','address','pin_code','city','state','country','email','phone_no','curriculum_followed','school_fees','school_fees_range','poc1_designation','poc1_email','poc1_name','poc1_number','poc2_designation','poc2_email','poc2_name','poc2_number']
+  // Auto-generate next school_profile_id: find max numeric existing ID, add 1
+  const { data: maxRows, error: maxErr } = await supabase.from('schools')
+    .select('school_profile_id').order('school_profile_id', { ascending: false }).limit(50)
+  if (maxErr) { state.saving = false; flash('err', maxErr.message); render(); return }
+  let maxNum = 0
+  for (const r of maxRows || []) {
+    const n = parseInt(String(r.school_profile_id).replace(/\D/g, ''), 10)
+    if (!isNaN(n) && n > maxNum) maxNum = n
+  }
+  const newId = String(maxNum + 1)
+  const row = { school_profile_id: newId }
+  const fields = ['school_name','school_type','address','pin_code','city','state','country','email','phone_no','curriculum_followed','school_fees','school_fees_range','poc1_designation','poc1_email','poc1_name','poc1_number','poc2_designation','poc2_email','poc2_name','poc2_number']
   fields.forEach(f => { const v = form[f]?.value?.trim(); if (v) row[f] = v })
   row.created_by = state.session.user.id
   row.owner_user_id = state.session.user.id
   const { error } = await supabase.from('schools').insert(row)
   state.saving = false
   if (error) { flash('err', error.message); render(); return }
-  flash('ok','School added')
-  window.location.hash = '#/schools/' + encodeURIComponent(row.school_profile_id)
+  // Refresh filter options in case a new country/state/city was added
+  loadFilterOptions()
+  flash('ok','School added (ID ' + newId + ')')
+  window.location.hash = '#/schools/' + encodeURIComponent(newId)
 }
 
 async function bulkReassign(newOwnerId) {
@@ -509,12 +524,11 @@ function renderSidebar() {
   const onSchools = hash === '/' || (hash.startsWith('/schools') && !hash.includes('/new'))
   const onFollow = hash === '/follow-ups'
   const onTeam = hash === '/team'
-  const onDash = hash === '/dashboard'
   const onReports = hash === '/reports'
   const item = (label, href, active, badge) => '<a href="' + href + '" class="flex items-center justify-between px-3 py-2 rounded-md text-sm transition ' + (active ? 'bg-indigo-500/15 text-white font-medium' : 'text-stone-300 hover:bg-stone-800/50 hover:text-white') + '"><span>' + esc(label) + '</span>' + (badge || '') + '</a>'
   const overdueCount = state.myOverdueCount
   const followBadge = overdueCount > 0 ? '<span class="bg-rose-500 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full">' + overdueCount + '</span>' : ''
-  return '<aside class="fixed left-0 top-[3px] bottom-0 w-60 bg-stone-900 text-stone-100 px-4 py-5 flex flex-col z-50 transition-transform ' + (state.sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0') + '"><div class="px-3 mb-6"><div class="text-[10px] font-semibold tracking-widest uppercase gradient-text">BrightChamps</div><div class="text-base font-semibold text-white mt-0.5">Webinar CRM</div></div><nav class="space-y-1 flex-1">' + item('Schools','#/schools', onSchools) + item('My follow-ups','#/follow-ups', onFollow, followBadge) + item('Dashboard','#/dashboard', onDash) + (isAdmin() ? item('Reports','#/reports', onReports) : '') + (isAdmin() ? item('Team','#/team', onTeam) : '') + '</nav><div class="border-t border-stone-800 pt-3 px-2"><div class="flex items-center gap-2.5">' + avatar(state.session.user.id, 'md') + '<div class="min-w-0 flex-1"><div class="text-xs text-stone-100 truncate font-medium">' + esc(state.profile?.full_name || state.session.user.email) + '</div><div class="text-[10px] font-semibold uppercase tracking-wider ' + (isAdmin() ? 'text-indigo-300' : 'text-stone-400') + '">' + (isAdmin() ? 'Admin' : 'Agent') + '</div></div></div><button data-action="logout" class="mt-2 w-full text-xs text-stone-400 hover:text-white text-left px-1">Sign out</button></div></aside>'
+  return '<aside class="fixed left-0 top-[3px] bottom-0 w-60 bg-stone-900 text-stone-100 px-4 py-5 flex flex-col z-50 transition-transform ' + (state.sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0') + '"><div class="px-3 mb-6"><div class="text-[10px] font-semibold tracking-widest uppercase gradient-text">BrightChamps</div><div class="text-base font-semibold text-white mt-0.5">Webinar CRM</div></div><nav class="space-y-1 flex-1">' + item('Schools','#/schools', onSchools) + item('My follow-ups','#/follow-ups', onFollow, followBadge) + (isAdmin() ? item('Reports','#/reports', onReports) : '') + (isAdmin() ? item('Team','#/team', onTeam) : '') + '</nav><div class="border-t border-stone-800 pt-3 px-2"><div class="flex items-center gap-2.5">' + avatar(state.session.user.id, 'md') + '<div class="min-w-0 flex-1"><div class="text-xs text-stone-100 truncate font-medium">' + esc(state.profile?.full_name || state.session.user.email) + '</div><div class="text-[10px] font-semibold uppercase tracking-wider ' + (isAdmin() ? 'text-indigo-300' : 'text-stone-400') + '">' + (isAdmin() ? 'Admin' : 'Agent') + '</div></div></div><button data-action="logout" class="mt-2 w-full text-xs text-stone-400 hover:text-white text-left px-1">Sign out</button></div></aside>'
 }
 
 function renderBreadcrumb() {
@@ -523,7 +537,6 @@ function renderBreadcrumb() {
   if (hash.startsWith('/schools/') && state.currentSchool) return '<a href="#/schools" class="hover:text-stone-900">Schools</a> <span class="text-stone-300">/</span> <span class="text-stone-900">' + esc(state.currentSchool.school_name) + '</span>'
   if (hash === '/follow-ups') return '<span class="text-stone-900">My follow-ups</span>'
   if (hash === '/team') return '<span class="text-stone-900">Team</span>'
-  if (hash === '/dashboard') return '<span class="text-stone-900">Dashboard</span>'
   if (hash === '/reports') return '<span class="text-stone-900">Reports</span>'
   return '<span class="text-stone-900">Schools</span>'
 }
@@ -535,7 +548,6 @@ function renderCurrentView() {
     case 'school-new': return renderSchoolNew()
     case 'follow-ups': return renderFollowUps()
     case 'team': return renderTeam()
-    case 'dashboard': return renderDashboard()
     case 'reports': return renderReports()
     default: return renderSchoolsList()
   }
@@ -675,12 +687,20 @@ function renderSchoolNew() {
     const cls = opts.colSpan || ''
     const req = opts.required ? ' required' : ''
     const star = opts.required ? ' <span class="text-rose-500">*</span>' : ''
+    const list = opts.list ? ' list="' + opts.list + '"' : ''
     const tag = type === 'textarea'
       ? '<textarea name="' + name + '" rows="2"' + req + ' class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring"></textarea>'
-      : '<input type="' + (type || 'text') + '" name="' + name + '"' + req + ' class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring">'
+      : '<input type="' + (type || 'text') + '" name="' + name + '"' + list + req + ' class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring" autocomplete="off">'
     return '<div class="' + cls + '"><label class="block text-xs font-medium text-stone-600 mb-1">' + esc(label) + star + '</label>' + tag + '</div>'
   }
-  return '<div class="mb-5"><h1 class="text-xl font-semibold tracking-tight text-stone-900">Add a school</h1><p class="text-sm text-stone-500 mt-0.5">You become the owner of this school once it\'s saved. You can reassign it later.</p></div><form data-action="submit-new-school" class="space-y-6 max-w-4xl"><section class="bg-white border border-stone-200 rounded-lg p-5"><h2 class="text-sm font-semibold text-stone-900 mb-4">Identity</h2><div class="grid grid-cols-1 md:grid-cols-3 gap-4">' + field('School Profile ID','school_profile_id','text',{required:true}) + field('School name','school_name','text',{required:true, colSpan:'md:col-span-2'}) + field('School type','school_type') + field('Curriculum','curriculum_followed') + field('Country','country') + '</div></section><section class="bg-white border border-stone-200 rounded-lg p-5"><h2 class="text-sm font-semibold text-stone-900 mb-4">Location</h2><div class="grid grid-cols-1 md:grid-cols-3 gap-4">' + field('Address','address','textarea',{colSpan:'md:col-span-3'}) + field('City','city') + field('State','state') + field('Pin code','pin_code') + '</div></section><section class="bg-white border border-stone-200 rounded-lg p-5"><h2 class="text-sm font-semibold text-stone-900 mb-4">School contact</h2><div class="grid grid-cols-1 md:grid-cols-2 gap-4">' + field('Email','email','email') + field('Phone','phone_no','tel') + field('Fees','school_fees') + field('Fees range','school_fees_range') + '</div></section><section class="bg-white border border-stone-200 rounded-lg p-5"><h2 class="text-sm font-semibold text-stone-900 mb-4">Point of contact 1</h2><div class="grid grid-cols-1 md:grid-cols-2 gap-4">' + field('Name','poc1_name') + field('Designation','poc1_designation') + field('Email','poc1_email','email') + field('Phone','poc1_number','tel') + '</div></section><section class="bg-white border border-stone-200 rounded-lg p-5"><h2 class="text-sm font-semibold text-stone-900 mb-4">Point of contact 2 <span class="text-stone-400 font-normal text-xs">(optional)</span></h2><div class="grid grid-cols-1 md:grid-cols-2 gap-4">' + field('Name','poc2_name') + field('Designation','poc2_designation') + field('Email','poc2_email','email') + field('Phone','poc2_number','tel') + '</div></section><div class="flex items-center gap-3 sticky bottom-4 bg-white border border-stone-200 rounded-lg p-4 shadow-sm"><button type="submit"' + (state.saving ? ' disabled' : '') + ' class="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white text-sm font-medium px-4 py-2 rounded-md">' + (state.saving ? 'Saving…' : 'Save school') + '</button><a href="#/schools" class="text-sm text-stone-600 hover:text-stone-900">Cancel</a></div></form>'
+  const fo = state.filterOptions || {}
+  const optList = (arr) => (arr || []).map(v => '<option value="' + esc(v) + '">').join('')
+  const datalists = '<datalist id="dl-country">' + optList(fo.countries) + '</datalist>'
+    + '<datalist id="dl-state">' + optList(fo.states) + '</datalist>'
+    + '<datalist id="dl-city">' + optList(fo.cities) + '</datalist>'
+    + '<datalist id="dl-school-type">' + optList(fo.school_types) + '</datalist>'
+    + '<datalist id="dl-curriculum">' + optList(fo.curriculums) + '</datalist>'
+  return '<div class="mb-5"><h1 class="text-xl font-semibold tracking-tight text-stone-900">Add a school</h1><p class="text-sm text-stone-500 mt-0.5">ID is generated automatically. You become the owner once saved.</p></div>' + datalists + '<form data-action="submit-new-school" class="space-y-6 max-w-4xl"><section class="bg-white border border-stone-200 rounded-lg p-5"><h2 class="text-sm font-semibold text-stone-900 mb-4">Identity</h2><div class="grid grid-cols-1 md:grid-cols-3 gap-4">' + field('School name','school_name','text',{required:true, colSpan:'md:col-span-2'}) + field('School type','school_type','text',{list:'dl-school-type'}) + field('Curriculum','curriculum_followed','text',{required:true, list:'dl-curriculum'}) + '</div></section><section class="bg-white border border-stone-200 rounded-lg p-5"><h2 class="text-sm font-semibold text-stone-900 mb-4">Location</h2><div class="grid grid-cols-1 md:grid-cols-3 gap-4">' + field('Country','country','text',{required:true, list:'dl-country'}) + field('State','state','text',{required:true, list:'dl-state'}) + field('City','city','text',{required:true, list:'dl-city'}) + field('Address','address','textarea',{colSpan:'md:col-span-3'}) + field('Pin code','pin_code') + '</div></section><section class="bg-white border border-stone-200 rounded-lg p-5"><h2 class="text-sm font-semibold text-stone-900 mb-4">School contact</h2><div class="grid grid-cols-1 md:grid-cols-2 gap-4">' + field('Email','email','email') + field('Phone','phone_no','tel') + field('Fees','school_fees') + field('Fees range','school_fees_range') + '</div></section><section class="bg-white border border-stone-200 rounded-lg p-5"><h2 class="text-sm font-semibold text-stone-900 mb-4">Point of contact 1</h2><div class="grid grid-cols-1 md:grid-cols-2 gap-4">' + field('Name','poc1_name') + field('Designation','poc1_designation') + field('Email','poc1_email','email') + field('Phone','poc1_number','tel') + '</div></section><section class="bg-white border border-stone-200 rounded-lg p-5"><h2 class="text-sm font-semibold text-stone-900 mb-4">Point of contact 2 <span class="text-stone-400 font-normal text-xs">(optional)</span></h2><div class="grid grid-cols-1 md:grid-cols-2 gap-4">' + field('Name','poc2_name') + field('Designation','poc2_designation') + field('Email','poc2_email','email') + field('Phone','poc2_number','tel') + '</div></section><div class="flex items-center gap-3 sticky bottom-4 bg-white border border-stone-200 rounded-lg p-4 shadow-sm"><button type="submit"' + (state.saving ? ' disabled' : '') + ' class="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white text-sm font-medium px-4 py-2 rounded-md">' + (state.saving ? 'Saving…' : 'Save school') + '</button><a href="#/schools" class="text-sm text-stone-600 hover:text-stone-900">Cancel</a></div></form>'
 }
 
 function renderFollowUps() {
@@ -888,6 +908,29 @@ function renderReports() {
   const hdr = '<div class="mb-5 flex items-end justify-between flex-wrap gap-3"><div><h1 class="text-xl font-semibold tracking-tight text-stone-900">Reports</h1><p class="text-sm text-stone-500 mt-0.5">Team performance and pipeline analytics.</p></div><div class="flex items-end gap-2"><div><label class="block text-[10px] font-medium text-stone-500 uppercase tracking-wider mb-1">From</label><input type="date" value="' + esc(state.reportsFrom) + '" data-action="reports-from-change" class="text-sm px-2 py-1.5 border border-stone-200 rounded-md bg-white focus-ring"></div><div><label class="block text-[10px] font-medium text-stone-500 uppercase tracking-wider mb-1">To</label><input type="date" value="' + esc(state.reportsTo) + '" data-action="reports-to-change" class="text-sm px-2 py-1.5 border border-stone-200 rounded-md bg-white focus-ring"></div></div></div>'
   if (!d) return hdr + '<div class="text-stone-500 text-sm">Loading reports…</div>'
 
+  // KPI tiles (global metrics, not date-range scoped)
+  const t = d.tiles || {}
+  const tot = t.total_schools || 0
+  const ass = t.assigned_schools || 0
+  const touched = t.touched_assigned || 0
+  const untouched = t.untouched_assigned || 0
+  const conv = t.conversions || 0
+  const team = t.team_size || 1
+  const assPctOfTotal = tot > 0 ? ((ass / tot) * 100).toFixed(1) : '0.0'
+  const touchedPctOfAss = ass > 0 ? ((touched / ass) * 100).toFixed(1) : '0.0'
+  const teamL2E = ass > 0 ? ((conv / ass) * 100).toFixed(1) : '0.0'
+  const avgPerAgent = team > 0 ? Math.round(ass / team) : 0
+  const tile = (label, value, sub, accent) => '<div class="bg-white border border-stone-200 rounded-lg p-4"><div class="text-[10px] font-semibold uppercase tracking-wider text-stone-500">' + esc(label) + '</div><div class="text-2xl font-semibold mt-1 ' + (accent || 'text-stone-900') + '">' + (typeof value === 'number' ? value.toLocaleString() : esc(value)) + '</div>' + (sub ? '<div class="text-[11px] text-stone-500 mt-1">' + esc(sub) + '</div>' : '') + '</div>'
+  const tiles = '<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-6">' +
+    tile('Total schools', tot, 'In system') +
+    tile('Assigned', ass, assPctOfTotal + '% of total') +
+    tile('Touched', touched, touchedPctOfAss + '% of assigned') +
+    tile('Untouched', untouched, 'Assigned · zero activity', untouched > 0 ? 'text-rose-600' : '') +
+    tile('Conversions', conv, 'Team L2E ' + teamL2E + '%', 'text-emerald-700') +
+    tile('Avg leads / agent', avgPerAgent, team + ' agents') +
+    tile('Assigned this month', t.assigned_this_month || 0, 'From audit log') +
+    '</div>'
+
   const card = (title, subtitle, body) => '<section class="bg-white border border-stone-200 rounded-lg overflow-hidden mb-6"><header class="px-4 py-3 border-b border-stone-200"><h2 class="text-sm font-semibold text-stone-900">' + esc(title) + '</h2>' + (subtitle ? '<p class="text-xs text-stone-500 mt-0.5">' + esc(subtitle) + '</p>' : '') + '</header><div class="p-4">' + body + '</div></section>'
 
   // View 1: hourly by type — chart
@@ -934,17 +977,18 @@ function renderReports() {
   // View 5: L2E metrics per agent
   const l2e = d.agent_l2e || []
   const l2eRows = l2e.length === 0
-    ? '<tr><td colspan="6" class="text-center text-stone-400 py-8 text-sm">No data.</td></tr>'
+    ? '<tr><td colspan="7" class="text-center text-stone-400 py-8 text-sm">No data.</td></tr>'
     : l2e.map(u => {
       const leads = u.leads || 0
       const conv = u.conversions || 0
+      const untouched = u.untouched || 0
       const pct = leads > 0 ? (conv / leads * 100).toFixed(1) : '0.0'
       const avgAttempts = leads > 0 ? ((u.attempts_period || 0) / leads).toFixed(1) : '0.0'
       const isSelf = u.user_id === state.session.user.id
-      return '<tr class="border-b border-stone-100"><td class="px-4 py-3"><div class="flex items-center gap-2.5">' + avatar(u.user_id, 'sm') + '<div><div class="text-sm font-medium text-stone-900">' + esc(u.full_name || '—') + (isSelf ? ' <span class="text-xs text-stone-400 font-normal">(you)</span>' : '') + '</div><div class="text-xs text-stone-500">' + esc(u.email) + '</div></div></div></td><td class="px-4 py-3 text-sm text-stone-700">' + leads + '</td><td class="px-4 py-3 text-sm font-medium text-stone-900">' + conv + '</td><td class="px-4 py-3 text-sm font-medium ' + (parseFloat(pct) > 0 ? 'text-emerald-700' : 'text-stone-400') + '">' + pct + '%</td><td class="px-4 py-3 text-sm text-stone-700">' + (u.l2e_days || 0) + ' days</td><td class="px-4 py-3 text-sm text-stone-700">' + avgAttempts + '</td></tr>'
+      return '<tr class="border-b border-stone-100"><td class="px-4 py-3"><div class="flex items-center gap-2.5">' + avatar(u.user_id, 'sm') + '<div><div class="text-sm font-medium text-stone-900">' + esc(u.full_name || '—') + (isSelf ? ' <span class="text-xs text-stone-400 font-normal">(you)</span>' : '') + '</div><div class="text-xs text-stone-500">' + esc(u.email) + '</div></div></div></td><td class="px-4 py-3 text-sm text-stone-700">' + leads + '</td><td class="px-4 py-3 text-sm ' + (untouched > 0 ? 'text-rose-600 font-medium' : 'text-stone-400') + '">' + untouched + '</td><td class="px-4 py-3 text-sm font-medium text-stone-900">' + conv + '</td><td class="px-4 py-3 text-sm font-medium ' + (parseFloat(pct) > 0 ? 'text-emerald-700' : 'text-stone-400') + '">' + pct + '%</td><td class="px-4 py-3 text-sm text-stone-700">' + (u.l2e_days || 0) + ' days</td><td class="px-4 py-3 text-sm text-stone-700">' + avgAttempts + '</td></tr>'
     }).join('')
-  const view5 = card('5. Agent L2E metrics', 'Lead → Webinar Done. Attempts and avg attempts use the selected date range.',
-    '<div class="overflow-x-auto"><table class="w-full"><thead class="bg-stone-50 border-b border-stone-200"><tr class="text-left text-xs font-medium text-stone-500 uppercase tracking-wider"><th class="px-4 py-2.5">Agent</th><th class="px-4 py-2.5">Leads</th><th class="px-4 py-2.5">Conversions</th><th class="px-4 py-2.5">L2E %</th><th class="px-4 py-2.5">L2E days (avg)</th><th class="px-4 py-2.5">Avg attempts / lead</th></tr></thead><tbody>' + l2eRows + '</tbody></table></div>')
+  const view5 = card('5. Agent L2E metrics', 'Lead → Webinar Done. Untouched = zero activities of any kind on that school.',
+    '<div class="overflow-x-auto"><table class="w-full"><thead class="bg-stone-50 border-b border-stone-200"><tr class="text-left text-xs font-medium text-stone-500 uppercase tracking-wider"><th class="px-4 py-2.5">Agent</th><th class="px-4 py-2.5">Leads</th><th class="px-4 py-2.5">Untouched</th><th class="px-4 py-2.5">Conversions</th><th class="px-4 py-2.5">L2E %</th><th class="px-4 py-2.5">L2E days (avg)</th><th class="px-4 py-2.5">Avg attempts / lead</th></tr></thead><tbody>' + l2eRows + '</tbody></table></div>')
 
   // View 6: city / state L2E
   const cityRows = (d.city_l2e || []).slice(0, 30).map(r => {
@@ -960,7 +1004,7 @@ function renderReports() {
   const view6 = card('6. L2E % by geography', 'Where you convert best',
     '<div class="grid grid-cols-1 lg:grid-cols-2 gap-6"><div><div class="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">Top 30 cities</div><table class="w-full"><thead class="bg-stone-50 border-b border-stone-200"><tr class="text-left text-xs font-medium text-stone-500 uppercase tracking-wider"><th class="px-4 py-2">City</th><th class="px-4 py-2">Total</th><th class="px-4 py-2">Done</th><th class="px-4 py-2">L2E %</th></tr></thead><tbody>' + cityRows + '</tbody></table></div><div><div class="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">By state</div><table class="w-full"><thead class="bg-stone-50 border-b border-stone-200"><tr class="text-left text-xs font-medium text-stone-500 uppercase tracking-wider"><th class="px-4 py-2">State</th><th class="px-4 py-2">Total</th><th class="px-4 py-2">Done</th><th class="px-4 py-2">L2E %</th></tr></thead><tbody>' + stateRows + '</tbody></table></div></div>')
 
-  return hdr + view1 + view2 + view3 + view4 + view5 + view6
+  return hdr + tiles + view1 + view2 + view3 + view4 + view5 + view6
 }
 
 function initReportsCharts() {
@@ -1097,6 +1141,24 @@ function attachHandlers() {
   }
 
   root.oninput = (e) => {
+    // New school form cascade: country → state → city
+    if (state.view === 'school-new') {
+      const t = e.target
+      if (t.tagName === 'INPUT' && t.name === 'country') {
+        const dl = document.getElementById('dl-state')
+        if (dl) {
+          const arr = state.filterOptions?.states_by_country?.[t.value] || state.filterOptions?.states || []
+          dl.innerHTML = arr.map(s => '<option value="' + esc(s) + '">').join('')
+        }
+      }
+      if (t.tagName === 'INPUT' && t.name === 'state') {
+        const dl = document.getElementById('dl-city')
+        if (dl) {
+          const arr = state.filterOptions?.cities_by_state?.[t.value] || state.filterOptions?.cities || []
+          dl.innerHTML = arr.map(c => '<option value="' + esc(c) + '">').join('')
+        }
+      }
+    }
     const el = e.target.closest('[data-action]')
     if (!el) return
     const action = el.dataset.action
@@ -1172,11 +1234,6 @@ async function handleRoute() {
     state.view = 'team'; render()
     await Promise.all([loadUsers(), loadSchoolCountsByOwner()])
     render()
-  } else if (hash === '/dashboard') {
-    state.view = 'dashboard'; render()
-    await loadDashboard()
-    render()
-    initDashboardCharts()
   } else if (hash === '/reports') {
     if (!isAdmin()) { window.location.hash = '#/schools'; return }
     state.view = 'reports'; render()
