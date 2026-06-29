@@ -38,20 +38,32 @@ const SUPABASE_KEY = 'sb_publishable_wQ9M9NiTljrd3W__mMsT0Q_IUMKrWFr'
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
 window.supabase = supabase
 
-const STAGES = ['New Lead','Contacted','Pitched','Agreed','Scheduled','Webinar Done','Closed','Not Interested']
-const TERMINAL_STAGES = ['Closed','Webinar Done','Not Interested']
+const STAGE_GROUPS = ['Prospect', 'Active Pipeline', 'Confirmed', 'Exhausted']
+const STAGE_SUBS = {
+  'Prospect':        ['New Lead','CNC','CD','CBL','NA','Wrong Number','Future Prospect','Not Interested','Backed Out'],
+  'Active Pipeline': ['Work in Progress','CD','CBL','NA','Future Prospect','Backed Out','Privacy Concern'],
+  'Confirmed':       ['Follow Up CD','Follow Up CBL','Follow Up CBC','Follow Up NA','Follow Up Backed Out','Confirm'],
+  'Exhausted':       ['Attempt Exhausted']
+}
+const NO_FOLLOWUP_SUBS  = ['Not Interested','Backed Out','Attempt Exhausted']
+const TERMINAL_SUBS     = ['Not Interested','Backed Out','Attempt Exhausted','Confirm']
+const NOT_INTERESTED_REASONS = ['Exam','Vacation','Privacy Concern','Onboarded Too Many Times','Others']
+const EXAM_TYPES    = ['Unit Test','Term Exam','Other Test']
+const VACATION_TYPES = ['Summer','Winter','Diwali','Christmas','Spring','Eid']
+
+const STAGE_GROUP_STYLES = {
+  'Prospect':        { bg:'#DBEAFE', color:'#1E3A8A', border:'#BFDBFE' },
+  'Active Pipeline': { bg:'#FEF3C7', color:'#92400E', border:'#FDE68A' },
+  'Confirmed':       { bg:'#D1FAE5', color:'#065F46', border:'#A7F3D0' },
+  'Exhausted':       { bg:'#F5F5F4', color:'#57534E', border:'#E7E5E4' },
+}
+
+// Legacy — kept so reports/charts that reference it don't break
+const STAGES = Object.values(STAGE_SUBS).flat()
+const TERMINAL_STAGES = TERMINAL_SUBS
 const ACTIVITY_TYPES = ['Call','Email','WhatsApp','Meeting','Other']
 const PAGE_SIZE = 50
-const STAGE_STYLES = {
-  'New Lead':       'background:#F5F5F4; color:#44403C; border-color:#E7E5E4',
-  'Contacted':      'background:#DBEAFE; color:#1E3A8A; border-color:#BFDBFE',
-  'Pitched':        'background:#E0E7FF; color:#3730A3; border-color:#C7D2FE',
-  'Agreed':         'background:#D1FAE5; color:#065F46; border-color:#A7F3D0',
-  'Scheduled':      'background:#FEF3C7; color:#92400E; border-color:#FDE68A',
-  'Webinar Done':   'background:#BBF7D0; color:#14532D; border-color:#86EFAC',
-  'Closed':         'background:#E7E5E4; color:#1C1917; border-color:#D6D3D1',
-  'Not Interested': 'background:#FEE2E2; color:#991B1B; border-color:#FECACA',
-}
+const STAGE_STYLES = {}
 const ACTIVITY_TYPE_COLORS = {
   'Call':     { border:'#3B82F6', dot:'bg-blue-500' },
   'Email':    { border:'#6366F1', dot:'bg-indigo-500' },
@@ -64,7 +76,7 @@ const AVATAR_COLORS = ['bg-rose-500','bg-amber-500','bg-emerald-500','bg-cyan-50
 const state = {
   session: null, profile: null, view: 'loading',
   schools: [], schoolsTotal: 0, schoolsPage: 1,
-  filters: { search:'', stage:'', ownerId:'', mineOnly:false, country:'', state_:'', city:'', createdFrom:'', createdTo:'' },
+  filters: { search:'', stageGroup:'', stageSub:'', ownerId:'', mineOnly:false, country:'', state_:'', city:'', createdFrom:'', createdTo:'' },
   filterOptions: { cities: [], states: [], countries: [] },
   reportsData: null,
   reportsFrom: '',
@@ -79,6 +91,7 @@ const state = {
   myOverdueCount: 0,                 // sidebar badge (always current user)
   dashboardData: null,
   auditLog: [], auditLogOpen: false,
+  webinarDates: [],
   exporting: false,
   saving: false, flash: null, bulkPanel: null,
   sidebarOpen: false,
@@ -105,9 +118,10 @@ function fmtDateOnly(iso) {
   return d.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' })
 }
 function todayYMD() { return new Date().toISOString().slice(0,10) }
-function stagePill(stage) {
-  const style = STAGE_STYLES[stage] || STAGE_STYLES['New Lead']
-  return '<span class="stage-pill" style="' + style + '">' + esc(stage) + '</span>'
+function stagePill(group, sub) {
+  const s = STAGE_GROUP_STYLES[group] || { bg:'#F5F5F4', color:'#44403C', border:'#E7E5E4' }
+  const style = 'background:' + s.bg + ';color:' + s.color + ';border-color:' + s.border
+  return '<span class="stage-pill" style="' + style + '"><span style="opacity:0.6;margin-right:3px">' + esc(group||'') + '</span><span style="opacity:0.4;margin-right:3px">›</span>' + esc(sub||'') + '</span>'
 }
 function userById(id) { return state.users.find(u => u.user_id === id) }
 function userName(id) { const u = userById(id); return u ? (u.full_name || u.email) : null }
@@ -154,13 +168,14 @@ async function loadSchoolCountsByOwner() {
 async function loadSchools() {
   const offset = (state.schoolsPage - 1) * PAGE_SIZE
   let q = supabase.from('schools')
-    .select('school_profile_id,school_name,city,state,current_stage,owner_user_id,last_activity_at', { count:'exact' })
+    .select('school_profile_id,school_name,city,state,stage_group,stage_sub,not_eligible,owner_user_id,last_activity_at', { count:'exact' })
     .order('school_name').range(offset, offset + PAGE_SIZE - 1)
   if (state.filters.search) {
     const s = state.filters.search.replace(/[%_]/g,'')
     q = q.or('school_name.ilike.%' + s + '%,city.ilike.%' + s + '%,state.ilike.%' + s + '%')
   }
-  if (state.filters.stage) q = q.eq('current_stage', state.filters.stage)
+  if (state.filters.stageGroup) q = q.eq('stage_group', state.filters.stageGroup)
+  if (state.filters.stageSub)   q = q.eq('stage_sub',   state.filters.stageSub)
   if (state.filters.country) q = q.eq('country', state.filters.country)
   if (state.filters.state_) q = q.eq('state', state.filters.state_)
   if (state.filters.city) q = q.eq('city', state.filters.city)
@@ -238,7 +253,7 @@ async function loadFollowUpsView() {
     closed_7d: closedRes.count || 0,
   }
 
-  let q = applyOwner(supabase.from('activities').select('*, school:schools(school_profile_id,school_name,city,state,current_stage)'))
+  let q = applyOwner(supabase.from('activities').select('*, school:schools(school_profile_id,school_name,city,state,stage_group,stage_sub)'))
   if (state.followUpsFilter === 'open') {
     q = q.is('completed_at', null).not('scheduled_for', 'is', null).order('scheduled_for', { ascending: true })
   } else if (state.followUpsFilter === 'overdue') {
@@ -266,6 +281,13 @@ async function loadAuditLog(schoolId) {
   state.auditLog = data || []
 }
 
+async function loadWebinarDates(schoolId) {
+  const { data } = await supabase.from('webinar_dates')
+    .select('*').eq('school_profile_id', schoolId)
+    .order('webinar_date', { ascending: false })
+  state.webinarDates = data || []
+}
+
 async function exportSchoolsCsv() {
   if (state.exporting) return
   state.exporting = true; render()
@@ -275,13 +297,13 @@ async function exportSchoolsCsv() {
   let from = 0
   while (true) {
     let q = supabase.from('schools')
-      .select('school_profile_id,school_name,school_type,address,pin_code,city,state,country,email,phone_no,curriculum_followed,school_fees,school_fees_range,poc1_designation,poc1_email,poc1_name,poc1_number,poc2_designation,poc2_email,poc2_name,poc2_number,owner_user_id,current_stage,last_activity_at')
+      .select('school_profile_id,school_name,school_type,address,pin_code,city,state,country,email,phone_no,curriculum_followed,school_fees,school_fees_range,poc1_designation,poc1_email,poc1_name,poc1_number,poc2_designation,poc2_email,poc2_name,poc2_number,owner_user_id,stage_group,stage_sub,not_eligible,last_activity_at')
       .order('school_name').range(from, from + pageSize - 1)
     if (state.filters.search) {
       const s = state.filters.search.replace(/[%_]/g,'')
       q = q.or('school_name.ilike.%' + s + '%,city.ilike.%' + s + '%,state.ilike.%' + s + '%')
     }
-    if (state.filters.stage) q = q.eq('current_stage', state.filters.stage)
+    if (state.filters.stageGroup) q = q.eq('stage_group', state.filters.stageGroup)
     if (state.filters.mineOnly) q = q.eq('owner_user_id', state.session.user.id)
     else if (state.filters.ownerId === 'unassigned') q = q.is('owner_user_id', null)
     else if (state.filters.ownerId) q = q.eq('owner_user_id', state.filters.ownerId)
@@ -292,7 +314,7 @@ async function exportSchoolsCsv() {
     from += pageSize
   }
   // Build CSV
-  const headers = ['ID','School name','Type','Address','Pin code','City','State','Country','Email','Phone','Curriculum','Fees','Fees range','POC1 designation','POC1 email','POC1 name','POC1 phone','POC2 designation','POC2 email','POC2 name','POC2 phone','Owner','Stage','Last activity']
+  const headers = ['ID','School name','Type','Address','Pin code','City','State','Country','Email','Phone','Curriculum','Fees','Fees range','POC1 designation','POC1 email','POC1 name','POC1 phone','POC2 designation','POC2 email','POC2 name','POC2 phone','Owner','Stage group','Stage','Not eligible','Last activity']
   const csvEsc = (v) => {
     if (v === null || v === undefined) return ''
     const s = String(v)
@@ -305,7 +327,7 @@ async function exportSchoolsCsv() {
       r.email, r.phone_no, r.curriculum_followed, r.school_fees, r.school_fees_range,
       r.poc1_designation, r.poc1_email, r.poc1_name, r.poc1_number,
       r.poc2_designation, r.poc2_email, r.poc2_name, r.poc2_number,
-      userName(r.owner_user_id) || '', r.current_stage, r.last_activity_at || ''
+      userName(r.owner_user_id) || '', r.stage_group, r.stage_sub, r.not_eligible ? 'Yes' : 'No', r.last_activity_at || ''
     ].map(csvEsc).join(','))
   }
   const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' })
@@ -326,71 +348,123 @@ async function logout() { await supabase.auth.signOut(); window.location.hash = 
 
 async function submitActivity(form) {
   if (state.saving) return
-  const newStage = form.new_stage.value || null
-  const scheduledFor = form.scheduled_for.value || null
   const activityType = form.activity_type.value
-  const stageNow = newStage || state.currentSchool.current_stage
-  const stageIsTerminal = TERMINAL_STAGES.includes(stageNow)
+  const newGroup = form.new_stage_group?.value || ''
+  const newSub   = form.new_stage_sub?.value   || ''
+  const scheduledFor = form.scheduled_for?.value || null
+  const s = state.currentSchool
 
-  // ENFORCE: every logged activity is a completed activity. The school must either
-  // (a) have a next follow-up scheduled, or (b) be moved to a terminal stage.
-  if (!stageIsTerminal && !scheduledFor) {
-    flash('err', 'Set the next follow-up date, or move stage to Closed / Webinar Done / Not Interested.')
-    return
+  const effectiveGroup = newGroup || s.stage_group
+  const effectiveSub   = newSub   || s.stage_sub
+
+  // Webinar date required when moving to Confirm
+  const webinarDate = form.webinar_date?.value || null
+  const webinarTime = form.webinar_time?.value || null
+  if (newSub === 'Confirm' && !webinarDate) {
+    flash('err', 'Add the webinar date before confirming.'); return
+  }
+
+  // Not Interested reason required
+  const niReason = form.ni_reason?.value || null
+  const niReasonOther = form.ni_reason_other?.value?.trim() || null
+  if (newSub === 'Not Interested' && !niReason) {
+    flash('err', 'Select a reason for Not Interested.'); return
+  }
+
+  // Exam schedule fields
+  const examType  = form.exam_type?.value  || null
+  const examStart = form.exam_start?.value || null
+  const examEnd   = form.exam_end?.value   || null
+
+  // Vacation schedule fields
+  const vacType  = form.vac_type?.value  || null
+  const vacStart = form.vac_start?.value || null
+  const vacEnd   = form.vac_end?.value   || null
+
+  // Follow-up date rule: required unless terminal sub, not-eligible, or webinar passed
+  const noFollowupSub = NO_FOLLOWUP_SUBS.includes(effectiveSub)
+  const webinarPassed = s.stage_sub === 'Confirm' && (() => {
+    // find latest webinar date for this school from state
+    const dates = state.webinarDates || []
+    if (!dates.length) return false
+    const latest = dates.reduce((a, b) => a.webinar_date > b.webinar_date ? a : b)
+    return latest.webinar_date < todayYMD()
+  })()
+  const needFollowup = !noFollowupSub && !s.not_eligible && !webinarPassed
+  if (needFollowup && !scheduledFor) {
+    flash('err', 'Set the next follow-up date, or move to a terminal stage (Not Interested, Backed Out, Attempt Exhausted).'); return
   }
 
   state.saving = true; render()
   const nowIso = new Date().toISOString()
 
-  // 1. Insert the completed activity
+  // 1. Insert completed activity
   const primary = {
-    school_profile_id: state.currentSchool.school_profile_id,
+    school_profile_id: s.school_profile_id,
     user_id: state.session.user.id,
     activity_type: activityType,
-    outcome: form.outcome.value.trim() || null,
-    notes: form.notes.value.trim() || null,
+    outcome: form.outcome?.value?.trim() || null,
+    notes: form.notes?.value?.trim() || null,
     scheduled_for: scheduledFor,
     completed_at: nowIso,
-    stage_at_time: stageNow,
+    stage_group_at_time: effectiveGroup,
+    stage_sub_at_time: effectiveSub,
+    not_interested_reason: niReason,
+    not_interested_reason_other: niReason === 'Others' ? niReasonOther : null,
+    exam_type: examType, exam_start: examStart, exam_end: examEnd,
+    vacation_type: vacType, vacation_start: vacStart, vacation_end: vacEnd,
   }
   const { error: insErr } = await supabase.from('activities').insert(primary)
   if (insErr) { state.saving = false; flash('err', insErr.message); render(); return }
 
-  // 2. Auto-close any open follow-up tasks for this school by this user.
+  // 2. Auto-close open follow-up tasks for this school+user
   await supabase.from('activities')
     .update({ completed_at: nowIso, outcome: 'Closed by ' + activityType + ' activity' })
-    .eq('school_profile_id', state.currentSchool.school_profile_id)
+    .eq('school_profile_id', s.school_profile_id)
     .eq('user_id', state.session.user.id)
     .is('completed_at', null)
     .not('scheduled_for', 'is', null)
 
-  // 3. If a next follow-up date is set and stage isn't terminal, create the next task.
-  if (scheduledFor && !stageIsTerminal) {
-    const followUp = {
-      school_profile_id: state.currentSchool.school_profile_id,
+  // 3. Create next follow-up task if needed
+  if (scheduledFor && needFollowup) {
+    await supabase.from('activities').insert({
+      school_profile_id: s.school_profile_id,
       user_id: state.session.user.id,
       activity_type: activityType,
-      outcome: null,
       notes: 'Follow-up scheduled from ' + fmtDateOnly(nowIso),
       scheduled_for: scheduledFor,
       completed_at: null,
-      stage_at_time: stageNow,
-    }
-    await supabase.from('activities').insert(followUp)
+      stage_group_at_time: effectiveGroup,
+      stage_sub_at_time: effectiveSub,
+    })
   }
 
-  // 4. Stage change on the school, if any
-  if (newStage && newStage !== state.currentSchool.current_stage) {
-    await supabase.from('schools').update({ current_stage: newStage }).eq('school_profile_id', state.currentSchool.school_profile_id)
+  // 4. Stage change on school
+  if (newGroup || newSub) {
+    const stageUpdate = {}
+    if (newGroup) stageUpdate.stage_group = newGroup
+    if (newSub)   stageUpdate.stage_sub   = newSub
+    await supabase.from('schools').update(stageUpdate).eq('school_profile_id', s.school_profile_id)
+  }
+
+  // 5. Webinar date insert
+  if (newSub === 'Confirm' && webinarDate) {
+    await supabase.from('webinar_dates').insert({
+      school_profile_id: s.school_profile_id,
+      webinar_date: webinarDate,
+      webinar_time: webinarTime || null,
+      created_by: state.session.user.id,
+    })
   }
 
   await Promise.all([
-    loadSchool(state.currentSchool.school_profile_id),
-    loadActivities(state.currentSchool.school_profile_id),
+    loadSchool(s.school_profile_id),
+    loadActivities(s.school_profile_id),
+    loadWebinarDates(s.school_profile_id),
     loadMyOverdueCount(),
   ])
   state.saving = false
-  flash('ok', stageIsTerminal ? 'Activity logged · school marked ' + stageNow : 'Activity logged · next follow-up scheduled')
+  flash('ok', noFollowupSub ? 'Activity logged' : 'Activity logged · next follow-up scheduled')
   render()
 }
 
@@ -567,13 +641,13 @@ function renderSchoolsList() {
     ? '<tr><td colspan="7" class="text-center text-stone-400 py-12 text-sm">No schools match these filters.</td></tr>'
     : state.schools.map(s => {
       const selected = state.selectedSchoolIds.has(s.school_profile_id)
-      return '<tr class="hover:bg-stone-50 border-b border-stone-100' + (selected ? ' bg-indigo-50/40' : '') + '" data-action="open-school" data-id="' + esc(s.school_profile_id) + '"><td class="py-2 px-4 w-10" data-no-row-click><input type="checkbox" id="cb-' + esc(s.school_profile_id) + '" class="row-checkbox sr-only" data-action="toggle-select" data-id="' + esc(s.school_profile_id) + '"' + (selected ? ' checked' : '') + '><label for="cb-' + esc(s.school_profile_id) + '" class="cursor-pointer block" data-no-row-click><span class="check-box inline-block w-4 h-4 rounded border border-stone-300 hover:border-indigo-400 transition align-middle"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M5 10l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></label></td><td class="py-3 px-3 font-mono text-xs text-stone-400">' + esc(s.school_profile_id) + '</td><td class="py-3 px-4"><div class="font-medium text-stone-900">' + esc(s.school_name) + '</div><div class="text-xs text-stone-500">' + esc([s.city, s.state].filter(Boolean).join(', ')) + '</div></td><td class="py-3 px-4">' + stagePill(s.current_stage) + '</td><td class="py-3 px-4">' + avatarWithName(s.owner_user_id) + '</td><td class="py-3 px-4 text-sm text-stone-500">' + esc(fmtDate(s.last_activity_at) || 'No activity') + '</td><td class="py-3 px-4 text-right text-stone-300">›</td></tr>'
+      return '<tr class="hover:bg-stone-50 border-b border-stone-100' + (selected ? ' bg-indigo-50/40' : '') + '" data-action="open-school" data-id="' + esc(s.school_profile_id) + '"><td class="py-2 px-4 w-10" data-no-row-click><input type="checkbox" id="cb-' + esc(s.school_profile_id) + '" class="row-checkbox sr-only" data-action="toggle-select" data-id="' + esc(s.school_profile_id) + '"' + (selected ? ' checked' : '') + '><label for="cb-' + esc(s.school_profile_id) + '" class="cursor-pointer block" data-no-row-click><span class="check-box inline-block w-4 h-4 rounded border border-stone-300 hover:border-indigo-400 transition align-middle"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M5 10l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></label></td><td class="py-3 px-3 font-mono text-xs text-stone-400">' + esc(s.school_profile_id) + '</td><td class="py-3 px-4"><div class="font-medium text-stone-900">' + esc(s.school_name) + (s.not_eligible ? ' <span class="text-[10px] font-semibold text-rose-600 bg-rose-50 border border-rose-200 px-1.5 py-0.5 rounded ml-1">Not Eligible</span>' : '') + '</div><div class="text-xs text-stone-500">' + esc([s.city, s.state].filter(Boolean).join(', ')) + '</div></td><td class="py-3 px-4">' + stagePill(s.stage_group, s.stage_sub) + '</td><td class="py-3 px-4">' + avatarWithName(s.owner_user_id) + '</td><td class="py-3 px-4 text-sm text-stone-500">' + esc(fmtDate(s.last_activity_at) || 'No activity') + '</td><td class="py-3 px-4 text-right text-stone-300">›</td></tr>'
     }).join('')
 
   const selectedCount = state.selectedSchoolIds.size
   const filtersActive = state.filters.search || state.filters.stage || state.filters.ownerId || state.filters.mineOnly || state.filters.country || state.filters.state_ || state.filters.city || state.filters.createdFrom || state.filters.createdTo
 
-  return '<div class="mb-5 flex items-end justify-between"><div><h1 class="text-xl font-semibold tracking-tight text-stone-900">Schools</h1><p class="text-sm text-stone-500 mt-0.5">' + state.schoolsTotal.toLocaleString() + ' ' + (state.filters.mineOnly ? 'assigned to you' : 'total') + '. Click a row to open.</p></div>' + (isAdmin() ? '<button data-action="export-csv"' + (state.exporting ? ' disabled' : '') + ' class="text-sm border border-stone-300 hover:border-stone-400 hover:bg-stone-50 disabled:opacity-50 px-3 py-1.5 rounded-md text-stone-700 transition">' + (state.exporting ? 'Exporting…' : '↓ Export CSV') + '</button>' : '') + '</div><div class="bg-white border border-stone-200 rounded-lg overflow-hidden"><div class="px-4 py-3 border-b border-stone-200 flex flex-wrap gap-2 items-center"><input type="text" placeholder="Search by name, city, state…" value="' + esc(state.filters.search) + '" class="flex-1 min-w-[200px] text-sm px-3 py-1.5 border border-stone-200 rounded-md focus-ring focus:border-indigo-300" data-action="filter-search-input"><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring" data-action="filter-stage-change"><option value="">All stages</option>' + STAGES.map(s => '<option value="' + esc(s) + '"' + (state.filters.stage === s ? ' selected' : '') + '>' + esc(s) + '</option>').join('') + '</select><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring' + (state.filters.mineOnly ? ' opacity-40 pointer-events-none' : '') + '" data-action="filter-owner-change"><option value="">All owners</option><option value="unassigned"' + (state.filters.ownerId === 'unassigned' ? ' selected' : '') + '>Unassigned</option>' + userOptions + '</select><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring" data-action="filter-country-change"><option value="">All countries</option>' + state.filterOptions.countries.map(c => '<option value="' + esc(c) + '"' + (state.filters.country === c ? ' selected' : '') + '>' + esc(c) + '</option>').join('') + '</select><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring" data-action="filter-state-change"><option value="">All states</option>' + state.filterOptions.states.map(s => '<option value="' + esc(s) + '"' + (state.filters.state_ === s ? ' selected' : '') + '>' + esc(s) + '</option>').join('') + '</select><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring" data-action="filter-city-change"><option value="">All cities</option>' + state.filterOptions.cities.map(c => '<option value="' + esc(c) + '"' + (state.filters.city === c ? ' selected' : '') + '>' + esc(c) + '</option>').join('') + '</select><label class="text-xs text-stone-500">Created</label><input type="date" value="' + esc(state.filters.createdFrom) + '" class="text-sm px-2 py-1.5 border border-stone-200 rounded-md focus-ring" data-action="filter-createdfrom-change"><span class="text-xs text-stone-400">→</span><input type="date" value="' + esc(state.filters.createdTo) + '" class="text-sm px-2 py-1.5 border border-stone-200 rounded-md focus-ring" data-action="filter-createdto-change"><button data-action="toggle-mine" class="text-sm px-3 py-1.5 rounded-md border transition ' + (state.filters.mineOnly ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50') + '">Mine only</button>' + (filtersActive ? '<button data-action="clear-filters" class="text-xs text-stone-500 hover:text-stone-900 px-2">Clear</button>' : '') + '</div><div class="overflow-x-auto"><table class="w-full"><thead class="bg-stone-50 border-b border-stone-200"><tr class="text-left text-xs font-medium text-stone-500 uppercase tracking-wider"><th class="py-2 px-4 w-10"><input type="checkbox" id="cb-all" class="row-checkbox sr-only" data-action="toggle-select-all"' + (allSelected ? ' checked' : '') + '><label for="cb-all" class="cursor-pointer block"><span class="check-box inline-block w-4 h-4 rounded border ' + (someSelected ? 'bg-indigo-100 border-indigo-300' : 'border-stone-300') + ' hover:border-indigo-400 transition align-middle"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M5 10l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></label></th><th class="py-2.5 px-3">ID</th><th class="py-2.5 px-4">School</th><th class="py-2.5 px-4">Stage</th><th class="py-2.5 px-4">Owner</th><th class="py-2.5 px-4">Last activity</th><th class="py-2.5 px-4"></th></tr></thead><tbody>' + rows + '</tbody></table></div>' + (state.schoolsTotal > PAGE_SIZE ? '<div class="px-4 py-3 border-t border-stone-200 flex items-center justify-between text-sm text-stone-500"><div>' + start.toLocaleString() + '–' + end.toLocaleString() + ' of ' + state.schoolsTotal.toLocaleString() + '</div><div class="flex items-center gap-2"><button data-action="page-prev"' + (page === 1 ? ' disabled' : '') + ' class="px-2.5 py-1 border border-stone-200 rounded hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed">‹</button><span>Page ' + page + ' of ' + totalPages.toLocaleString() + '</span><button data-action="page-next"' + (page >= totalPages ? ' disabled' : '') + ' class="px-2.5 py-1 border border-stone-200 rounded hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed">›</button></div></div>' : '') + '</div>' + (selectedCount > 0 ? renderBulkBar(selectedCount) : '')
+  return '<div class="mb-5 flex items-end justify-between"><div><h1 class="text-xl font-semibold tracking-tight text-stone-900">Schools</h1><p class="text-sm text-stone-500 mt-0.5">' + state.schoolsTotal.toLocaleString() + ' ' + (state.filters.mineOnly ? 'assigned to you' : 'total') + '. Click a row to open.</p></div>' + (isAdmin() ? '<button data-action="export-csv"' + (state.exporting ? ' disabled' : '') + ' class="text-sm border border-stone-300 hover:border-stone-400 hover:bg-stone-50 disabled:opacity-50 px-3 py-1.5 rounded-md text-stone-700 transition">' + (state.exporting ? 'Exporting…' : '↓ Export CSV') + '</button>' : '') + '</div><div class="bg-white border border-stone-200 rounded-lg overflow-hidden"><div class="px-4 py-3 border-b border-stone-200 flex flex-wrap gap-2 items-center"><input type="text" placeholder="Search by name, city, state…" value="' + esc(state.filters.search) + '" class="flex-1 min-w-[200px] text-sm px-3 py-1.5 border border-stone-200 rounded-md focus-ring focus:border-indigo-300" data-action="filter-search-input"><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring" data-action="filter-stage-group-change"><option value="">All groups</option>' + STAGE_GROUPS.map(g => '<option value="' + esc(g) + '"' + (state.filters.stageGroup === g ? ' selected' : '') + '>' + esc(g) + '</option>').join('') + '</select><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring" data-action="filter-stage-sub-change"><option value="">All stages</option>' + (state.filters.stageGroup ? (STAGE_SUBS[state.filters.stageGroup]||[]) : STAGES).map(s => '<option value="' + esc(s) + '"' + (state.filters.stageSub === s ? ' selected' : '') + '>' + esc(s) + '</option>').join('') + '</select><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring' + (state.filters.mineOnly ? ' opacity-40 pointer-events-none' : '') + '" data-action="filter-owner-change"><option value="">All owners</option><option value="unassigned"' + (state.filters.ownerId === 'unassigned' ? ' selected' : '') + '>Unassigned</option>' + userOptions + '</select><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring" data-action="filter-country-change"><option value="">All countries</option>' + state.filterOptions.countries.map(c => '<option value="' + esc(c) + '"' + (state.filters.country === c ? ' selected' : '') + '>' + esc(c) + '</option>').join('') + '</select><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring" data-action="filter-state-change"><option value="">All states</option>' + state.filterOptions.states.map(s => '<option value="' + esc(s) + '"' + (state.filters.state_ === s ? ' selected' : '') + '>' + esc(s) + '</option>').join('') + '</select><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring" data-action="filter-city-change"><option value="">All cities</option>' + state.filterOptions.cities.map(c => '<option value="' + esc(c) + '"' + (state.filters.city === c ? ' selected' : '') + '>' + esc(c) + '</option>').join('') + '</select><label class="text-xs text-stone-500">Created</label><input type="date" value="' + esc(state.filters.createdFrom) + '" class="text-sm px-2 py-1.5 border border-stone-200 rounded-md focus-ring" data-action="filter-createdfrom-change"><span class="text-xs text-stone-400">→</span><input type="date" value="' + esc(state.filters.createdTo) + '" class="text-sm px-2 py-1.5 border border-stone-200 rounded-md focus-ring" data-action="filter-createdto-change"><button data-action="toggle-mine" class="text-sm px-3 py-1.5 rounded-md border transition ' + (state.filters.mineOnly ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50') + '">Mine only</button>' + (filtersActive ? '<button data-action="clear-filters" class="text-xs text-stone-500 hover:text-stone-900 px-2">Clear</button>' : '') + '</div><div class="overflow-x-auto"><table class="w-full"><thead class="bg-stone-50 border-b border-stone-200"><tr class="text-left text-xs font-medium text-stone-500 uppercase tracking-wider"><th class="py-2 px-4 w-10"><input type="checkbox" id="cb-all" class="row-checkbox sr-only" data-action="toggle-select-all"' + (allSelected ? ' checked' : '') + '><label for="cb-all" class="cursor-pointer block"><span class="check-box inline-block w-4 h-4 rounded border ' + (someSelected ? 'bg-indigo-100 border-indigo-300' : 'border-stone-300') + ' hover:border-indigo-400 transition align-middle"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M5 10l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></label></th><th class="py-2.5 px-3">ID</th><th class="py-2.5 px-4">School</th><th class="py-2.5 px-4">Stage</th><th class="py-2.5 px-4">Owner</th><th class="py-2.5 px-4">Last activity</th><th class="py-2.5 px-4"></th></tr></thead><tbody>' + rows + '</tbody></table></div>' + (state.schoolsTotal > PAGE_SIZE ? '<div class="px-4 py-3 border-t border-stone-200 flex items-center justify-between text-sm text-stone-500"><div>' + start.toLocaleString() + '–' + end.toLocaleString() + ' of ' + state.schoolsTotal.toLocaleString() + '</div><div class="flex items-center gap-2"><button data-action="page-prev"' + (page === 1 ? ' disabled' : '') + ' class="px-2.5 py-1 border border-stone-200 rounded hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed">‹</button><span>Page ' + page + ' of ' + totalPages.toLocaleString() + '</span><button data-action="page-next"' + (page >= totalPages ? ' disabled' : '') + ' class="px-2.5 py-1 border border-stone-200 rounded hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed">›</button></div></div>' : '') + '</div>' + (selectedCount > 0 ? renderBulkBar(selectedCount) : '')
 }
 
 function renderBulkBar(count) {
@@ -595,7 +669,11 @@ function renderSchoolDetail() {
       const typeStyle = ACTIVITY_TYPE_COLORS[a.activity_type] || ACTIVITY_TYPE_COLORS['Other']
       const isPending = !a.completed_at
       const when = a.completed_at ? fmtDate(a.completed_at) : (a.scheduled_for ? 'Scheduled for ' + fmtDateOnly(a.scheduled_for) : fmtDate(a.created_at))
-      return '<div class="py-3 pl-4 mb-2 border-l-2' + (isPending ? ' bg-amber-50/30' : '') + '" style="border-left-color: ' + (isPending ? '#FBBF24' : typeStyle.border) + '"><div class="flex items-center justify-between flex-wrap gap-2"><div class="flex items-center gap-2"><span class="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-800"><span class="w-1.5 h-1.5 rounded-full ' + typeStyle.dot + '"></span>' + esc(a.activity_type) + '</span>' + (isPending ? '<span class="text-[10px] font-semibold uppercase tracking-wider text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">Pending</span>' : '') + (a.stage_at_time && a.stage_at_time !== s.current_stage ? '<span class="text-xs text-stone-400">→ ' + esc(a.stage_at_time) + '</span>' : '') + '</div><div class="text-xs text-stone-400 flex items-center gap-2">' + avatar(a.user_id, 'xs') + '<span>' + esc(when) + '</span></div></div>' + (a.outcome ? '<div class="text-sm text-stone-800 mt-1.5">' + esc(a.outcome) + '</div>' : '') + (a.notes ? '<div class="text-sm text-stone-600 mt-1 whitespace-pre-wrap">' + esc(a.notes) + '</div>' : '') + (a.scheduled_for && a.completed_at ? '<div class="text-xs text-stone-400 mt-1">Follow-up planned: ' + esc(fmtDateOnly(a.scheduled_for)) + '</div>' : '') + '</div>'
+      const stageChanged = (a.stage_group_at_time && a.stage_sub_at_time) && (a.stage_group_at_time !== s.stage_group || a.stage_sub_at_time !== s.stage_sub)
+      const niInfo = a.not_interested_reason ? '<div class="text-xs text-rose-600 mt-1">Reason: ' + esc(a.not_interested_reason) + (a.not_interested_reason_other ? ' — ' + esc(a.not_interested_reason_other) : '') + '</div>' : ''
+      const examInfo = a.exam_type ? '<div class="text-xs text-amber-700 mt-1">Exam: ' + esc(a.exam_type) + (a.exam_start ? ' (' + esc(fmtDateOnly(a.exam_start)) + (a.exam_end ? ' → ' + esc(fmtDateOnly(a.exam_end)) : '') + ')' : '') + '</div>' : ''
+      const vacInfo  = a.vacation_type ? '<div class="text-xs text-amber-700 mt-1">Vacation: ' + esc(a.vacation_type) + (a.vacation_start ? ' (' + esc(fmtDateOnly(a.vacation_start)) + (a.vacation_end ? ' → ' + esc(fmtDateOnly(a.vacation_end)) : '') + ')' : '') + '</div>' : ''
+      return '<div class="py-3 pl-4 mb-2 border-l-2' + (isPending ? ' bg-amber-50/30' : '') + '" style="border-left-color: ' + (isPending ? '#FBBF24' : typeStyle.border) + '"><div class="flex items-center justify-between flex-wrap gap-2"><div class="flex items-center gap-2"><span class="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-800"><span class="w-1.5 h-1.5 rounded-full ' + typeStyle.dot + '"></span>' + esc(a.activity_type) + '</span>' + (isPending ? '<span class="text-[10px] font-semibold uppercase tracking-wider text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">Pending</span>' : '') + (stageChanged ? '<span class="text-xs text-stone-400">→ ' + esc(a.stage_sub_at_time) + '</span>' : '') + '</div><div class="text-xs text-stone-400 flex items-center gap-2">' + avatar(a.user_id, 'xs') + '<span>' + esc(when) + '</span></div></div>' + (a.outcome ? '<div class="text-sm text-stone-800 mt-1.5">' + esc(a.outcome) + '</div>' : '') + (a.notes ? '<div class="text-sm text-stone-600 mt-1 whitespace-pre-wrap">' + esc(a.notes) + '</div>' : '') + niInfo + examInfo + vacInfo + (a.scheduled_for && a.completed_at ? '<div class="text-xs text-stone-400 mt-1">Follow-up planned: ' + esc(fmtDateOnly(a.scheduled_for)) + '</div>' : '') + '</div>'
     }).join('')
 
   const userOpts = state.users.map(u => '<option value="' + esc(u.user_id) + '"' + (s.owner_user_id === u.user_id ? ' selected' : '') + '>' + esc(u.full_name || u.email) + '</option>').join('')
@@ -618,19 +696,75 @@ function renderSchoolDetail() {
     banner = '<div class="mb-4 ' + tone.bg + ' border ' + tone.bd + ' rounded-lg px-4 py-3 flex items-center gap-3"><span class="text-base">' + tone.icon + '</span><div class="text-sm flex-1"><span class="' + tone.tx + ' font-semibold">' + label + ':</span> <span class="text-stone-700">' + esc(myPending.activity_type) + ' on ' + esc(fmtDateOnly(myPending.scheduled_for)) + '</span></div><div class="text-xs text-stone-500">Log the activity to close this task →</div></div>'
   }
 
-  return banner + '<div class="mb-5 flex items-start justify-between gap-4 flex-wrap"><div><div class="text-xs text-stone-400 font-mono mb-1">ID ' + esc(s.school_profile_id) + '</div><h1 class="text-2xl font-semibold tracking-tight text-stone-900">' + esc(s.school_name) + '</h1><div class="text-sm text-stone-500 mt-1">' + esc([s.city, s.state, s.country].filter(Boolean).join(', ')) + '</div></div><div class="flex items-center gap-3 flex-wrap justify-end">' + stagePill(s.current_stage) + ownerSlot + '</div></div><div class="grid grid-cols-1 lg:grid-cols-3 gap-6"><div class="lg:col-span-1 space-y-6">' + renderActivityForm(s) + (isAdmin() ? renderAdminPanel(userOpts) : '') + '</div><div class="lg:col-span-2 space-y-6">' + (state.editingSchool ? renderSchoolEditForm(s) : renderSchoolFields(s, editable)) + '<section class="bg-white border border-stone-200 rounded-lg"><header class="px-4 py-3 border-b border-stone-200"><h2 class="text-sm font-semibold text-stone-900">Activity timeline <span class="text-stone-400 font-normal">(' + state.activities.length + ')</span></h2></header><div class="p-4">' + activityItems + '</div></section>' + renderAuditLogSection(s) + '</div></div>'
+  return banner + '<div class="mb-5 flex items-start justify-between gap-4 flex-wrap"><div><div class="text-xs text-stone-400 font-mono mb-1">ID ' + esc(s.school_profile_id) + '</div><h1 class="text-2xl font-semibold tracking-tight text-stone-900">' + esc(s.school_name) + (s.not_eligible ? ' <span class="text-sm font-medium text-rose-600 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-md ml-2">Not Eligible</span>' : '') + '</h1><div class="text-sm text-stone-500 mt-1">' + esc([s.city, s.state, s.country].filter(Boolean).join(', ')) + '</div></div><div class="flex items-center gap-3 flex-wrap justify-end">' + stagePill(s.stage_group, s.stage_sub) + ownerSlot + '</div></div><div class="grid grid-cols-1 lg:grid-cols-3 gap-6"><div class="lg:col-span-1 space-y-6">' + renderActivityForm(s) + renderNotEligiblePanel(s) + (isAdmin() ? renderAdminPanel(userOpts) : '') + '</div><div class="lg:col-span-2 space-y-6">' + (state.editingSchool ? renderSchoolEditForm(s) : renderSchoolFields(s, editable)) + renderWebinarDatesSection() + '<section class="bg-white border border-stone-200 rounded-lg"><header class="px-4 py-3 border-b border-stone-200"><h2 class="text-sm font-semibold text-stone-900">Activity timeline <span class="text-stone-400 font-normal">(' + state.activities.length + ')</span></h2></header><div class="p-4">' + activityItems + '</div></section>' + renderAuditLogSection(s) + '</div></div>'
 }
 
 function renderActivityForm(s) {
-  const isTerminal = TERMINAL_STAGES.includes(s.current_stage)
-  const hint = isTerminal
-    ? '<div class="text-xs text-stone-500 italic">This school is in a terminal stage — no new follow-up required.</div>'
-    : '<div class="text-xs text-stone-500 italic">Set a next follow-up date, or move stage to Closed / Webinar Done / Not Interested.</div>'
-  return '<section class="bg-white border border-stone-200 rounded-lg"><header class="px-4 py-3 border-b border-stone-200"><h2 class="text-sm font-semibold text-stone-900">Log activity</h2></header><form data-action="submit-activity" class="p-4 space-y-3"><div><label class="block text-xs font-medium text-stone-600 mb-1">Type</label><select name="activity_type" required class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md bg-white focus-ring">' + ACTIVITY_TYPES.map(t => '<option>' + esc(t) + '</option>').join('') + '</select></div><div><label class="block text-xs font-medium text-stone-600 mb-1">Outcome <span class="text-stone-400 font-normal">(short)</span></label><input type="text" name="outcome" placeholder="e.g., Spoke to principal" class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring"></div><div><label class="block text-xs font-medium text-stone-600 mb-1">Notes</label><textarea name="notes" rows="3" placeholder="Details, next steps…" class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring resize-none"></textarea></div><div class="grid grid-cols-2 gap-3"><div><label class="block text-xs font-medium text-stone-600 mb-1">Move stage to</label><select name="new_stage" class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md bg-white focus-ring"><option value="">Keep current</option>' + STAGES.map(st => '<option value="' + esc(st) + '"' + (st === s.current_stage ? ' disabled' : '') + '>' + esc(st) + '</option>').join('') + '</select></div><div><label class="block text-xs font-medium text-stone-600 mb-1">Next follow-up</label><input type="date" name="scheduled_for" class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring"></div></div>' + hint + '<button type="submit"' + (state.saving ? ' disabled' : '') + ' class="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white text-sm font-medium py-2 rounded-md transition">' + (state.saving ? 'Saving…' : 'Log activity') + '</button></form></section>'
+  const isTerminalSub = NO_FOLLOWUP_SUBS.includes(s.stage_sub)
+  const isNotEligible = s.not_eligible
+  // Check if webinar date has passed (Confirm stage)
+  const webinarPassed = s.stage_sub === 'Confirm' && (() => {
+    const dates = state.webinarDates || []
+    if (!dates.length) return false
+    const latest = dates.reduce((a, b) => a.webinar_date > b.webinar_date ? a : b)
+    return latest.webinar_date < todayYMD()
+  })()
+  const needFollowup = !isTerminalSub && !isNotEligible && !webinarPassed
+
+  const groupOpts = STAGE_GROUPS.map(g => '<option value="' + esc(g) + '"' + (g === s.stage_group ? ' selected' : '') + '>' + esc(g) + '</option>').join('')
+  const subOpts = (STAGE_SUBS[s.stage_group] || []).map(st => '<option value="' + esc(st) + '"' + (st === s.stage_sub ? ' selected' : '') + '>' + esc(st) + '</option>').join('')
+
+  const hint = !needFollowup
+    ? '<div class="text-xs text-stone-500 italic">No follow-up task required for this stage.</div>'
+    : '<div class="text-xs text-stone-500 italic">Follow-up date required — or move to a terminal sub-stage.</div>'
+
+  return '<section class="bg-white border border-stone-200 rounded-lg"><header class="px-4 py-3 border-b border-stone-200"><h2 class="text-sm font-semibold text-stone-900">Log activity</h2></header><form data-action="submit-activity" class="p-4 space-y-3">' +
+    '<div><label class="block text-xs font-medium text-stone-600 mb-1">Type</label><select name="activity_type" required class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md bg-white focus-ring">' + ACTIVITY_TYPES.map(t => '<option>' + esc(t) + '</option>').join('') + '</select></div>' +
+    '<div><label class="block text-xs font-medium text-stone-600 mb-1">Outcome <span class="text-stone-400 font-normal">(short)</span></label><input type="text" name="outcome" placeholder="e.g., Spoke to principal" class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring"></div>' +
+    '<div><label class="block text-xs font-medium text-stone-600 mb-1">Notes</label><textarea name="notes" rows="2" placeholder="Details, next steps…" class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring resize-none"></textarea></div>' +
+    '<div class="grid grid-cols-2 gap-3">' +
+      '<div><label class="block text-xs font-medium text-stone-600 mb-1">Move group to</label>' +
+        '<select name="new_stage_group" id="act-stage-group" onchange="updateSubStageOptions(this.value)" class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md bg-white focus-ring"><option value="">Keep current</option>' + groupOpts + '</select></div>' +
+      '<div><label class="block text-xs font-medium text-stone-600 mb-1">Move sub-stage to</label>' +
+        '<select name="new_stage_sub" id="act-stage-sub" onchange="toggleActivityFormFields()" class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md bg-white focus-ring"><option value="">Keep current</option>' + subOpts + '</select></div>' +
+    '</div>' +
+    // Not Interested reason (shown when sub = Not Interested)
+    '<div id="ni-reason-row" style="display:none"><label class="block text-xs font-medium text-stone-600 mb-1">Reason <span class="text-rose-500">*</span></label>' +
+      '<select name="ni_reason" id="ni-reason-sel" onchange="toggleNiOther()" class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md bg-white focus-ring"><option value="">— Select reason —</option>' + NOT_INTERESTED_REASONS.map(r => '<option>' + esc(r) + '</option>').join('') + '</select>' +
+      '<input type="text" name="ni_reason_other" id="ni-reason-other" placeholder="Specify reason…" style="display:none" class="w-full mt-2 text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring"></div>' +
+    // Exam schedule fields
+    '<div id="exam-row" style="display:none" class="space-y-2"><label class="block text-xs font-medium text-stone-600">Exam schedule</label>' +
+      '<select name="exam_type" class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md bg-white focus-ring"><option value="">— Exam type —</option>' + EXAM_TYPES.map(t => '<option>' + esc(t) + '</option>').join('') + '</select>' +
+      '<div class="grid grid-cols-2 gap-2"><input type="date" name="exam_start" class="text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring" placeholder="Start"><input type="date" name="exam_end" class="text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring" placeholder="End"></div></div>' +
+    // Vacation schedule fields
+    '<div id="vacation-row" style="display:none" class="space-y-2"><label class="block text-xs font-medium text-stone-600">Vacation schedule</label>' +
+      '<select name="vac_type" class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md bg-white focus-ring"><option value="">— Vacation type —</option>' + VACATION_TYPES.map(t => '<option>' + esc(t) + '</option>').join('') + '</select>' +
+      '<div class="grid grid-cols-2 gap-2"><input type="date" name="vac_start" class="text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring" placeholder="Start"><input type="date" name="vac_end" class="text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring" placeholder="End"></div></div>' +
+    // Webinar date/time fields (shown when sub = Confirm)
+    '<div id="webinar-date-row" style="display:none"><label class="block text-xs font-medium text-stone-600 mb-1">Webinar date <span class="text-rose-500">*</span></label>' +
+      '<div class="grid grid-cols-2 gap-2"><input type="date" name="webinar_date" class="text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring"><input type="time" name="webinar_time" class="text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring"></div></div>' +
+    '<div id="followup-date-row"' + (needFollowup ? '' : ' style="display:none"') + '><label class="block text-xs font-medium text-stone-600 mb-1">Next follow-up date' + (needFollowup ? ' <span class="text-rose-500">*</span>' : '') + '</label><input type="date" name="scheduled_for" class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring" min="' + todayYMD() + '"></div>' +
+    hint +
+    '<button type="submit"' + (state.saving ? ' disabled' : '') + ' class="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white text-sm font-medium py-2 rounded-md transition">' + (state.saving ? 'Saving…' : 'Log activity') + '</button>' +
+    '</form></section>'
 }
 
 function renderAdminPanel(userOpts) {
   return '<section class="bg-white border border-stone-200 rounded-lg"><header class="px-4 py-3 border-b border-stone-200"><h2 class="text-sm font-semibold text-stone-900">Admin</h2></header><div class="p-4 space-y-3"><div><label class="block text-xs font-medium text-stone-600 mb-1">Reassign owner</label><select data-action="reassign-owner" class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md bg-white focus-ring"><option value="">Unassigned</option>' + userOpts + '</select></div></div></section>'
+}
+
+function renderNotEligiblePanel(s) {
+  return '<section class="bg-white border border-stone-200 rounded-lg"><header class="px-4 py-3 border-b border-stone-200 flex items-center justify-between"><h2 class="text-sm font-semibold text-stone-900">Not Eligible</h2>' + (s.not_eligible ? '<span class="text-[10px] font-semibold uppercase tracking-wider text-rose-600 bg-rose-50 px-2 py-0.5 rounded">Flagged</span>' : '') + '</header><div class="p-4">' + (s.not_eligible ? '<div class="text-sm text-stone-700 mb-1">Reason: <span class="font-medium">' + esc(s.not_eligible_reason || '—') + '</span></div><div class="text-xs text-stone-400">Flagged by ' + esc(userName(s.not_eligible_flagged_by) || 'unknown') + ' on ' + esc(fmtDateOnly(s.not_eligible_flagged_at) || '?') + '</div><button data-action="clear-not-eligible" class="mt-3 text-xs text-stone-600 hover:text-stone-900 border border-stone-200 hover:border-stone-400 px-2.5 py-1 rounded-md">Clear flag</button>' : '<div class="space-y-2"><input type="text" id="not-eligible-reason" placeholder="Reason (required)" class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring"><button data-action="set-not-eligible" class="w-full text-sm text-rose-600 hover:text-rose-800 border border-rose-200 hover:border-rose-400 hover:bg-rose-50 py-1.5 rounded-md font-medium transition">Mark as Not Eligible</button></div>') + '</div></section>'
+}
+
+function renderWebinarDatesSection() {
+  const dates = state.webinarDates || []
+  if (dates.length === 0) return ''
+  const rows = dates.map(d => {
+    const isPast = d.webinar_date < todayYMD()
+    return '<div class="py-2 border-b border-stone-100 last:border-0 flex items-center justify-between"><div><div class="text-sm font-medium ' + (isPast ? 'text-stone-400' : 'text-stone-900') + '">' + esc(fmtDateOnly(d.webinar_date)) + (d.webinar_time ? ' · ' + esc(d.webinar_time.slice(0,5)) : '') + (isPast ? ' <span class="text-xs text-stone-400">(past)</span>' : ' <span class="text-xs text-emerald-600 font-semibold">Upcoming</span>') + '</div><div class="text-xs text-stone-400 mt-0.5">Added by ' + esc(userName(d.created_by) || '—') + '</div></div></div>'
+  }).join('')
+  return '<section class="bg-white border border-stone-200 rounded-lg"><header class="px-4 py-3 border-b border-stone-200"><h2 class="text-sm font-semibold text-stone-900">Webinar dates <span class="text-stone-400 font-normal">(' + dates.length + ')</span></h2></header><div class="p-4">' + rows + '</div></section>'
 }
 
 function renderSchoolFields(s, editable) {
@@ -766,7 +900,7 @@ function renderFollowUpItem(f, today) {
   const ownerChip = isAdmin() ? '<div class="text-xs text-stone-500 mt-1 flex items-center gap-1.5">' + avatar(f.user_id, 'xs') + esc(userName(f.user_id) || '—') + '</div>' : ''
   const cta = !isClosed ? '<div class="text-xs text-indigo-600 mt-2">Open school to log activity →</div>' : ''
   const outcome = isClosed && f.outcome ? '<div class="text-sm text-stone-700 mt-1">' + esc(f.outcome) + '</div>' : ''
-  return '<li><a href="#/schools/' + esc(sch.school_profile_id) + '" class="block px-4 py-3 hover:bg-stone-50 transition"><div class="flex items-start gap-3"><span class="w-2 h-2 rounded-full ' + typeStyle.dot + ' mt-1.5 shrink-0"></span><div class="flex-1 min-w-0"><div class="flex items-center justify-between gap-3 flex-wrap"><span class="font-medium text-stone-900 truncate">' + esc(sch.school_name || 'School') + '</span><div class="text-xs ' + dateCls + '">' + esc(dateText) + '</div></div><div class="text-xs text-stone-500 mt-0.5">' + esc(f.activity_type) + (sch.city ? ' · ' + esc(sch.city) : '') + (sch.current_stage ? ' · ' + esc(sch.current_stage) : '') + '</div>' + outcome + ownerChip + cta + '</div></div></a></li>'
+  return '<li><a href="#/schools/' + esc(sch.school_profile_id) + '" class="block px-4 py-3 hover:bg-stone-50 transition"><div class="flex items-start gap-3"><span class="w-2 h-2 rounded-full ' + typeStyle.dot + ' mt-1.5 shrink-0"></span><div class="flex-1 min-w-0"><div class="flex items-center justify-between gap-3 flex-wrap"><span class="font-medium text-stone-900 truncate">' + esc(sch.school_name || 'School') + '</span><div class="text-xs ' + dateCls + '">' + esc(dateText) + '</div></div><div class="text-xs text-stone-500 mt-0.5">' + esc(f.activity_type) + (sch.city ? ' · ' + esc(sch.city) : '') + (sch.stage_sub ? ' · ' + esc(sch.stage_sub) : '') + '</div>' + outcome + ownerChip + cta + '</div></div></a></li>'
 }
 
 function renderTeam() {
@@ -830,12 +964,11 @@ if (window.ChartDataLabels && window.Chart) {
 function initDashboardCharts() {
   if (!state.dashboardData) return
   destroyCharts()
-  const stages = state.dashboardData.stages || {}
-  const stageLabels = STAGES.filter(s => stages[s])
-  const stageData = stageLabels.map(s => stages[s])
-  const stageColors = stageLabels.map(s => {
-    const m = (STAGE_STYLES[s] || '').match(/background:(#[0-9A-Fa-f]+)/)
-    return m ? m[1] : '#94A3B8'
+  const stageGroups = state.dashboardData.stage_groups || {}
+  const stageLabels = STAGE_GROUPS.filter(g => stageGroups[g])
+  const stageData = stageLabels.map(g => stageGroups[g])
+  const stageColors = stageLabels.map(g => {
+    return STAGE_GROUP_STYLES[g]?.bg || '#94A3B8'
   })
 
   const stagesEl = document.getElementById('chart-stages')
@@ -966,13 +1099,13 @@ function renderReports() {
   su.forEach(r => { if (!suByUser[r.owner_user_id]) suByUser[r.owner_user_id] = {}; suByUser[r.owner_user_id][r.stage] = r.n })
   const suUserIds = Object.keys(suByUser).sort((a,b) => (userName(a)||'').localeCompare(userName(b)||''))
   const suRows = suUserIds.length === 0
-    ? '<tr><td colspan="' + (STAGES.length + 2) + '" class="text-center text-stone-400 py-8 text-sm">No assigned schools.</td></tr>'
+    ? '<tr><td colspan="' + (STAGE_GROUPS.length + 2) + '" class="text-center text-stone-400 py-8 text-sm">No assigned schools.</td></tr>'
     : suUserIds.map(uid => {
-      const tot = STAGES.reduce((s, st) => s + (suByUser[uid][st] || 0), 0)
-      return '<tr class="border-b border-stone-100"><td class="px-3 py-2 text-sm"><div class="flex items-center gap-2">' + avatar(uid, 'xs') + '<span class="text-stone-700">' + esc(userName(uid) || '—') + '</span></div></td>' + STAGES.map(st => '<td class="px-2 py-2 text-center text-sm ' + (suByUser[uid][st] ? 'text-stone-900' : 'text-stone-300') + '">' + (suByUser[uid][st] || '—') + '</td>').join('') + '<td class="px-3 py-2 text-center text-sm font-semibold text-stone-900">' + tot + '</td></tr>'
+      const tot = STAGE_GROUPS.reduce((s, g) => s + (suByUser[uid][g] || 0), 0)
+      return '<tr class="border-b border-stone-100"><td class="px-3 py-2 text-sm"><div class="flex items-center gap-2">' + avatar(uid, 'xs') + '<span class="text-stone-700">' + esc(userName(uid) || '—') + '</span></div></td>' + STAGE_GROUPS.map(g => '<td class="px-2 py-2 text-center text-sm ' + (suByUser[uid][g] ? 'text-stone-900' : 'text-stone-300') + '">' + (suByUser[uid][g] || '—') + '</td>').join('') + '<td class="px-3 py-2 text-center text-sm font-semibold text-stone-900">' + tot + '</td></tr>'
     }).join('')
-  const view4 = card('4. Pipeline: schools by stage × owner', 'How leads cluster across stages, per agent',
-    '<div class="overflow-x-auto"><table class="w-full text-xs"><thead><tr class="bg-stone-50 text-stone-500 uppercase tracking-wider border-b border-stone-200"><th class="px-3 py-2 text-left font-medium">Agent</th>' + STAGES.map(st => '<th class="px-2 py-2 font-medium" style="' + (STAGE_STYLES[st] || '') + '">' + esc(st) + '</th>').join('') + '<th class="px-3 py-2 font-medium">Total</th></tr></thead><tbody>' + suRows + '</tbody></table></div>')
+  const view4 = card('4. Pipeline: schools by stage group × owner', 'How leads cluster across groups, per agent',
+    '<div class="overflow-x-auto"><table class="w-full text-xs"><thead><tr class="bg-stone-50 text-stone-500 uppercase tracking-wider border-b border-stone-200"><th class="px-3 py-2 text-left font-medium">Agent</th>' + STAGE_GROUPS.map(g => { const st = STAGE_GROUP_STYLES[g]; return '<th class="px-2 py-2 font-medium" style="background:' + st.bg + ';color:' + st.color + '">' + esc(g) + '</th>' }).join('') + '<th class="px-3 py-2 font-medium">Total</th></tr></thead><tbody>' + suRows + '</tbody></table></div>')
 
   // View 5: L2E metrics per agent
   const l2e = d.agent_l2e || []
@@ -1084,6 +1217,71 @@ function initReportsCharts() {
   }
 }
 
+async function setNotEligible() {
+  const reason = document.getElementById('not-eligible-reason')?.value?.trim()
+  if (!reason) { flash('err', 'Enter a reason before flagging.'); return }
+  const { error } = await supabase.from('schools').update({
+    not_eligible: true, not_eligible_reason: reason,
+    not_eligible_flagged_by: state.session.user.id,
+    not_eligible_flagged_at: new Date().toISOString(),
+  }).eq('school_profile_id', state.currentSchool.school_profile_id)
+  if (error) { flash('err', error.message); return }
+  await loadSchool(state.currentSchool.school_profile_id)
+  flash('ok', 'School marked as Not Eligible'); render()
+}
+
+async function clearNotEligible() {
+  const { error } = await supabase.from('schools').update({
+    not_eligible: false, not_eligible_reason: null,
+    not_eligible_flagged_by: null, not_eligible_flagged_at: null,
+  }).eq('school_profile_id', state.currentSchool.school_profile_id)
+  if (error) { flash('err', error.message); return }
+  await loadSchool(state.currentSchool.school_profile_id)
+  flash('ok', 'Not Eligible flag cleared'); render()
+}
+
+function updateSubStageOptions(group) {
+  const subSel = document.getElementById('act-stage-sub')
+  if (!subSel) return
+  const subs = STAGE_SUBS[group] || (state.currentSchool ? STAGE_SUBS[state.currentSchool.stage_group] || [] : [])
+  subSel.innerHTML = '<option value="">Keep current</option>' + subs.map(s => '<option value="' + esc(s) + '">' + esc(s) + '</option>').join('')
+  toggleActivityFormFields()
+}
+
+function toggleActivityFormFields() {
+  const groupSel = document.getElementById('act-stage-group')
+  const subSel   = document.getElementById('act-stage-sub')
+  if (!groupSel || !subSel) return
+  const group = groupSel.value || (state.currentSchool?.stage_group || '')
+  const sub   = subSel.value   || (state.currentSchool?.stage_sub   || '')
+
+  const noFollowup = NO_FOLLOWUP_SUBS.includes(sub) || group === 'Exhausted' || (state.currentSchool?.not_eligible)
+  const fu = document.getElementById('followup-date-row')
+  if (fu) fu.style.display = noFollowup ? 'none' : ''
+
+  const wd = document.getElementById('webinar-date-row')
+  if (wd) wd.style.display = sub === 'Confirm' ? '' : 'none'
+
+  const ni = document.getElementById('ni-reason-row')
+  if (ni) ni.style.display = sub === 'Not Interested' ? '' : 'none'
+
+  const ex = document.getElementById('exam-row')
+  if (ex) ex.style.display = sub === 'Not Interested' ? '' : 'none'
+
+  const va = document.getElementById('vacation-row')
+  if (va) va.style.display = sub === 'Not Interested' ? '' : 'none'
+}
+
+function toggleNiOther() {
+  const sel = document.getElementById('ni-reason-sel')
+  const oth = document.getElementById('ni-reason-other')
+  if (sel && oth) oth.style.display = sel.value === 'Others' ? '' : 'none'
+}
+
+window.updateSubStageOptions = updateSubStageOptions
+window.toggleActivityFormFields = toggleActivityFormFields
+window.toggleNiOther = toggleNiOther
+
 let searchDebounce = null
 function attachHandlers() {
   const root = document.getElementById('app')
@@ -1097,11 +1295,13 @@ function attachHandlers() {
     if (action === 'login') { e.preventDefault(); login(); return }
     if (action === 'logout') { e.preventDefault(); logout(); return }
     if (action === 'open-school') { window.location.hash = '#/schools/' + encodeURIComponent(id); return }
-    if (action === 'clear-filters') { state.filters = { search:'', stage:'', ownerId:'', mineOnly:false, country:'', state_:'', city:'', createdFrom:'', createdTo:'' }; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render); return }
+    if (action === 'clear-filters') { state.filters = { search:'', stageGroup:'', stageSub:'', ownerId:'', mineOnly:false, country:'', state_:'', city:'', createdFrom:'', createdTo:'' }; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render); return }
     if (action === 'toggle-mine') { state.filters.mineOnly = !state.filters.mineOnly; if (state.filters.mineOnly) state.filters.ownerId = ''; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render); return }
     if (action === 'page-prev') { state.schoolsPage = Math.max(1, state.schoolsPage - 1); state.selectedSchoolIds.clear(); loadSchools().then(render); return }
     if (action === 'page-next') { state.schoolsPage += 1; state.selectedSchoolIds.clear(); loadSchools().then(render); return }
     if (action === 'take-ownership') { takeOwnership(); return }
+    if (action === 'set-not-eligible') { setNotEligible(); return }
+    if (action === 'clear-not-eligible') { clearNotEligible(); return }
     if (action === 'enter-edit-mode') { state.editingSchool = true; render(); return }
     if (action === 'cancel-edit-school') { state.editingSchool = false; render(); return }
     if (action === 'clear-selection') { state.selectedSchoolIds.clear(); render(); return }
@@ -1191,7 +1391,8 @@ function attachHandlers() {
     const el = e.target.closest('[data-action]')
     if (!el) return
     const action = el.dataset.action
-    if (action === 'filter-stage-change') { state.filters.stage = el.value; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render) }
+    if (action === 'filter-stage-group-change') { state.filters.stageGroup = el.value; state.filters.stageSub = ''; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render) }
+    if (action === 'filter-stage-sub-change') { state.filters.stageSub = el.value; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render) }
     if (action === 'filter-owner-change') { state.filters.ownerId = el.value; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render) }
     if (action === 'filter-country-change') { state.filters.country = el.value; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render) }
     if (action === 'filter-state-change') { state.filters.state_ = el.value; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render) }
@@ -1222,9 +1423,9 @@ async function handleRoute() {
     state.view = 'school-new'; render()
   } else if (hash.startsWith('/schools/')) {
     const id = decodeURIComponent(hash.split('/')[2])
-    state.view = 'school-detail'; state.currentSchool = null; state.activities = []; state.auditLog = []
+    state.view = 'school-detail'; state.currentSchool = null; state.activities = []; state.auditLog = []; state.webinarDates = []
     render()
-    await Promise.all([loadSchool(id), loadActivities(id)])
+    await Promise.all([loadSchool(id), loadActivities(id), loadWebinarDates(id)])
     render()
   } else if (hash === '/follow-ups') {
     state.view = 'follow-ups'; render()
