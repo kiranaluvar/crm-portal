@@ -238,18 +238,7 @@ async function loadFollowUpsView() {
   const effectiveOwner = (owner === 'mine' || (!isAdmin() && owner !== state.session.user.id && owner !== ''))
     ? state.session.user.id
     : (owner === '' ? null : owner)
-  const applyOwner = (q) => effectiveOwner ? q.eq('user_id', effectiveOwner) : q
 
-  // Restrict to schools owned by this user (or selected user). 
-  // Activities on schools not owned by the filter user are excluded.
-  const applySchoolOwner = (q) => effectiveOwner
-    ? q.eq('school.owner_user_id', effectiveOwner)
-    : q
-
-  const baseQ = () => applyOwner(
-    supabase.from('activities')
-      .select('*, school:schools!inner(school_profile_id,school_name,city,state,stage_group,stage_sub,owner_user_id)', { count: 'exact', head: true })
-  )
   const baseQInner = (effectiveOwner)
     ? () => supabase.from('activities')
         .select('*, school:schools!inner(school_profile_id,school_name,city,state,stage_group,stage_sub,owner_user_id)', { count: 'exact', head: true })
@@ -259,10 +248,10 @@ async function loadFollowUpsView() {
         .select('*, school:schools!inner(school_profile_id,school_name,city,state,stage_group,stage_sub,owner_user_id)', { count: 'exact', head: true })
 
   const [openRes, todayRes, overdueRes, closedRes] = await Promise.all([
-    baseQInner()().is('completed_at', null).not('scheduled_for', 'is', null),
-    baseQInner()().is('completed_at', null).eq('scheduled_for', today),
-    baseQInner()().is('completed_at', null).lt('scheduled_for', today),
-    baseQInner()().gte('completed_at', monthStart).not('scheduled_for', 'is', null),
+    baseQInner().is('completed_at', null).not('scheduled_for', 'is', null),
+    baseQInner().is('completed_at', null).eq('scheduled_for', today),
+    baseQInner().is('completed_at', null).lt('scheduled_for', today),
+    baseQInner().gte('completed_at', monthStart).not('scheduled_for', 'is', null),
   ])
   state.followUpsCounts = {
     open:      openRes.count    || 0,
