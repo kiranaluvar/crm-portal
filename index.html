@@ -174,7 +174,7 @@ async function loadSchools() {
     .order('school_name').range(offset, offset + PAGE_SIZE - 1)
   if (state.filters.search) {
     const s = state.filters.search.replace(/[%_]/g,'')
-    q = q.or('school_name.ilike.%' + s + '%,city.ilike.%' + s + '%,state.ilike.%' + s + '%')
+    q = q.or('school_name.ilike.%' + s + '%,city.ilike.%' + s + '%,state.ilike.%' + s + '%,address.ilike.%' + s + '%')
   }
   if (state.filters.stageGroups.length) q = q.in('stage_group', state.filters.stageGroups)
   if (state.filters.stageSubs.length)   q = q.in('stage_sub',   state.filters.stageSubs)
@@ -327,7 +327,7 @@ async function exportSchoolsCsv() {
       .order('school_name').range(from, from + pageSize - 1)
     if (state.filters.search) {
       const s = state.filters.search.replace(/[%_]/g,'')
-      q = q.or('school_name.ilike.%' + s + '%,city.ilike.%' + s + '%,state.ilike.%' + s + '%')
+      q = q.or('school_name.ilike.%' + s + '%,city.ilike.%' + s + '%,state.ilike.%' + s + '%,address.ilike.%' + s + '%')
     }
     if (state.filters.stageGroups.length) q = q.in('stage_group', state.filters.stageGroups)
     if (state.filters.stageSubs.length) q = q.in('stage_sub', state.filters.stageSubs)
@@ -720,7 +720,7 @@ function renderSchoolsList() {
   const stateOpts = state.filterOptions.states.map(s => ({ value: s, label: s }))
   const cityOpts = state.filterOptions.cities.map(c => ({ value: c, label: c }))
 
-  const filterBar = '<input type="text" placeholder="Search by name, city, state…" value="' + esc(f.search) + '" class="flex-1 min-w-[200px] text-sm px-3 py-1.5 border border-stone-200 rounded-md focus-ring focus:border-indigo-300" data-action="filter-search-input">'
+  const filterBar = '<input type="text" placeholder="Search by name, city, state, address…" value="' + esc(f.search) + '" class="flex-1 min-w-[200px] text-sm px-3 py-1.5 border border-stone-200 rounded-md focus-ring focus:border-indigo-300" data-action="filter-search-input">'
     + multiSelectDropdown('stageGroups', 'All groups', stageGroupOpts, f.stageGroups, {})
     + multiSelectDropdown('stageSubs', 'All stages', stageSubOpts, f.stageSubs, {})
     + '<div class="' + (f.mineOnly ? 'opacity-40 pointer-events-none' : '') + '">' + multiSelectDropdown('ownerIds', 'All agents', ownerOpts, f.ownerIds, { searchable: true }) + '</div>'
