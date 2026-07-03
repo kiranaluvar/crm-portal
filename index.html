@@ -1564,9 +1564,14 @@ async function init() {
   }
   supabase.auth.onAuthStateChange(async (event, session) => {
     if (event === 'SIGNED_IN') {
+      const isNewSignIn = !state.session || state.session.user.id !== session?.user?.id
       state.session = session
-      await Promise.all([loadProfile(), loadUsers(), loadMyOverdueCount(), loadFilterOptions()])
-      handleRoute()
+      if (isNewSignIn) {
+        await Promise.all([loadProfile(), loadUsers(), loadMyOverdueCount(), loadFilterOptions()])
+        handleRoute()
+      }
+      // else: just a background session/token refresh (e.g. tab regained focus) — update
+      // the session silently and skip re-rendering, so in-progress form input isn't wiped.
     } else if (event === 'SIGNED_OUT') {
       state.session = null; state.profile = null; state.view = 'login'; render()
     }
@@ -1578,5 +1583,3 @@ init()
 </script>
 </body>
 </html>
-
-
