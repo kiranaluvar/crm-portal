@@ -526,11 +526,6 @@ async function reassignOwner(newOwnerId) {
   if (error) { flash('err', error.message); return }
   await loadSchool(state.currentSchool.school_profile_id); flash('ok','Owner updated'); render()
 }
-async function takeOwnership() {
-  const { error } = await supabase.from('schools').update({ owner_user_id: state.session.user.id }).eq('school_profile_id', state.currentSchool.school_profile_id)
-  if (error) { flash('err', error.message); return }
-  await loadSchool(state.currentSchool.school_profile_id); flash('ok','You now own this school'); render()
-}
 async function submitNewSchool(form) {
   if (state.saving) return
   state.saving = true; render()
@@ -764,7 +759,7 @@ function renderSchoolDetail() {
 
   const ownerSlot = s.owner_user_id
     ? '<div class="flex items-center gap-2">' + avatar(s.owner_user_id) + '<span class="text-xs text-stone-600">' + esc(ownerName) + '</span></div>'
-    : '<button data-action="take-ownership" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium border border-indigo-200 hover:border-indigo-400 px-2.5 py-1 rounded-md">Take ownership</button>'
+    : '<span class="text-xs text-stone-400 italic border border-stone-200 px-2.5 py-1 rounded-md">Unassigned — admin only</span>'
 
   // Find any pending follow-up for current user on this school
   const myPending = state.activities.find(a => !a.completed_at && a.scheduled_for && a.user_id === state.session.user.id)
@@ -1391,7 +1386,6 @@ function attachHandlers() {
     if (action === 'toggle-mine') { state.filters.mineOnly = !state.filters.mineOnly; if (state.filters.mineOnly) state.filters.ownerIds = []; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render); return }
     if (action === 'page-prev') { state.schoolsPage = Math.max(1, state.schoolsPage - 1); state.selectedSchoolIds.clear(); loadSchools().then(render); return }
     if (action === 'page-next') { state.schoolsPage += 1; state.selectedSchoolIds.clear(); loadSchools().then(render); return }
-    if (action === 'take-ownership') { takeOwnership(); return }
     if (action === 'set-not-eligible') { setNotEligible(); return }
     if (action === 'clear-not-eligible') { clearNotEligible(); return }
     if (action === 'enter-edit-mode') { state.editingSchool = true; render(); return }
@@ -1584,6 +1578,3 @@ init()
 </script>
 </body>
 </html>
-
-
-
