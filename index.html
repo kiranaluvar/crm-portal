@@ -77,7 +77,9 @@ const FEES_RANGES = ['<45000','45000-50000','50000-55000','55000-60000','60000-6
 const state = {
   session: null, profile: null, view: 'loading',
   schools: [], schoolsTotal: 0, schoolsPage: 1,
-  filters: { search:'', stageGroup:'', stageSub:'', ownerId:'', mineOnly:false, country:'', state_:'', city:'', feesRanges:[], notEligible:'', createdFrom:'', createdTo:'' },
+  filters: { search:'', stageGroup:'', stageSub:'', ownerId:'', mineOnly:false, country:'', states_:[], cities_:[], feesRanges:[], notEligible:'', createdFrom:'', createdTo:'' },
+  openFilter: null,
+  filterSearch: {},
   filterOptions: { cities: [], states: [], countries: [] },
   reportsData: null,
   reportsFrom: '',
@@ -179,8 +181,8 @@ async function loadSchools() {
   if (state.filters.stageSub && state.filters.stageSub !== '__not_eligible__') q = q.eq('stage_sub', state.filters.stageSub)
   if (state.filters.stageSub === '__not_eligible__') q = q.eq('not_eligible', true)
   if (state.filters.country) q = q.eq('country', state.filters.country)
-  if (state.filters.state_) q = q.eq('state', state.filters.state_)
-  if (state.filters.city) q = q.eq('city', state.filters.city)
+  if (state.filters.states_.length) q = q.in('state', state.filters.states_)
+  if (state.filters.cities_.length) q = q.in('city', state.filters.cities_)
   if (state.filters.feesRanges.length) {
     const ranges = state.filters.feesRanges
     if (ranges.includes('200000+') && ranges.length === 1) {
@@ -656,6 +658,29 @@ function renderCurrentView() {
   }
 }
 
+function multiSelectDropdown(key, allLabel, options, selected, opts) {
+  opts = opts || {}
+  const isOpen = state.openFilter === key
+  const n = selected.length
+  let btnLabel
+  if (n === 0) btnLabel = allLabel
+  else if (n === 1) { const o = options.find(o => o.value === selected[0]); btnLabel = o ? o.label : selected[0] }
+  else btnLabel = n + ' selected'
+  const btnCls = 'text-sm px-3 py-1.5 border rounded-md bg-white focus-ring flex items-center gap-1.5 whitespace-nowrap ' + (n > 0 ? 'border-indigo-300 text-indigo-700 bg-indigo-50/50' : 'border-stone-200 text-stone-700')
+  let panel = ''
+  if (isOpen) {
+    const searchTerm = (state.filterSearch[key] || '').toLowerCase()
+    const visibleOptions = opts.searchable && searchTerm ? options.filter(o => o.label.toLowerCase().includes(searchTerm)) : options
+    const searchBox = opts.searchable ? '<input type="text" placeholder="Search…" value="' + esc(state.filterSearch[key] || '') + '" data-action="filter-dropdown-search" data-key="' + key + '" class="w-full text-xs px-2 py-1.5 border border-stone-200 rounded-md mb-1.5 focus-ring">' : ''
+    const rows = visibleOptions.length === 0
+      ? '<div class="text-xs text-stone-400 text-center py-3">No matches</div>'
+      : visibleOptions.map(o => '<label class="flex items-center gap-2 px-1.5 py-1 hover:bg-stone-50 rounded cursor-pointer text-sm"><input type="checkbox" data-action="filter-dropdown-toggle" data-key="' + key + '" data-value="' + esc(o.value) + '" class="rounded border-stone-300 text-indigo-600 focus:ring-indigo-400"' + (selected.includes(o.value) ? ' checked' : '') + '><span class="truncate">' + esc(o.label) + '</span></label>').join('')
+    panel = '<div class="absolute z-30 mt-1 w-60 bg-white border border-stone-200 rounded-lg shadow-lg p-2" data-no-row-click>' + searchBox + '<div class="max-h-56 overflow-y-auto space-y-0.5">' + rows + '</div><div class="flex items-center justify-between pt-2 mt-1 border-t border-stone-100"><button data-action="filter-dropdown-clear" data-key="' + key + '" class="text-xs text-stone-500 hover:text-stone-900">Clear</button><button data-action="filter-dropdown-done" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">Done</button></div></div>'
+  }
+  const backdrop = isOpen ? '<div data-action="close-filter-dropdown" class="fixed inset-0 z-20"></div>' : ''
+  return backdrop + '<div class="relative" data-no-row-click><button type="button" data-action="toggle-filter-dropdown" data-key="' + key + '" class="' + btnCls + '">' + esc(btnLabel) + ' <span class="text-stone-400">▾</span></button>' + panel + '</div>'
+}
+
 function renderSchoolsList() {
   const totalPages = Math.max(1, Math.ceil(state.schoolsTotal / PAGE_SIZE))
   const page = state.schoolsPage
@@ -674,9 +699,9 @@ function renderSchoolsList() {
     }).join('')
 
   const selectedCount = state.selectedSchoolIds.size
-  const filtersActive = state.filters.search || state.filters.stageGroup || state.filters.stageSub || state.filters.ownerId || state.filters.mineOnly || state.filters.country || state.filters.state_ || state.filters.city || state.filters.feesRanges.length || state.filters.notEligible || state.filters.createdFrom || state.filters.createdTo
+  const filtersActive = state.filters.search || state.filters.stageGroup || state.filters.stageSub || state.filters.ownerId || state.filters.mineOnly || state.filters.country || state.filters.states_.length || state.filters.cities_.length || state.filters.feesRanges.length || state.filters.notEligible || state.filters.createdFrom || state.filters.createdTo
   const f = state.filters
-  return '<div class="mb-5 flex items-end justify-between"><div><h1 class="text-xl font-semibold tracking-tight text-stone-900">Schools</h1><p class="text-sm text-stone-500 mt-0.5">' + state.schoolsTotal.toLocaleString() + ' ' + (f.mineOnly ? 'assigned to you' : 'total') + '. Click a row to open.</p></div>' + (isAdmin() ? '<button data-action="export-csv"' + (state.exporting ? ' disabled' : '') + ' class="text-sm border border-stone-300 hover:border-stone-400 hover:bg-stone-50 disabled:opacity-50 px-3 py-1.5 rounded-md text-stone-700 transition">' + (state.exporting ? 'Exporting…' : '↓ Export CSV') + '</button>' : '') + '</div><div class="bg-white border border-stone-200 rounded-lg overflow-hidden"><div class="px-4 py-3 border-b border-stone-200 flex flex-wrap gap-2 items-center"><input type="text" placeholder="Search by name, city, state…" value="' + esc(f.search) + '" class="flex-1 min-w-[200px] text-sm px-3 py-1.5 border border-stone-200 rounded-md focus-ring focus:border-indigo-300" data-action="filter-search-input"><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring" data-action="filter-stage-group-change"><option value="">All groups</option>' + STAGE_GROUPS.map(g => '<option value="' + esc(g) + '"' + (f.stageGroup === g ? ' selected' : '') + '>' + esc(g) + '</option>').join('') + '</select><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring" data-action="filter-stage-sub-change"><option value="">All stages</option><option value=\"__not_eligible__\"' + (f.stageSub === '__not_eligible__' ? ' selected' : '') + '>Not Eligible</option>' + (f.stageGroup ? (STAGE_SUBS[f.stageGroup]||[]) : STAGES).map(s => '<option value="' + esc(s) + '"' + (f.stageSub === s ? ' selected' : '') + '>' + esc(s) + '</option>').join('') + '</select><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring' + (f.mineOnly ? ' opacity-40 pointer-events-none' : '') + '" data-action="filter-owner-change"><option value="">All agents</option><option value="unassigned"' + (f.ownerId === 'unassigned' ? ' selected' : '') + '>Unassigned</option>' + userOptions + '</select><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring" data-action="filter-country-change"><option value="">All countries</option>' + state.filterOptions.countries.map(c => '<option value="' + esc(c) + '"' + (f.country === c ? ' selected' : '') + '>' + esc(c) + '</option>').join('') + '</select><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring" data-action="filter-state-change"><option value="">All states</option>' + state.filterOptions.states.map(s => '<option value="' + esc(s) + '"' + (f.state_ === s ? ' selected' : '') + '>' + esc(s) + '</option>').join('') + '</select><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring" data-action="filter-city-change"><option value="">All cities</option>' + state.filterOptions.cities.map(c => '<option value="' + esc(c) + '"' + (f.city === c ? ' selected' : '') + '>' + esc(c) + '</option>').join('') + '</select><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring" data-action="filter-fees-range-change"><option value="">All fee ranges</option>' + FEES_RANGES.map(r => '<option value="' + esc(r) + '"' + (f.feesRanges.includes(r) ? ' selected' : '') + '>' + esc(r) + '</option>').join('') + '</select><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring" data-action="filter-not-eligible-change"><option value="">All schools</option><option value="yes"' + (f.notEligible === 'yes' ? ' selected' : '') + '>Not Eligible only</option><option value="no"' + (f.notEligible === 'no' ? ' selected' : '') + '>Eligible only</option></select><label class="text-xs text-stone-500">Created</label><input type="date" value="' + esc(f.createdFrom) + '" class="text-sm px-2 py-1.5 border border-stone-200 rounded-md focus-ring" data-action="filter-createdfrom-change"><span class="text-xs text-stone-400">→</span><input type="date" value="' + esc(f.createdTo) + '" class="text-sm px-2 py-1.5 border border-stone-200 rounded-md focus-ring" data-action="filter-createdto-change"><button data-action="toggle-mine" class="text-sm px-3 py-1.5 rounded-md border transition ' + (f.mineOnly ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50') + '">Mine only</button>' + (filtersActive ? '<button data-action="clear-filters" class="text-xs text-stone-500 hover:text-stone-900 px-2">Clear</button>' : '') + '</div><div class="overflow-x-auto"><table class="w-full"><thead class="bg-stone-50 border-b border-stone-200"><tr class="text-left text-xs font-medium text-stone-500 uppercase tracking-wider"><th class="py-2 px-4 w-10"><input type="checkbox" id="cb-all" class="row-checkbox sr-only" data-action="toggle-select-all"' + (allSelected ? ' checked' : '') + '><label for="cb-all" class="cursor-pointer block"><span class="check-box inline-block w-4 h-4 rounded border ' + (someSelected ? 'bg-indigo-100 border-indigo-300' : 'border-stone-300') + ' hover:border-indigo-400 transition align-middle"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M5 10l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></label></th><th class="py-2.5 px-3">ID</th><th class="py-2.5 px-4">School</th><th class="py-2.5 px-4">Stage</th><th class="py-2.5 px-4">Owner</th><th class="py-2.5 px-4">Last activity</th><th class="py-2.5 px-4"></th></tr></thead><tbody>' + rows + '</tbody></table></div>' + (state.schoolsTotal > PAGE_SIZE ? '<div class="px-4 py-3 border-t border-stone-200 flex items-center justify-between text-sm text-stone-500"><div>' + start.toLocaleString() + '–' + end.toLocaleString() + ' of ' + state.schoolsTotal.toLocaleString() + '</div><div class="flex items-center gap-2"><button data-action="page-prev"' + (page === 1 ? ' disabled' : '') + ' class="px-2.5 py-1 border border-stone-200 rounded hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed">‹</button><span>Page ' + page + ' of ' + totalPages.toLocaleString() + '</span><button data-action="page-next"' + (page >= totalPages ? ' disabled' : '') + ' class="px-2.5 py-1 border border-stone-200 rounded hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed">›</button></div></div>' : '') + '</div>' + (selectedCount > 0 ? renderBulkBar(selectedCount) : '')
+  return '<div class="mb-5 flex items-end justify-between"><div><h1 class="text-xl font-semibold tracking-tight text-stone-900">Schools</h1><p class="text-sm text-stone-500 mt-0.5">' + state.schoolsTotal.toLocaleString() + ' ' + (f.mineOnly ? 'assigned to you' : 'total') + '. Click a row to open.</p></div>' + (isAdmin() ? '<button data-action="export-csv"' + (state.exporting ? ' disabled' : '') + ' class="text-sm border border-stone-300 hover:border-stone-400 hover:bg-stone-50 disabled:opacity-50 px-3 py-1.5 rounded-md text-stone-700 transition">' + (state.exporting ? 'Exporting…' : '↓ Export CSV') + '</button>' : '') + '</div><div class="bg-white border border-stone-200 rounded-lg overflow-hidden"><div class="px-4 py-3 border-b border-stone-200 flex flex-wrap gap-2 items-center"><input type="text" placeholder="Search by name, city, state…" value="' + esc(f.search) + '" class="flex-1 min-w-[200px] text-sm px-3 py-1.5 border border-stone-200 rounded-md focus-ring focus:border-indigo-300" data-action="filter-search-input"><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring" data-action="filter-stage-group-change"><option value="">All groups</option>' + STAGE_GROUPS.map(g => '<option value="' + esc(g) + '"' + (f.stageGroup === g ? ' selected' : '') + '>' + esc(g) + '</option>').join('') + '</select><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring" data-action="filter-stage-sub-change"><option value="">All stages</option><option value=\"__not_eligible__\"' + (f.stageSub === '__not_eligible__' ? ' selected' : '') + '>Not Eligible</option>' + (f.stageGroup ? (STAGE_SUBS[f.stageGroup]||[]) : STAGES).map(s => '<option value="' + esc(s) + '"' + (f.stageSub === s ? ' selected' : '') + '>' + esc(s) + '</option>').join('') + '</select><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring' + (f.mineOnly ? ' opacity-40 pointer-events-none' : '') + '" data-action="filter-owner-change"><option value="">All agents</option><option value="unassigned"' + (f.ownerId === 'unassigned' ? ' selected' : '') + '>Unassigned</option>' + userOptions + '</select><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring" data-action="filter-country-change"><option value="">All countries</option>' + state.filterOptions.countries.map(c => '<option value="' + esc(c) + '"' + (f.country === c ? ' selected' : '') + '>' + esc(c) + '</option>').join('') + '</select>' + multiSelectDropdown('states_', 'All states', state.filterOptions.states.map(s => ({ value: s, label: s })), f.states_ || [], { searchable: true }) + '' + multiSelectDropdown('cities', 'All cities', state.filterOptions.cities.map(c => ({ value: c, label: c })), f.cities_ || [], { searchable: true }) + '' + multiSelectDropdown('feesRanges', 'All fee ranges', FEES_RANGES.map(r => ({ value: r, label: r })), f.feesRanges, {}) + '<select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring" data-action="filter-not-eligible-change"><option value="">All schools</option><option value="yes"' + (f.notEligible === 'yes' ? ' selected' : '') + '>Not Eligible only</option><option value="no"' + (f.notEligible === 'no' ? ' selected' : '') + '>Eligible only</option></select><label class="text-xs text-stone-500">Created</label><input type="date" value="' + esc(f.createdFrom) + '" class="text-sm px-2 py-1.5 border border-stone-200 rounded-md focus-ring" data-action="filter-createdfrom-change"><span class="text-xs text-stone-400">→</span><input type="date" value="' + esc(f.createdTo) + '" class="text-sm px-2 py-1.5 border border-stone-200 rounded-md focus-ring" data-action="filter-createdto-change"><button data-action="toggle-mine" class="text-sm px-3 py-1.5 rounded-md border transition ' + (f.mineOnly ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50') + '">Mine only</button>' + (filtersActive ? '<button data-action="clear-filters" class="text-xs text-stone-500 hover:text-stone-900 px-2">Clear</button>' : '') + '</div><div class="overflow-x-auto"><table class="w-full"><thead class="bg-stone-50 border-b border-stone-200"><tr class="text-left text-xs font-medium text-stone-500 uppercase tracking-wider"><th class="py-2 px-4 w-10"><input type="checkbox" id="cb-all" class="row-checkbox sr-only" data-action="toggle-select-all"' + (allSelected ? ' checked' : '') + '><label for="cb-all" class="cursor-pointer block"><span class="check-box inline-block w-4 h-4 rounded border ' + (someSelected ? 'bg-indigo-100 border-indigo-300' : 'border-stone-300') + ' hover:border-indigo-400 transition align-middle"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M5 10l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></label></th><th class="py-2.5 px-3">ID</th><th class="py-2.5 px-4">School</th><th class="py-2.5 px-4">Stage</th><th class="py-2.5 px-4">Owner</th><th class="py-2.5 px-4">Last activity</th><th class="py-2.5 px-4"></th></tr></thead><tbody>' + rows + '</tbody></table></div>' + (state.schoolsTotal > PAGE_SIZE ? '<div class="px-4 py-3 border-t border-stone-200 flex items-center justify-between text-sm text-stone-500"><div>' + start.toLocaleString() + '–' + end.toLocaleString() + ' of ' + state.schoolsTotal.toLocaleString() + '</div><div class="flex items-center gap-2"><button data-action="page-prev"' + (page === 1 ? ' disabled' : '') + ' class="px-2.5 py-1 border border-stone-200 rounded hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed">‹</button><span>Page ' + page + ' of ' + totalPages.toLocaleString() + '</span><button data-action="page-next"' + (page >= totalPages ? ' disabled' : '') + ' class="px-2.5 py-1 border border-stone-200 rounded hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed">›</button></div></div>' : '') + '</div>' + (selectedCount > 0 ? renderBulkBar(selectedCount) : '')
 }
 
 function renderBulkBar(count) {
@@ -1344,7 +1369,7 @@ function attachHandlers() {
     if (action === 'login') { e.preventDefault(); login(); return }
     if (action === 'logout') { e.preventDefault(); logout(); return }
     if (action === 'open-school') { window.location.hash = '#/schools/' + encodeURIComponent(id); return }
-    if (action === 'clear-filters') { state.filters = { search:'', stageGroup:'', stageSub:'', ownerId:'', mineOnly:false, country:'', state_:'', city:'', feesRanges:[], notEligible:'', createdFrom:'', createdTo:'' }; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render); return }
+    if (action === 'clear-filters') { state.filters = { search:'', stageGroup:'', stageSub:'', ownerId:'', mineOnly:false, country:'', states_:[], cities_:[], feesRanges:[], notEligible:'', createdFrom:'', createdTo:'' }; state.filterSearch = {}; state.openFilter = null; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render); return }
     if (action === 'toggle-mine') { state.filters.mineOnly = !state.filters.mineOnly; if (state.filters.mineOnly) state.filters.ownerId = ''; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render); return }
     if (action === 'page-prev') { state.schoolsPage = Math.max(1, state.schoolsPage - 1); state.selectedSchoolIds.clear(); loadSchools().then(render); return }
     if (action === 'page-next') { state.schoolsPage += 1; state.selectedSchoolIds.clear(); loadSchools().then(render); return }
@@ -1359,6 +1384,17 @@ function attachHandlers() {
     if (action === 'bulk-delete-execute') { bulkDelete(); return }
     if (action === 'start-complete-followup') { state.followUpsCompleting = Number(id); render(); return }
     if (action === 'cancel-complete-followup') { state.followUpsCompleting = null; render(); return }
+    if (action === 'toggle-filter-dropdown') { state.openFilter = (state.openFilter === el.dataset.key) ? null : el.dataset.key; render(); return }
+    if (action === 'close-filter-dropdown') { state.openFilter = null; render(); return }
+    if (action === 'filter-dropdown-done') { state.openFilter = null; render(); return }
+    if (action === 'filter-dropdown-clear') {
+      const key = el.dataset.key
+      state.filters[key] = []
+      state.filterSearch[key] = ''
+      state.schoolsPage = 1; state.selectedSchoolIds.clear()
+      loadSchools().then(render)
+      return
+    }
     if (action === 'toggle-sidebar') { state.sidebarOpen = !state.sidebarOpen; render(); return }
     if (action === 'set-role') { setUserRole(id, el.dataset.role); return }
     if (action === 'set-fu-filter') {
@@ -1411,6 +1447,14 @@ function attachHandlers() {
     const el = e.target.closest('[data-action]')
     if (!el) return
     const action = el.dataset.action
+    if (action === 'filter-dropdown-search') {
+      state.filterSearch[el.dataset.key] = el.value
+      render()
+      requestAnimationFrame(() => {
+        const box = document.querySelector('[data-action="filter-dropdown-search"][data-key="' + el.dataset.key + '"]')
+        if (box) { box.focus(); box.setSelectionRange(box.value.length, box.value.length) }
+      })
+    }
     if (action === 'filter-search-input') {
       clearTimeout(searchDebounce)
       searchDebounce = setTimeout(() => {
@@ -1440,20 +1484,21 @@ function attachHandlers() {
     const el = e.target.closest('[data-action]')
     if (!el) return
     const action = el.dataset.action
+    if (action === 'filter-dropdown-toggle') {
+      const key = el.dataset.key, val = el.dataset.value
+      const arr = state.filters[key]
+      const idx = arr.indexOf(val)
+      if (el.checked && idx === -1) arr.push(val)
+      else if (!el.checked && idx !== -1) arr.splice(idx, 1)
+      state.schoolsPage = 1; state.selectedSchoolIds.clear()
+      loadSchools().then(render)
+      return
+    }
     if (action === 'filter-stage-group-change') { state.filters.stageGroup = el.value; state.filters.stageSub = ''; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render) }
     if (action === 'filter-stage-sub-change') { state.filters.stageSub = el.value; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render) }
     if (action === 'filter-owner-change') { state.filters.ownerId = el.value; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render) }
-    if (action === 'filter-fees-range-change') {
-      const val = el.value
-      if (!val) { state.filters.feesRanges = [] }
-      else if (state.filters.feesRanges.includes(val)) { state.filters.feesRanges = state.filters.feesRanges.filter(v => v !== val) }
-      else { state.filters.feesRanges = [val] }
-      state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render)
-    }
     if (action === 'filter-not-eligible-change') { state.filters.notEligible = el.value; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render) }
     if (action === 'filter-country-change') { state.filters.country = el.value; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render) }
-    if (action === 'filter-state-change') { state.filters.state_ = el.value; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render) }
-    if (action === 'filter-city-change') { state.filters.city = el.value; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render) }
     if (action === 'filter-createdfrom-change') { state.filters.createdFrom = el.value; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render) }
     if (action === 'filter-createdto-change') { state.filters.createdTo = el.value; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render) }
     if (action === 'reassign-owner') { reassignOwner(el.value) }
