@@ -1150,8 +1150,8 @@ function renderReports() {
   // View 1: hourly by type — chart
   const view1 = card('1. Hourly outreach pattern', 'When the team works, broken down by channel', '<div style="position:relative; height:280px;"><canvas id="chart-hourly"></canvas></div>')
 
-  // View 2: agent daily — chart
-  const view2 = card('2. Agent daily reachout', 'Activities per day, stacked by agent', '<div style="position:relative; height:300px;"><canvas id="chart-agent-daily"></canvas></div>')
+  // View 2: agent activity mix — chart
+  const view2 = card('2. Agent activity mix', 'Total activities per agent, stacked by channel', '<div style="position:relative; height:300px;"><canvas id="chart-agent-type"></canvas></div>')
 
   // View 3: agent × hour heatmap (table)
   const ah = d.agent_hourly || []
@@ -1259,29 +1259,27 @@ function initReportsCharts() {
     })
   }
 
-  // View 2: agent daily stacked bar
-  const ad = state.reportsData.agent_daily || []
-  const byDayUser = {}
-  ad.forEach(r => { if (!byDayUser[r.day]) byDayUser[r.day] = {}; byDayUser[r.day][r.user_id] = r.n })
-  const days = Object.keys(byDayUser).sort()
-  const userIdsInData = [...new Set(ad.map(r => r.user_id))]
-  const datasets2 = userIdsInData.map(uid => {
-    const name = (userName(uid) || '—').split(' ')[0]
-    // derive color from user_id like our avatars
-    const colorClass = userColor(uid)
-    const colorMap = { 'bg-rose-500':'#F43F5E','bg-amber-500':'#F59E0B','bg-emerald-500':'#10B981','bg-cyan-500':'#06B6D4','bg-indigo-500':'#6366F1','bg-fuchsia-500':'#D946EF','bg-orange-500':'#F97316','bg-teal-500':'#14B8A6','bg-violet-500':'#8B5CF6','bg-pink-500':'#EC4899','bg-sky-500':'#0EA5E9','bg-lime-600':'#65A30D' }
-    return {
-      label: name,
-      data: days.map(d => (byDayUser[d] && byDayUser[d][uid]) || 0),
-      backgroundColor: colorMap[colorClass] || '#78716C',
-      borderRadius: 2, borderSkipped: false,
-    }
+  // View 2: agent × channel stacked bar (one column per agent, stacked by activity type)
+  const at = state.reportsData.agent_type_totals || []
+  const byUserType = {}
+  at.forEach(r => { if (!byUserType[r.user_id]) byUserType[r.user_id] = {}; byUserType[r.user_id][r.activity_type] = r.n })
+  const agentTypeUserIds = Object.keys(byUserType).sort((a, b) => {
+    const totalA = Object.values(byUserType[a]).reduce((s, v) => s + v, 0)
+    const totalB = Object.values(byUserType[b]).reduce((s, v) => s + v, 0)
+    return totalB - totalA
   })
-  const el2 = document.getElementById('chart-agent-daily')
+  const datasets2 = ACTIVITY_TYPES.map(t => ({
+    label: t,
+    data: agentTypeUserIds.map(uid => (byUserType[uid] && byUserType[uid][t]) || 0),
+    backgroundColor: typeColors[t],
+    borderRadius: 3,
+    borderSkipped: false,
+  }))
+  const el2 = document.getElementById('chart-agent-type')
   if (el2) {
-    state.chartInstances.agentDaily = new Chart(el2, {
+    state.chartInstances.agentType = new Chart(el2, {
       type: 'bar',
-      data: { labels: days.map(d => new Date(d).toLocaleDateString('en-IN', { day:'numeric', month:'short' })), datasets: datasets2 },
+      data: { labels: agentTypeUserIds.map(uid => (userName(uid) || '—').split(' ')[0]), datasets: datasets2 },
       options: {
         responsive: true, maintainAspectRatio: false,
         plugins: {
@@ -1290,7 +1288,7 @@ function initReportsCharts() {
           datalabels: { display: false },
         },
         scales: {
-          x: { stacked: true, grid: { display: false }, ticks: { color: '#78716C', font: { size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 10 } },
+          x: { stacked: true, grid: { display: false }, ticks: { color: '#78716C', font: { size: 11 } } },
           y: { stacked: true, beginAtZero: true, grid: { color: '#F5F5F4' }, ticks: { color: '#78716C', font: { size: 11 }, precision: 0 } },
         }
       }
