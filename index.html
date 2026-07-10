@@ -76,9 +76,7 @@ const AVATAR_COLORS = ['bg-rose-500','bg-amber-500','bg-emerald-500','bg-cyan-50
 const state = {
   session: null, profile: null, view: 'loading',
   schools: [], schoolsTotal: 0, schoolsPage: 1,
-  filters: { search:'', stageGroups:[], stageSubs:[], ownerIds:[], mineOnly:false, countries:[], states_:[], cities:[], createdFrom:'', createdTo:'' },
-  openFilter: null,
-  filterSearch: {},
+  filters: { search:'', stageGroup:'', stageSub:'', ownerId:'', mineOnly:false, country:'', state_:'', city:'', createdFrom:'', createdTo:'' },
   filterOptions: { cities: [], states: [], countries: [] },
   reportsData: null,
   reportsFrom: '',
@@ -174,24 +172,18 @@ async function loadSchools() {
     .order('school_name').range(offset, offset + PAGE_SIZE - 1)
   if (state.filters.search) {
     const s = state.filters.search.replace(/[%_]/g,'')
-    q = q.or('school_name.ilike.%' + s + '%,city.ilike.%' + s + '%,state.ilike.%' + s + '%,address.ilike.%' + s + '%')
+    q = q.or('school_name.ilike.%' + s + '%,city.ilike.%' + s + '%,state.ilike.%' + s + '%')
   }
-  if (state.filters.stageGroups.length) q = q.in('stage_group', state.filters.stageGroups)
-  if (state.filters.stageSubs.length)   q = q.in('stage_sub',   state.filters.stageSubs)
-  if (state.filters.countries.length) q = q.in('country', state.filters.countries)
-  if (state.filters.states_.length) q = q.in('state', state.filters.states_)
-  if (state.filters.cities.length) q = q.in('city', state.filters.cities)
+  if (state.filters.stageGroup) q = q.eq('stage_group', state.filters.stageGroup)
+  if (state.filters.stageSub)   q = q.eq('stage_sub',   state.filters.stageSub)
+  if (state.filters.country) q = q.eq('country', state.filters.country)
+  if (state.filters.state_) q = q.eq('state', state.filters.state_)
+  if (state.filters.city) q = q.eq('city', state.filters.city)
   if (state.filters.createdFrom) q = q.gte('created_at', state.filters.createdFrom)
   if (state.filters.createdTo) q = q.lte('created_at', state.filters.createdTo + 'T23:59:59')
-  if (state.filters.mineOnly) {
-    q = q.eq('owner_user_id', state.session.user.id)
-  } else if (state.filters.ownerIds.length) {
-    const specificIds = state.filters.ownerIds.filter(v => v !== 'unassigned')
-    const wantsUnassigned = state.filters.ownerIds.includes('unassigned')
-    if (specificIds.length && wantsUnassigned) q = q.or('owner_user_id.in.(' + specificIds.join(',') + '),owner_user_id.is.null')
-    else if (specificIds.length) q = q.in('owner_user_id', specificIds)
-    else if (wantsUnassigned) q = q.is('owner_user_id', null)
-  }
+  if (state.filters.mineOnly) q = q.eq('owner_user_id', state.session.user.id)
+  else if (state.filters.ownerId === 'unassigned') q = q.is('owner_user_id', null)
+  else if (state.filters.ownerId) q = q.eq('owner_user_id', state.filters.ownerId)
   const { data, count, error } = await q
   if (error) { flash('err', error.message); return }
   state.schools = data || []
@@ -246,7 +238,18 @@ async function loadFollowUpsView() {
   const effectiveOwner = (owner === 'mine' || (!isAdmin() && owner !== state.session.user.id && owner !== ''))
     ? state.session.user.id
     : (owner === '' ? null : owner)
+  const applyOwner = (q) => effectiveOwner ? q.eq('user_id', effectiveOwner) : q
 
+  // Restrict to schools owned by this user (or selected user). 
+  // Activities on schools not owned by the filter user are excluded.
+  const applySchoolOwner = (q) => effectiveOwner
+    ? q.eq('school.owner_user_id', effectiveOwner)
+    : q
+
+  const baseQ = () => applyOwner(
+    supabase.from('activities')
+      .select('*, school:schools!inner(school_profile_id,school_name,city,state,stage_group,stage_sub,owner_user_id)', { count: 'exact', head: true })
+  )
   const baseQInner = (effectiveOwner)
     ? () => supabase.from('activities')
         .select('*, school:schools!inner(school_profile_id,school_name,city,state,stage_group,stage_sub,owner_user_id)', { count: 'exact', head: true })
@@ -256,10 +259,10 @@ async function loadFollowUpsView() {
         .select('*, school:schools!inner(school_profile_id,school_name,city,state,stage_group,stage_sub,owner_user_id)', { count: 'exact', head: true })
 
   const [openRes, todayRes, overdueRes, closedRes] = await Promise.all([
-    baseQInner().is('completed_at', null).not('scheduled_for', 'is', null),
-    baseQInner().is('completed_at', null).eq('scheduled_for', today),
-    baseQInner().is('completed_at', null).lt('scheduled_for', today),
-    baseQInner().gte('completed_at', monthStart).not('scheduled_for', 'is', null),
+    baseQInner()().is('completed_at', null).not('scheduled_for', 'is', null),
+    baseQInner()().is('completed_at', null).eq('scheduled_for', today),
+    baseQInner()().is('completed_at', null).lt('scheduled_for', today),
+    baseQInner()().gte('completed_at', monthStart).not('scheduled_for', 'is', null),
   ])
   state.followUpsCounts = {
     open:      openRes.count    || 0,
@@ -327,24 +330,12 @@ async function exportSchoolsCsv() {
       .order('school_name').range(from, from + pageSize - 1)
     if (state.filters.search) {
       const s = state.filters.search.replace(/[%_]/g,'')
-      q = q.or('school_name.ilike.%' + s + '%,city.ilike.%' + s + '%,state.ilike.%' + s + '%,address.ilike.%' + s + '%')
+      q = q.or('school_name.ilike.%' + s + '%,city.ilike.%' + s + '%,state.ilike.%' + s + '%')
     }
-    if (state.filters.stageGroups.length) q = q.in('stage_group', state.filters.stageGroups)
-    if (state.filters.stageSubs.length) q = q.in('stage_sub', state.filters.stageSubs)
-    if (state.filters.countries.length) q = q.in('country', state.filters.countries)
-    if (state.filters.states_.length) q = q.in('state', state.filters.states_)
-    if (state.filters.cities.length) q = q.in('city', state.filters.cities)
-    if (state.filters.createdFrom) q = q.gte('created_at', state.filters.createdFrom)
-    if (state.filters.createdTo) q = q.lte('created_at', state.filters.createdTo + 'T23:59:59')
-    if (state.filters.mineOnly) {
-      q = q.eq('owner_user_id', state.session.user.id)
-    } else if (state.filters.ownerIds.length) {
-      const specificIds = state.filters.ownerIds.filter(v => v !== 'unassigned')
-      const wantsUnassigned = state.filters.ownerIds.includes('unassigned')
-      if (specificIds.length && wantsUnassigned) q = q.or('owner_user_id.in.(' + specificIds.join(',') + '),owner_user_id.is.null')
-      else if (specificIds.length) q = q.in('owner_user_id', specificIds)
-      else if (wantsUnassigned) q = q.is('owner_user_id', null)
-    }
+    if (state.filters.stageGroup) q = q.eq('stage_group', state.filters.stageGroup)
+    if (state.filters.mineOnly) q = q.eq('owner_user_id', state.session.user.id)
+    else if (state.filters.ownerId === 'unassigned') q = q.is('owner_user_id', null)
+    else if (state.filters.ownerId) q = q.eq('owner_user_id', state.filters.ownerId)
     const { data, error } = await q
     if (error) { state.exporting = false; flash('err', error.message); render(); return }
     all.push(...(data || []))
@@ -419,7 +410,7 @@ async function submitActivity(form) {
   const vacStart = form.vac_start?.value || null
   const vacEnd   = form.vac_end?.value   || null
 
-  // Follow-up date rule: required unless terminal sub, not-eligible, or webinar passed
+  // Follow-up date rule: required unless terminal sub, not-eligible, webinar passed, or already confirmed
   const noFollowupSub = NO_FOLLOWUP_SUBS.includes(effectiveSub)
   const webinarPassed = s.stage_sub === 'Confirm' && (() => {
     // find latest webinar date for this school from state
@@ -428,7 +419,8 @@ async function submitActivity(form) {
     const latest = dates.reduce((a, b) => a.webinar_date > b.webinar_date ? a : b)
     return latest.webinar_date < todayYMD()
   })()
-  const needFollowup = !noFollowupSub && !s.not_eligible && !webinarPassed
+  const isConfirmedStage = effectiveSub === 'Confirm' || (s.stage_sub === 'Confirm' && !newSub)
+  const needFollowup = !noFollowupSub && !s.not_eligible && !webinarPassed && !isConfirmedStage
   if (needFollowup && !scheduledFor) {
     flash('err', 'Set the next follow-up date, or move to a terminal stage (Not Interested, Backed Out, Attempt Exhausted).'); return
   }
@@ -526,13 +518,24 @@ async function reassignOwner(newOwnerId) {
   if (error) { flash('err', error.message); return }
   await loadSchool(state.currentSchool.school_profile_id); flash('ok','Owner updated'); render()
 }
+async function takeOwnership() {
+  const { error } = await supabase.from('schools').update({ owner_user_id: state.session.user.id }).eq('school_profile_id', state.currentSchool.school_profile_id)
+  if (error) { flash('err', error.message); return }
+  await loadSchool(state.currentSchool.school_profile_id); flash('ok','You now own this school'); render()
+}
 async function submitNewSchool(form) {
   if (state.saving) return
   state.saving = true; render()
-  // Auto-generate next school_profile_id via a real DB sequence (immune to text-vs-numeric sort bugs)
-  const { data: newIdData, error: idErr } = await supabase.rpc('next_school_id')
-  if (idErr) { state.saving = false; flash('err', idErr.message); render(); return }
-  const newId = String(newIdData)
+  // Auto-generate next school_profile_id: find max numeric existing ID, add 1
+  const { data: maxRows, error: maxErr } = await supabase.from('schools')
+    .select('school_profile_id').order('school_profile_id', { ascending: false }).limit(50)
+  if (maxErr) { state.saving = false; flash('err', maxErr.message); render(); return }
+  let maxNum = 0
+  for (const r of maxRows || []) {
+    const n = parseInt(String(r.school_profile_id).replace(/\D/g, ''), 10)
+    if (!isNaN(n) && n > maxNum) maxNum = n
+  }
+  const newId = String(maxNum + 1)
   const row = { school_profile_id: newId }
   const fields = ['school_name','school_type','address','pin_code','city','state','country','email','phone_no','curriculum_followed','school_fees','school_fees_range','poc1_designation','poc1_email','poc1_name','poc1_number','poc2_designation','poc2_email','poc2_name','poc2_number']
   fields.forEach(f => { const v = form[f]?.value?.trim(); if (v) row[f] = v })
@@ -654,38 +657,12 @@ function renderCurrentView() {
   }
 }
 
-function multiSelectDropdown(key, allLabel, options, selected, opts) {
-  opts = opts || {}
-  const isOpen = state.openFilter === key
-  const n = selected.length
-  let btnLabel
-  if (n === 0) btnLabel = allLabel
-  else if (n === 1) { const o = options.find(o => o.value === selected[0]); btnLabel = o ? o.label : selected[0] }
-  else btnLabel = n + ' selected'
-  const btnCls = 'text-sm px-3 py-1.5 border rounded-md bg-white focus-ring flex items-center gap-1.5 whitespace-nowrap ' + (n > 0 ? 'border-indigo-300 text-indigo-700 bg-indigo-50/50' : 'border-stone-200 text-stone-700')
-  let panel = ''
-  if (isOpen) {
-    const searchTerm = (state.filterSearch[key] || '').toLowerCase()
-    const visibleOptions = opts.searchable && searchTerm
-      ? options.filter(o => o.label.toLowerCase().includes(searchTerm))
-      : options
-    const searchBox = opts.searchable
-      ? '<input type="text" placeholder="Search…" value="' + esc(state.filterSearch[key] || '') + '" data-action="filter-dropdown-search" data-key="' + key + '" class="w-full text-xs px-2 py-1.5 border border-stone-200 rounded-md mb-1.5 focus-ring">'
-      : ''
-    const rows = visibleOptions.length === 0
-      ? '<div class="text-xs text-stone-400 text-center py-3">No matches</div>'
-      : visibleOptions.map(o => '<label class="flex items-center gap-2 px-1.5 py-1 hover:bg-stone-50 rounded cursor-pointer text-sm"><input type="checkbox" data-action="filter-dropdown-toggle" data-key="' + key + '" data-value="' + esc(o.value) + '" class="rounded border-stone-300 text-indigo-600 focus:ring-indigo-400"' + (selected.includes(o.value) ? ' checked' : '') + '><span class="truncate">' + esc(o.label) + '</span></label>').join('')
-    panel = '<div class="absolute z-30 mt-1 w-60 bg-white border border-stone-200 rounded-lg shadow-lg p-2" data-no-row-click>' + searchBox + '<div class="max-h-56 overflow-y-auto space-y-0.5">' + rows + '</div><div class="flex items-center justify-between pt-2 mt-1 border-t border-stone-100"><button data-action="filter-dropdown-clear" data-key="' + key + '" class="text-xs text-stone-500 hover:text-stone-900">Clear</button><button data-action="filter-dropdown-done" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">Done</button></div></div>'
-  }
-  const backdrop = isOpen ? '<div data-action="close-filter-dropdown" class="fixed inset-0 z-20"></div>' : ''
-  return backdrop + '<div class="relative" data-no-row-click><button type="button" data-action="toggle-filter-dropdown" data-key="' + key + '" class="' + btnCls + '">' + esc(btnLabel) + ' <span class="text-stone-400">▾</span></button>' + panel + '</div>'
-}
-
 function renderSchoolsList() {
   const totalPages = Math.max(1, Math.ceil(state.schoolsTotal / PAGE_SIZE))
   const page = state.schoolsPage
   const start = (page-1)*PAGE_SIZE + 1
   const end = Math.min(page*PAGE_SIZE, state.schoolsTotal)
+  const userOptions = state.users.map(u => '<option value="' + esc(u.user_id) + '"' + (state.filters.ownerId === u.user_id ? ' selected' : '') + '>' + esc(u.full_name || u.email) + '</option>').join('')
   const allPageIds = state.schools.map(s => s.school_profile_id)
   const allSelected = allPageIds.length > 0 && allPageIds.every(id => state.selectedSchoolIds.has(id))
   const someSelected = !allSelected && allPageIds.some(id => state.selectedSchoolIds.has(id))
@@ -698,29 +675,9 @@ function renderSchoolsList() {
     }).join('')
 
   const selectedCount = state.selectedSchoolIds.size
-  const f = state.filters
-  const filtersActive = f.search || f.stageGroups.length || f.stageSubs.length || f.ownerIds.length || f.mineOnly || f.countries.length || f.states_.length || f.cities.length || f.createdFrom || f.createdTo
+  const filtersActive = state.filters.search || state.filters.stage || state.filters.ownerId || state.filters.mineOnly || state.filters.country || state.filters.state_ || state.filters.city || state.filters.createdFrom || state.filters.createdTo
 
-  const stageGroupOpts = STAGE_GROUPS.map(g => ({ value: g, label: g }))
-  const availableStageSubs = f.stageGroups.length ? [...new Set(f.stageGroups.flatMap(g => STAGE_SUBS[g] || []))] : STAGES
-  const stageSubOpts = availableStageSubs.map(s => ({ value: s, label: s }))
-  const ownerOpts = [{ value: 'unassigned', label: 'Unassigned' }].concat(state.users.map(u => ({ value: u.user_id, label: u.full_name || u.email })))
-  const countryOpts = state.filterOptions.countries.map(c => ({ value: c, label: c }))
-  const stateOpts = state.filterOptions.states.map(s => ({ value: s, label: s }))
-  const cityOpts = state.filterOptions.cities.map(c => ({ value: c, label: c }))
-
-  const filterBar = '<input type="text" placeholder="Search by name, city, state, address…" value="' + esc(f.search) + '" class="flex-1 min-w-[200px] text-sm px-3 py-1.5 border border-stone-200 rounded-md focus-ring focus:border-indigo-300" data-action="filter-search-input">'
-    + multiSelectDropdown('stageGroups', 'All groups', stageGroupOpts, f.stageGroups, {})
-    + multiSelectDropdown('stageSubs', 'All stages', stageSubOpts, f.stageSubs, {})
-    + '<div class="' + (f.mineOnly ? 'opacity-40 pointer-events-none' : '') + '">' + multiSelectDropdown('ownerIds', 'All agents', ownerOpts, f.ownerIds, { searchable: true }) + '</div>'
-    + multiSelectDropdown('countries', 'All countries', countryOpts, f.countries, { searchable: true })
-    + multiSelectDropdown('states_', 'All states', stateOpts, f.states_, { searchable: true })
-    + multiSelectDropdown('cities', 'All cities', cityOpts, f.cities, { searchable: true })
-    + '<label class="text-xs text-stone-500">Created</label><input type="date" value="' + esc(f.createdFrom) + '" class="text-sm px-2 py-1.5 border border-stone-200 rounded-md focus-ring" data-action="filter-createdfrom-change"><span class="text-xs text-stone-400">→</span><input type="date" value="' + esc(f.createdTo) + '" class="text-sm px-2 py-1.5 border border-stone-200 rounded-md focus-ring" data-action="filter-createdto-change">'
-    + '<button data-action="toggle-mine" class="text-sm px-3 py-1.5 rounded-md border transition ' + (f.mineOnly ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50') + '">Mine only</button>'
-    + (filtersActive ? '<button data-action="clear-filters" class="text-xs text-stone-500 hover:text-stone-900 px-2">Clear</button>' : '')
-
-  return '<div class="mb-5 flex items-end justify-between"><div><h1 class="text-xl font-semibold tracking-tight text-stone-900">Schools</h1><p class="text-sm text-stone-500 mt-0.5">' + state.schoolsTotal.toLocaleString() + ' ' + (f.mineOnly ? 'assigned to you' : 'total') + '. Click a row to open.</p></div>' + (isAdmin() ? '<button data-action="export-csv"' + (state.exporting ? ' disabled' : '') + ' class="text-sm border border-stone-300 hover:border-stone-400 hover:bg-stone-50 disabled:opacity-50 px-3 py-1.5 rounded-md text-stone-700 transition">' + (state.exporting ? 'Exporting…' : '↓ Export CSV') + '</button>' : '') + '</div><div class="bg-white border border-stone-200 rounded-lg overflow-hidden"><div class="px-4 py-3 border-b border-stone-200 flex flex-wrap gap-2 items-center">' + filterBar + '</div><div class="overflow-x-auto"><table class="w-full"><thead class="bg-stone-50 border-b border-stone-200"><tr class="text-left text-xs font-medium text-stone-500 uppercase tracking-wider"><th class="py-2 px-4 w-10"><input type="checkbox" id="cb-all" class="row-checkbox sr-only" data-action="toggle-select-all"' + (allSelected ? ' checked' : '') + '><label for="cb-all" class="cursor-pointer block"><span class="check-box inline-block w-4 h-4 rounded border ' + (someSelected ? 'bg-indigo-100 border-indigo-300' : 'border-stone-300') + ' hover:border-indigo-400 transition align-middle"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M5 10l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></label></th><th class="py-2.5 px-3">ID</th><th class="py-2.5 px-4">School</th><th class="py-2.5 px-4">Stage</th><th class="py-2.5 px-4">Owner</th><th class="py-2.5 px-4">Last activity</th><th class="py-2.5 px-4"></th></tr></thead><tbody>' + rows + '</tbody></table></div>' + (state.schoolsTotal > PAGE_SIZE ? '<div class="px-4 py-3 border-t border-stone-200 flex items-center justify-between text-sm text-stone-500"><div>' + start.toLocaleString() + '–' + end.toLocaleString() + ' of ' + state.schoolsTotal.toLocaleString() + '</div><div class="flex items-center gap-2"><button data-action="page-prev"' + (page === 1 ? ' disabled' : '') + ' class="px-2.5 py-1 border border-stone-200 rounded hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed">‹</button><span>Page ' + page + ' of ' + totalPages.toLocaleString() + '</span><button data-action="page-next"' + (page >= totalPages ? ' disabled' : '') + ' class="px-2.5 py-1 border border-stone-200 rounded hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed">›</button></div></div>' : '') + '</div>' + (selectedCount > 0 ? renderBulkBar(selectedCount) : '')
+  return '<div class="mb-5 flex items-end justify-between"><div><h1 class="text-xl font-semibold tracking-tight text-stone-900">Schools</h1><p class="text-sm text-stone-500 mt-0.5">' + state.schoolsTotal.toLocaleString() + ' ' + (state.filters.mineOnly ? 'assigned to you' : 'total') + '. Click a row to open.</p></div>' + (isAdmin() ? '<button data-action="export-csv"' + (state.exporting ? ' disabled' : '') + ' class="text-sm border border-stone-300 hover:border-stone-400 hover:bg-stone-50 disabled:opacity-50 px-3 py-1.5 rounded-md text-stone-700 transition">' + (state.exporting ? 'Exporting…' : '↓ Export CSV') + '</button>' : '') + '</div><div class="bg-white border border-stone-200 rounded-lg overflow-hidden"><div class="px-4 py-3 border-b border-stone-200 flex flex-wrap gap-2 items-center"><input type="text" placeholder="Search by name, city, state…" value="' + esc(state.filters.search) + '" class="flex-1 min-w-[200px] text-sm px-3 py-1.5 border border-stone-200 rounded-md focus-ring focus:border-indigo-300" data-action="filter-search-input"><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring" data-action="filter-stage-group-change"><option value="">All groups</option>' + STAGE_GROUPS.map(g => '<option value="' + esc(g) + '"' + (state.filters.stageGroup === g ? ' selected' : '') + '>' + esc(g) + '</option>').join('') + '</select><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring" data-action="filter-stage-sub-change"><option value="">All stages</option>' + (state.filters.stageGroup ? (STAGE_SUBS[state.filters.stageGroup]||[]) : STAGES).map(s => '<option value="' + esc(s) + '"' + (state.filters.stageSub === s ? ' selected' : '') + '>' + esc(s) + '</option>').join('') + '</select><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring' + (state.filters.mineOnly ? ' opacity-40 pointer-events-none' : '') + '" data-action="filter-owner-change"><option value="">All agents</option><option value="unassigned"' + (state.filters.ownerId === 'unassigned' ? ' selected' : '') + '>Unassigned</option>' + userOptions + '</select><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring" data-action="filter-country-change"><option value="">All countries</option>' + state.filterOptions.countries.map(c => '<option value="' + esc(c) + '"' + (state.filters.country === c ? ' selected' : '') + '>' + esc(c) + '</option>').join('') + '</select><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring" data-action="filter-state-change"><option value="">All states</option>' + state.filterOptions.states.map(s => '<option value="' + esc(s) + '"' + (state.filters.state_ === s ? ' selected' : '') + '>' + esc(s) + '</option>').join('') + '</select><select class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring" data-action="filter-city-change"><option value="">All cities</option>' + state.filterOptions.cities.map(c => '<option value="' + esc(c) + '"' + (state.filters.city === c ? ' selected' : '') + '>' + esc(c) + '</option>').join('') + '</select><label class="text-xs text-stone-500">Created</label><input type="date" value="' + esc(state.filters.createdFrom) + '" class="text-sm px-2 py-1.5 border border-stone-200 rounded-md focus-ring" data-action="filter-createdfrom-change"><span class="text-xs text-stone-400">→</span><input type="date" value="' + esc(state.filters.createdTo) + '" class="text-sm px-2 py-1.5 border border-stone-200 rounded-md focus-ring" data-action="filter-createdto-change"><button data-action="toggle-mine" class="text-sm px-3 py-1.5 rounded-md border transition ' + (state.filters.mineOnly ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50') + '">Mine only</button>' + (filtersActive ? '<button data-action="clear-filters" class="text-xs text-stone-500 hover:text-stone-900 px-2">Clear</button>' : '') + '</div><div class="overflow-x-auto"><table class="w-full"><thead class="bg-stone-50 border-b border-stone-200"><tr class="text-left text-xs font-medium text-stone-500 uppercase tracking-wider"><th class="py-2 px-4 w-10"><input type="checkbox" id="cb-all" class="row-checkbox sr-only" data-action="toggle-select-all"' + (allSelected ? ' checked' : '') + '><label for="cb-all" class="cursor-pointer block"><span class="check-box inline-block w-4 h-4 rounded border ' + (someSelected ? 'bg-indigo-100 border-indigo-300' : 'border-stone-300') + ' hover:border-indigo-400 transition align-middle"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M5 10l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></label></th><th class="py-2.5 px-3">ID</th><th class="py-2.5 px-4">School</th><th class="py-2.5 px-4">Stage</th><th class="py-2.5 px-4">Owner</th><th class="py-2.5 px-4">Last activity</th><th class="py-2.5 px-4"></th></tr></thead><tbody>' + rows + '</tbody></table></div>' + (state.schoolsTotal > PAGE_SIZE ? '<div class="px-4 py-3 border-t border-stone-200 flex items-center justify-between text-sm text-stone-500"><div>' + start.toLocaleString() + '–' + end.toLocaleString() + ' of ' + state.schoolsTotal.toLocaleString() + '</div><div class="flex items-center gap-2"><button data-action="page-prev"' + (page === 1 ? ' disabled' : '') + ' class="px-2.5 py-1 border border-stone-200 rounded hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed">‹</button><span>Page ' + page + ' of ' + totalPages.toLocaleString() + '</span><button data-action="page-next"' + (page >= totalPages ? ' disabled' : '') + ' class="px-2.5 py-1 border border-stone-200 rounded hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed">›</button></div></div>' : '') + '</div>' + (selectedCount > 0 ? renderBulkBar(selectedCount) : '')
 }
 
 function renderBulkBar(count) {
@@ -753,7 +710,7 @@ function renderSchoolDetail() {
 
   const ownerSlot = s.owner_user_id
     ? '<div class="flex items-center gap-2">' + avatar(s.owner_user_id) + '<span class="text-xs text-stone-600">' + esc(ownerName) + '</span></div>'
-    : '<span class="text-xs text-stone-400 italic border border-stone-200 px-2.5 py-1 rounded-md">Unassigned — admin only</span>'
+    : '<button data-action="take-ownership" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium border border-indigo-200 hover:border-indigo-400 px-2.5 py-1 rounded-md">Take ownership</button>'
 
   // Find any pending follow-up for current user on this school
   const myPending = state.activities.find(a => !a.completed_at && a.scheduled_for && a.user_id === state.session.user.id)
@@ -787,7 +744,8 @@ function renderActivityForm(s) {
     const latest = dates.reduce((a, b) => a.webinar_date > b.webinar_date ? a : b)
     return latest.webinar_date < todayYMD()
   })()
-  const needFollowup = !isTerminalSub && !isNotEligible && !webinarPassed
+  const isConfirmedStage = s.stage_sub === 'Confirm'
+  const needFollowup = !isTerminalSub && !isNotEligible && !webinarPassed && !isConfirmedStage
 
   const groupOpts = STAGE_GROUPS.map(g => '<option value="' + esc(g) + '"' + (g === s.stage_group ? ' selected' : '') + '>' + esc(g) + '</option>').join('')
   const subOpts = (STAGE_SUBS[s.stage_group] || []).map(st => '<option value="' + esc(st) + '"' + (st === s.stage_sub ? ' selected' : '') + '>' + esc(st) + '</option>').join('')
@@ -1150,8 +1108,8 @@ function renderReports() {
   // View 1: hourly by type — chart
   const view1 = card('1. Hourly outreach pattern', 'When the team works, broken down by channel', '<div style="position:relative; height:280px;"><canvas id="chart-hourly"></canvas></div>')
 
-  // View 2: agent activity mix — chart
-  const view2 = card('2. Agent activity mix', 'Total activities per agent, stacked by channel', '<div style="position:relative; height:300px;"><canvas id="chart-agent-type"></canvas></div>')
+  // View 2: agent daily — chart
+  const view2 = card('2. Agent daily reachout', 'Activities per day, stacked by agent', '<div style="position:relative; height:300px;"><canvas id="chart-agent-daily"></canvas></div>')
 
   // View 3: agent × hour heatmap (table)
   const ah = d.agent_hourly || []
@@ -1249,7 +1207,12 @@ function initReportsCharts() {
         plugins: {
           legend: { position: 'top', labels: { font: { size: 11 }, boxWidth: 12 } },
           tooltip: { backgroundColor: '#1C1917' },
-          datalabels: { display: false },
+          datalabels: {
+            display: (ctx) => ctx.dataset.data[ctx.dataIndex] > 0,
+            anchor: 'center', align: 'center',
+            color: '#fff', font: { size: 10, weight: '600' },
+            formatter: (v) => v > 0 ? v : ''
+          },
         },
         scales: {
           x: { stacked: true, grid: { display: false }, ticks: { color: '#78716C', font: { size: 11 } } },
@@ -1259,36 +1222,43 @@ function initReportsCharts() {
     })
   }
 
-  // View 2: agent × channel stacked bar (one column per agent, stacked by activity type)
-  const at = state.reportsData.agent_type_totals || []
-  const byUserType = {}
-  at.forEach(r => { if (!byUserType[r.user_id]) byUserType[r.user_id] = {}; byUserType[r.user_id][r.activity_type] = r.n })
-  const agentTypeUserIds = Object.keys(byUserType).sort((a, b) => {
-    const totalA = Object.values(byUserType[a]).reduce((s, v) => s + v, 0)
-    const totalB = Object.values(byUserType[b]).reduce((s, v) => s + v, 0)
-    return totalB - totalA
+  // View 2: agent daily stacked bar
+  const ad = state.reportsData.agent_daily || []
+  const byDayUser = {}
+  ad.forEach(r => { if (!byDayUser[r.day]) byDayUser[r.day] = {}; byDayUser[r.day][r.user_id] = r.n })
+  const days = Object.keys(byDayUser).sort()
+  const userIdsInData = [...new Set(ad.map(r => r.user_id))]
+  const datasets2 = userIdsInData.map(uid => {
+    const name = (userName(uid) || '—').split(' ')[0]
+    // derive color from user_id like our avatars
+    const colorClass = userColor(uid)
+    const colorMap = { 'bg-rose-500':'#F43F5E','bg-amber-500':'#F59E0B','bg-emerald-500':'#10B981','bg-cyan-500':'#06B6D4','bg-indigo-500':'#6366F1','bg-fuchsia-500':'#D946EF','bg-orange-500':'#F97316','bg-teal-500':'#14B8A6','bg-violet-500':'#8B5CF6','bg-pink-500':'#EC4899','bg-sky-500':'#0EA5E9','bg-lime-600':'#65A30D' }
+    return {
+      label: name,
+      data: days.map(d => (byDayUser[d] && byDayUser[d][uid]) || 0),
+      backgroundColor: colorMap[colorClass] || '#78716C',
+      borderRadius: 2, borderSkipped: false,
+    }
   })
-  const datasets2 = ACTIVITY_TYPES.map(t => ({
-    label: t,
-    data: agentTypeUserIds.map(uid => (byUserType[uid] && byUserType[uid][t]) || 0),
-    backgroundColor: typeColors[t],
-    borderRadius: 3,
-    borderSkipped: false,
-  }))
-  const el2 = document.getElementById('chart-agent-type')
+  const el2 = document.getElementById('chart-agent-daily')
   if (el2) {
-    state.chartInstances.agentType = new Chart(el2, {
+    state.chartInstances.agentDaily = new Chart(el2, {
       type: 'bar',
-      data: { labels: agentTypeUserIds.map(uid => (userName(uid) || '—').split(' ')[0]), datasets: datasets2 },
+      data: { labels: days.map(d => new Date(d).toLocaleDateString('en-IN', { day:'numeric', month:'short' })), datasets: datasets2 },
       options: {
         responsive: true, maintainAspectRatio: false,
         plugins: {
           legend: { position: 'top', labels: { font: { size: 11 }, boxWidth: 12 } },
           tooltip: { backgroundColor: '#1C1917' },
-          datalabels: { display: false },
+          datalabels: {
+            display: (ctx) => ctx.dataset.data[ctx.dataIndex] > 0,
+            anchor: 'center', align: 'center',
+            color: '#fff', font: { size: 10, weight: '600' },
+            formatter: (v) => v > 0 ? v : ''
+          },
         },
         scales: {
-          x: { stacked: true, grid: { display: false }, ticks: { color: '#78716C', font: { size: 11 } } },
+          x: { stacked: true, grid: { display: false }, ticks: { color: '#78716C', font: { size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 10 } },
           y: { stacked: true, beginAtZero: true, grid: { color: '#F5F5F4' }, ticks: { color: '#78716C', font: { size: 11 }, precision: 0 } },
         }
       }
@@ -1374,10 +1344,11 @@ function attachHandlers() {
     if (action === 'login') { e.preventDefault(); login(); return }
     if (action === 'logout') { e.preventDefault(); logout(); return }
     if (action === 'open-school') { window.location.hash = '#/schools/' + encodeURIComponent(id); return }
-    if (action === 'clear-filters') { state.filters = { search:'', stageGroups:[], stageSubs:[], ownerIds:[], mineOnly:false, countries:[], states_:[], cities:[], createdFrom:'', createdTo:'' }; state.filterSearch = {}; state.openFilter = null; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render); return }
-    if (action === 'toggle-mine') { state.filters.mineOnly = !state.filters.mineOnly; if (state.filters.mineOnly) state.filters.ownerIds = []; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render); return }
+    if (action === 'clear-filters') { state.filters = { search:'', stageGroup:'', stageSub:'', ownerId:'', mineOnly:false, country:'', state_:'', city:'', createdFrom:'', createdTo:'' }; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render); return }
+    if (action === 'toggle-mine') { state.filters.mineOnly = !state.filters.mineOnly; if (state.filters.mineOnly) state.filters.ownerId = ''; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render); return }
     if (action === 'page-prev') { state.schoolsPage = Math.max(1, state.schoolsPage - 1); state.selectedSchoolIds.clear(); loadSchools().then(render); return }
     if (action === 'page-next') { state.schoolsPage += 1; state.selectedSchoolIds.clear(); loadSchools().then(render); return }
+    if (action === 'take-ownership') { takeOwnership(); return }
     if (action === 'set-not-eligible') { setNotEligible(); return }
     if (action === 'clear-not-eligible') { clearNotEligible(); return }
     if (action === 'enter-edit-mode') { state.editingSchool = true; render(); return }
@@ -1389,17 +1360,6 @@ function attachHandlers() {
     if (action === 'start-complete-followup') { state.followUpsCompleting = Number(id); render(); return }
     if (action === 'cancel-complete-followup') { state.followUpsCompleting = null; render(); return }
     if (action === 'toggle-sidebar') { state.sidebarOpen = !state.sidebarOpen; render(); return }
-    if (action === 'toggle-filter-dropdown') { state.openFilter = (state.openFilter === el.dataset.key) ? null : el.dataset.key; render(); return }
-    if (action === 'close-filter-dropdown') { state.openFilter = null; render(); return }
-    if (action === 'filter-dropdown-done') { state.openFilter = null; render(); return }
-    if (action === 'filter-dropdown-clear') {
-      const key = el.dataset.key
-      state.filters[key] = []
-      state.filterSearch[key] = ''
-      state.schoolsPage = 1; state.selectedSchoolIds.clear()
-      loadSchools().then(render)
-      return
-    }
     if (action === 'set-role') { setUserRole(id, el.dataset.role); return }
     if (action === 'set-fu-filter') {
       state.followUpsFilter = el.dataset.filter
@@ -1459,15 +1419,6 @@ function attachHandlers() {
         loadSchools().then(render)
       }, 250)
     }
-    if (action === 'filter-dropdown-search') {
-      state.filterSearch[el.dataset.key] = el.value
-      render()
-      // restore focus + caret to the search box after re-render
-      requestAnimationFrame(() => {
-        const box = document.querySelector('[data-action="filter-dropdown-search"][data-key="' + el.dataset.key + '"]')
-        if (box) { box.focus(); box.setSelectionRange(box.value.length, box.value.length) }
-      })
-    }
     if (action === 'bulk-delete-input') {
       const ok = el.value.trim() === 'delete ' + state.selectedSchoolIds.size
       const btn = document.getElementById('bulk-delete-execute')
@@ -1489,18 +1440,14 @@ function attachHandlers() {
     const el = e.target.closest('[data-action]')
     if (!el) return
     const action = el.dataset.action
+    if (action === 'filter-stage-group-change') { state.filters.stageGroup = el.value; state.filters.stageSub = ''; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render) }
+    if (action === 'filter-stage-sub-change') { state.filters.stageSub = el.value; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render) }
+    if (action === 'filter-owner-change') { state.filters.ownerId = el.value; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render) }
+    if (action === 'filter-country-change') { state.filters.country = el.value; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render) }
+    if (action === 'filter-state-change') { state.filters.state_ = el.value; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render) }
+    if (action === 'filter-city-change') { state.filters.city = el.value; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render) }
     if (action === 'filter-createdfrom-change') { state.filters.createdFrom = el.value; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render) }
     if (action === 'filter-createdto-change') { state.filters.createdTo = el.value; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render) }
-    if (action === 'filter-dropdown-toggle') {
-      const key = el.dataset.key, val = el.dataset.value
-      const arr = state.filters[key]
-      const idx = arr.indexOf(val)
-      if (el.checked && idx === -1) arr.push(val)
-      else if (!el.checked && idx !== -1) arr.splice(idx, 1)
-      state.schoolsPage = 1; state.selectedSchoolIds.clear()
-      loadSchools().then(render)
-      return
-    }
     if (action === 'reassign-owner') { reassignOwner(el.value) }
     if (action === 'toggle-select') { const id = el.dataset.id; if (el.checked) state.selectedSchoolIds.add(id); else state.selectedSchoolIds.delete(id); render() }
     if (action === 'toggle-select-all') { if (el.checked) state.schools.forEach(s => state.selectedSchoolIds.add(s.school_profile_id)); else state.schools.forEach(s => state.selectedSchoolIds.delete(s.school_profile_id)); render() }
@@ -1556,14 +1503,9 @@ async function init() {
   }
   supabase.auth.onAuthStateChange(async (event, session) => {
     if (event === 'SIGNED_IN') {
-      const isNewSignIn = !state.session || state.session.user.id !== session?.user?.id
       state.session = session
-      if (isNewSignIn) {
-        await Promise.all([loadProfile(), loadUsers(), loadMyOverdueCount(), loadFilterOptions()])
-        handleRoute()
-      }
-      // else: just a background session/token refresh (e.g. tab regained focus) — update
-      // the session silently and skip re-rendering, so in-progress form input isn't wiped.
+      await Promise.all([loadProfile(), loadUsers(), loadMyOverdueCount(), loadFilterOptions()])
+      handleRoute()
     } else if (event === 'SIGNED_OUT') {
       state.session = null; state.profile = null; state.view = 'login'; render()
     }
