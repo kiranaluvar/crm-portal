@@ -257,9 +257,11 @@ async function loadFollowUpsView() {
     : (owner === '' ? null : owner)
 
   // Filter by activity user_id only — Supabase JS can't filter on joined table columns
+  // Use !inner join so schools with not_eligible=true are excluded via the filter
   const baseQ = () => {
     let q = supabase.from('activities')
-      .select('*, school:schools(school_profile_id,school_name,city,state,stage_group,stage_sub,owner_user_id)', { count: 'exact', head: true })
+      .select('*, school:schools!inner(school_profile_id,school_name,city,state,stage_group,stage_sub,owner_user_id,not_eligible)', { count: 'exact', head: true })
+      .eq('school.not_eligible', false)
     if (effectiveOwner) q = q.eq('user_id', effectiveOwner)
     return q
   }
@@ -277,9 +279,10 @@ async function loadFollowUpsView() {
     closed_7d: closedRes.count  || 0,
   }
 
-  // Build list query
+  // Build list query — exclude not_eligible schools
   let q = supabase.from('activities')
-    .select('*, school:schools(school_profile_id,school_name,city,state,stage_group,stage_sub,owner_user_id)')
+    .select('*, school:schools!inner(school_profile_id,school_name,city,state,stage_group,stage_sub,owner_user_id,not_eligible)')
+    .eq('school.not_eligible', false)
   if (effectiveOwner) q = q.eq('user_id', effectiveOwner)
 
   if (state.followUpsFilter === 'open') {
