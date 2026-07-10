@@ -72,7 +72,7 @@ const ACTIVITY_TYPE_COLORS = {
   'Other':    { border:'#78716C', dot:'bg-stone-500' },
 }
 const AVATAR_COLORS = ['bg-rose-500','bg-amber-500','bg-emerald-500','bg-cyan-500','bg-indigo-500','bg-fuchsia-500','bg-orange-500','bg-teal-500','bg-violet-500','bg-pink-500','bg-sky-500','bg-lime-600']
-const FEES_RANGES = ['<45000','45000-50000','50000-55000','55000-60000','60000-65000','65000-70000','70000-75000','75000-80000','80000-85000','90000-95000','95000-100000']
+const FEES_RANGES = ['<45000','45000-50000','50000-55000','55000-60000','60000-65000','65000-70000','70000-75000','75000-80000','80000-85000','90000-95000','95000-100000','100000-125000','125000-150000','150000-175000','175000-200000','200000+']
 
 const state = {
   session: null, profile: null, view: 'loading',
@@ -181,7 +181,17 @@ async function loadSchools() {
   if (state.filters.country) q = q.eq('country', state.filters.country)
   if (state.filters.state_) q = q.eq('state', state.filters.state_)
   if (state.filters.city) q = q.eq('city', state.filters.city)
-  if (state.filters.feesRanges.length) q = q.in('school_fees_range', state.filters.feesRanges)
+  if (state.filters.feesRanges.length) {
+    const ranges = state.filters.feesRanges
+    if (ranges.includes('200000+') && ranges.length === 1) {
+      q = q.gte('school_fees', '200000')
+    } else if (ranges.includes('200000+')) {
+      const others = ranges.filter(r => r !== '200000+')
+      q = q.or('school_fees_range.in.(' + others.join(',') + '),school_fees.gte.200000')
+    } else {
+      q = q.in('school_fees_range', ranges)
+    }
+  }
   if (state.filters.notEligible === 'yes') q = q.eq('not_eligible', true)
   if (state.filters.notEligible === 'no') q = q.eq('not_eligible', false)
   if (state.filters.createdFrom) q = q.gte('created_at', state.filters.createdFrom)
