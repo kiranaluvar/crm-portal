@@ -1459,12 +1459,19 @@ function attachHandlers() {
       })
     }
     if (action === 'filter-search-input') {
+      state.filters.search = el.value  // update immediately so value is preserved on re-render
       clearTimeout(searchDebounce)
       searchDebounce = setTimeout(() => {
-        state.filters.search = el.value
         state.schoolsPage = 1; state.selectedSchoolIds.clear()
-        loadSchools().then(render)
-      }, 250)
+        loadSchools().then(() => {
+          render()
+          // Restore focus to search input after DOM rebuild
+          requestAnimationFrame(() => {
+            const inp = document.querySelector('[data-action="filter-search-input"]')
+            if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length) }
+          })
+        })
+      }, 400)
     }
     if (action === 'bulk-delete-input') {
       const ok = el.value.trim() === 'delete ' + state.selectedSchoolIds.size
