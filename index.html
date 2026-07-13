@@ -95,6 +95,7 @@ const state = {
   dashboardData: null,
   auditLog: [], auditLogOpen: false,
   webinarDates: [],
+  newSchoolDraft: {},
   exporting: false,
   saving: false, flash: null, bulkPanel: null,
   sidebarOpen: false,
@@ -548,6 +549,7 @@ async function submitNewSchool(form) {
   const { error } = await supabase.from('schools').insert(row)
   state.saving = false
   if (error) { flash('err', error.message); render(); return }
+  state.newSchoolDraft = {}
   // Refresh filter options in case a new country/state/city was added
   loadFilterOptions()
   flash('ok','School added (ID ' + newId + ')')
@@ -883,15 +885,17 @@ function renderSchoolEditForm(s) {
 }
 
 function renderSchoolNew() {
+  const d = state.newSchoolDraft || {}
   const field = (label, name, type, opts) => {
     opts = opts || {}
     const cls = opts.colSpan || ''
     const req = opts.required ? ' required' : ''
     const star = opts.required ? ' <span class="text-rose-500">*</span>' : ''
     const list = opts.list ? ' list="' + opts.list + '"' : ''
+    const val = d[name] ? ' value="' + esc(d[name]) + '"' : ''
     const tag = type === 'textarea'
-      ? '<textarea name="' + name + '" rows="2"' + req + ' class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring"></textarea>'
-      : '<input type="' + (type || 'text') + '" name="' + name + '"' + list + req + ' class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring" autocomplete="off">'
+      ? '<textarea name="' + name + '" rows="2"' + req + ' class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring">' + esc(d[name] || '') + '</textarea>'
+      : '<input type="' + (type || 'text') + '" name="' + name + '"' + list + req + val + ' class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring" autocomplete="off">'
     return '<div class="' + cls + '"><label class="block text-xs font-medium text-stone-600 mb-1">' + esc(label) + star + '</label>' + tag + '</div>'
   }
   const fo = state.filterOptions || {}
@@ -901,7 +905,10 @@ function renderSchoolNew() {
     + '<datalist id="dl-city">' + optList(fo.cities) + '</datalist>'
     + '<datalist id="dl-school-type">' + optList(fo.school_types) + '</datalist>'
     + '<datalist id="dl-curriculum">' + optList(fo.curriculums) + '</datalist>'
-  return '<div class="mb-5"><h1 class="text-xl font-semibold tracking-tight text-stone-900">Add a school</h1><p class="text-sm text-stone-500 mt-0.5">ID is generated automatically. You become the owner once saved.</p></div>' + datalists + '<form data-action="submit-new-school" class="space-y-6 max-w-4xl"><section class="bg-white border border-stone-200 rounded-lg p-5"><h2 class="text-sm font-semibold text-stone-900 mb-4">Identity</h2><div class="grid grid-cols-1 md:grid-cols-3 gap-4">' + field('School name','school_name','text',{required:true, colSpan:'md:col-span-2'}) + '<div><label class="block text-xs font-medium text-stone-600 mb-1">School type</label><select name="school_type" class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md bg-white focus-ring"><option value="">— Select —</option><option>Day School</option><option>Boarding School</option><option>Day &amp; Boarding School</option></select></div>'
+  const schoolTypeOpts = ['Day School','Boarding School','Day & Boarding School'].map(t => '<option' + (d.school_type === t ? ' selected' : '') + '>' + esc(t) + '</option>').join('')
+  const hasDraft = Object.keys(d).some(k => d[k])
+  const draftBanner = hasDraft ? '<div class="mb-4 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5 flex items-center justify-between text-sm"><span class="text-amber-800">Draft restored — your previous entries are still here.</span><button type="button" data-action="clear-school-draft" class="text-xs text-amber-600 hover:text-amber-900 font-medium">Clear draft</button></div>' : ''
+  return '<div class="mb-5"><h1 class="text-xl font-semibold tracking-tight text-stone-900">Add a school</h1><p class="text-sm text-stone-500 mt-0.5">ID is generated automatically. You become the owner once saved.</p></div>' + draftBanner + datalists + '<form data-action="submit-new-school" class="space-y-6 max-w-4xl"><section class="bg-white border border-stone-200 rounded-lg p-5"><h2 class="text-sm font-semibold text-stone-900 mb-4">Identity</h2><div class="grid grid-cols-1 md:grid-cols-3 gap-4">' + field('School name','school_name','text',{required:true, colSpan:'md:col-span-2'}) + '<div><label class="block text-xs font-medium text-stone-600 mb-1">School type</label><select name="school_type" class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md bg-white focus-ring"><option value="">— Select —</option>' + schoolTypeOpts + '</select></div>'
 + field('Curriculum','curriculum_followed','text',{required:true, list:'dl-curriculum'}) + '</div></section><section class="bg-white border border-stone-200 rounded-lg p-5"><h2 class="text-sm font-semibold text-stone-900 mb-4">Location</h2><div class="grid grid-cols-1 md:grid-cols-3 gap-4">' + field('Country','country','text',{required:true, list:'dl-country'}) + field('State','state','text',{required:true, list:'dl-state'}) + field('City','city','text',{required:true, list:'dl-city'}) + field('Address','address','textarea',{colSpan:'md:col-span-3'}) + field('Pin code','pin_code') + '</div></section><section class="bg-white border border-stone-200 rounded-lg p-5"><h2 class="text-sm font-semibold text-stone-900 mb-4">School contact</h2><div class="grid grid-cols-1 md:grid-cols-2 gap-4">' + field('Email','email','email') + field('Phone','phone_no','tel') + field('Fees','school_fees') + field('Fees range','school_fees_range') + '</div></section><section class="bg-white border border-stone-200 rounded-lg p-5"><h2 class="text-sm font-semibold text-stone-900 mb-4">Point of contact 1</h2><div class="grid grid-cols-1 md:grid-cols-2 gap-4">' + field('Name','poc1_name') + field('Designation','poc1_designation') + field('Email','poc1_email','email') + field('Phone','poc1_number','tel') + '</div></section><section class="bg-white border border-stone-200 rounded-lg p-5"><h2 class="text-sm font-semibold text-stone-900 mb-4">Point of contact 2 <span class="text-stone-400 font-normal text-xs">(optional)</span></h2><div class="grid grid-cols-1 md:grid-cols-2 gap-4">' + field('Name','poc2_name') + field('Designation','poc2_designation') + field('Email','poc2_email','email') + field('Phone','poc2_number','tel') + '</div></section><div class="flex items-center gap-3 sticky bottom-4 bg-white border border-stone-200 rounded-lg p-4 shadow-sm"><button type="submit"' + (state.saving ? ' disabled' : '') + ' class="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white text-sm font-medium px-4 py-2 rounded-md">' + (state.saving ? 'Saving…' : 'Save school') + '</button><a href="#/schools" class="text-sm text-stone-600 hover:text-stone-900">Cancel</a></div></form>'
 }
 
@@ -1376,6 +1383,7 @@ function attachHandlers() {
     if (action === 'toggle-mine') { state.filters.mineOnly = !state.filters.mineOnly; if (state.filters.mineOnly) state.filters.ownerId = ''; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render); return }
     if (action === 'page-prev') { state.schoolsPage = Math.max(1, state.schoolsPage - 1); state.selectedSchoolIds.clear(); loadSchools().then(render); return }
     if (action === 'page-next') { state.schoolsPage += 1; state.selectedSchoolIds.clear(); loadSchools().then(render); return }
+    if (action === 'clear-school-draft') { state.newSchoolDraft = {}; render(); return }
     if (action === 'take-ownership') { takeOwnership(); return }
     if (action === 'set-not-eligible') { setNotEligible(); return }
     if (action === 'clear-not-eligible') { clearNotEligible(); return }
@@ -1450,6 +1458,16 @@ function attachHandlers() {
     const el = e.target.closest('[data-action]')
     if (!el) return
     const action = el.dataset.action
+    // Save draft for Add School form
+    if (state.view === 'school-new') {
+      const form = e.target.closest('form[data-action="submit-new-school"]')
+      if (form) {
+        const fields = ['school_name','school_type','address','pin_code','city','state','country','email','phone_no','curriculum_followed','school_fees','school_fees_range','poc1_designation','poc1_email','poc1_name','poc1_number','poc2_designation','poc2_email','poc2_name','poc2_number']
+        fields.forEach(f => {
+          const el = form[f]; if (el) state.newSchoolDraft[f] = el.value
+        })
+      }
+    }
     if (action === 'filter-dropdown-search') {
       state.filterSearch[el.dataset.key] = el.value
       render()
@@ -1494,6 +1512,14 @@ function attachHandlers() {
     const el = e.target.closest('[data-action]')
     if (!el) return
     const action = el.dataset.action
+    // Save draft for Add School form (select fields)
+    if (state.view === 'school-new') {
+      const form = e.target.closest('form[data-action="submit-new-school"]')
+      if (form) {
+        const fields = ['school_name','school_type','address','pin_code','city','state','country','email','phone_no','curriculum_followed','school_fees','school_fees_range','poc1_designation','poc1_email','poc1_name','poc1_number','poc2_designation','poc2_email','poc2_name','poc2_number']
+        fields.forEach(f => { const el = form[f]; if (el) state.newSchoolDraft[f] = el.value })
+      }
+    }
     if (action === 'filter-dropdown-toggle') {
       const key = el.dataset.key, val = el.dataset.value
       const arr = state.filters[key]
