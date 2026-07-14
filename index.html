@@ -531,29 +531,38 @@ async function takeOwnership() {
 async function submitNewSchool(form) {
   if (state.saving) return
   state.saving = true; render()
-  // Auto-generate next school_profile_id: find max numeric existing ID, add 1
-  const { data: maxRows, error: maxErr } = await supabase.from('schools')
-    .select('school_profile_id').order('school_profile_id', { ascending: false }).limit(50)
-  if (maxErr) { state.saving = false; flash('err', maxErr.message); render(); return }
-  let maxNum = 0
-  for (const r of maxRows || []) {
-    const n = parseInt(String(r.school_profile_id).replace(/\D/g, ''), 10)
-    if (!isNaN(n) && n > maxNum) maxNum = n
-  }
-  const newId = String(maxNum + 1)
-  const row = { school_profile_id: newId }
+
   const fields = ['school_name','school_type','address','pin_code','city','state','country','email','phone_no','curriculum_followed','school_fees','school_fees_range','poc1_designation','poc1_email','poc1_name','poc1_number','poc2_designation','poc2_email','poc2_name','poc2_number']
-  fields.forEach(f => { const v = form[f]?.value?.trim(); if (v) row[f] = v })
-  row.created_by = state.session.user.id
-  row.owner_user_id = state.session.user.id
-  const { error } = await supabase.from('schools').insert(row)
+
+  // Retry up to 5 times in case of a race condition
+  let inserted = false
+  let lastError = null
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const { data: newIdData, error: idErr } = await supabase.rpc('next_school_id')
+    if (idErr) { state.saving = false; flash('err', idErr.message); render(); return }
+    const newId = String(newIdData)
+    const row = { school_profile_id: newId }
+    fields.forEach(f => { const v = form[f]?.value?.trim(); if (v) row[f] = v })
+    row.created_by = state.session.user.id
+    row.owner_user_id = state.session.user.id
+    const { error } = await supabase.from('schools').insert(row)
+    if (!error) {
+      inserted = true
+      state.saving = false
+      state.newSchoolDraft = {}
+      loadFilterOptions()
+      flash('ok', 'School added (ID ' + newId + ')')
+      window.location.hash = '#/schools/' + encodeURIComponent(newId)
+      return
+    }
+    // Only retry on duplicate key errors
+    if (!error.message.includes('duplicate key')) {
+      lastError = error; break
+    }
+    lastError = error
+  }
   state.saving = false
-  if (error) { flash('err', error.message); render(); return }
-  state.newSchoolDraft = {}
-  // Refresh filter options in case a new country/state/city was added
-  loadFilterOptions()
-  flash('ok','School added (ID ' + newId + ')')
-  window.location.hash = '#/schools/' + encodeURIComponent(newId)
+  flash('err', lastError?.message || 'Failed to save school'); render()
 }
 
 async function bulkReassign(newOwnerId) {
