@@ -24,6 +24,14 @@ body { background: #FAFAF9; color: #1C1917; font-feature-settings: "cv11","ss01"
 .check-box svg { display:none; }
 .field-grid dt { color: #78716C; }
 .field-grid dd { color: #1C1917; }
+@keyframes confetti-fall {
+  0%   { transform: translateY(-10vh) translateX(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) translateX(var(--drift)) rotate(var(--spin)); opacity: 0.9; }
+}
+.confetti-piece {
+  position: fixed; top: 0; z-index: 9999; pointer-events: none;
+  will-change: transform; animation: confetti-fall linear forwards;
+}
 </style>
 </head>
 <body class="font-sans antialiased">
@@ -395,6 +403,20 @@ async function login() {
 }
 async function logout() { await supabase.auth.signOut(); window.location.hash = '' }
 
+function celebrate() {
+  const colors = ['#6366F1','#A855F7','#EC4899','#10B981','#F59E0B','#3B82F6']
+  const count = 90
+  for (let i = 0; i < count; i++) {
+    const size = 6 + Math.random() * 6
+    const isCircle = Math.random() > 0.5
+    const piece = document.createElement('div')
+    piece.className = 'confetti-piece'
+    piece.style.cssText = `left:${Math.random()*100}vw;width:${size}px;height:${size*(isCircle?1:0.5)}px;background:${colors[Math.floor(Math.random()*colors.length)]};border-radius:${isCircle?'50%':'2px'};--drift:${(Math.random()-0.5)*300}px;--spin:${(Math.random()>0.5?1:-1)*(360+Math.random()*720)}deg;animation-duration:${2.5+Math.random()*1.5}s;animation-delay:${Math.random()*0.4}s;`
+    document.body.appendChild(piece)
+    setTimeout(() => piece.remove(), 4500)
+  }
+}
+
 async function submitActivity(form) {
   if (state.saving) return
   const activityType = form.activity_type.value
@@ -515,6 +537,7 @@ async function submitActivity(form) {
   ])
   state.saving = false
   flash('ok', noFollowupSub ? 'Activity logged' : 'Activity logged · next follow-up scheduled')
+  if (newSub === 'Confirm') celebrate()
   render()
 }
 
