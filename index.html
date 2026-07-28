@@ -727,7 +727,7 @@ function multiSelectDropdown(key, allLabel, options, selected, opts) {
     const rows = visibleOptions.length === 0
       ? '<div class="text-xs text-stone-400 text-center py-3">No matches</div>'
       : visibleOptions.map(o => '<label class="flex items-center gap-2 px-1.5 py-1 hover:bg-stone-50 rounded cursor-pointer text-sm"><input type="checkbox" data-action="filter-dropdown-toggle" data-key="' + key + '" data-value="' + esc(o.value) + '" class="rounded border-stone-300 text-indigo-600 focus:ring-indigo-400"' + (selected.includes(o.value) ? ' checked' : '') + '><span class="truncate">' + esc(o.label) + '</span></label>').join('')
-    panel = '<div class="absolute z-30 mt-1 w-60 bg-white border border-stone-200 rounded-lg shadow-lg p-2" data-no-row-click>' + searchBox + '<div class="max-h-56 overflow-y-auto space-y-0.5">' + rows + '</div><div class="flex items-center justify-between pt-2 mt-1 border-t border-stone-100"><button data-action="filter-dropdown-clear" data-key="' + key + '" class="text-xs text-stone-500 hover:text-stone-900">Clear</button><button data-action="filter-dropdown-done" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">Done</button></div></div>'
+    panel = '<div class="absolute z-30 mt-1 w-60 bg-white border border-stone-200 rounded-lg shadow-lg p-2" data-no-row-click>' + searchBox + '<div class="max-h-56 overflow-y-auto space-y-0.5" data-scroll-key="' + key + '">' + rows + '</div><div class="flex items-center justify-between pt-2 mt-1 border-t border-stone-100"><button data-action="filter-dropdown-clear" data-key="' + key + '" class="text-xs text-stone-500 hover:text-stone-900">Clear</button><button data-action="filter-dropdown-done" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">Done</button></div></div>'
   }
   const backdrop = isOpen ? '<div data-action="close-filter-dropdown" class="fixed inset-0 z-20"></div>' : ''
   return backdrop + '<div class="relative" data-no-row-click><button type="button" data-action="toggle-filter-dropdown" data-key="' + key + '" class="' + btnCls + '">' + esc(btnLabel) + ' <span class="text-stone-400">▾</span></button>' + panel + '</div>'
@@ -1569,12 +1569,20 @@ function attachHandlers() {
     }
     if (action === 'filter-dropdown-toggle') {
       const key = el.dataset.key, val = el.dataset.value
+      const scroller = el.closest('[data-scroll-key]')
+      const savedScroll = scroller ? scroller.scrollTop : 0
       const arr = state.filters[key]
       const idx = arr.indexOf(val)
       if (el.checked && idx === -1) arr.push(val)
       else if (!el.checked && idx !== -1) arr.splice(idx, 1)
       state.schoolsPage = 1; state.selectedSchoolIds.clear()
-      loadSchools().then(render)
+      loadSchools().then(() => {
+        render()
+        requestAnimationFrame(() => {
+          const sc = document.querySelector('[data-scroll-key="' + key + '"]')
+          if (sc) sc.scrollTop = savedScroll
+        })
+      })
       return
     }
     if (action === 'filter-stage-group-change') { state.filters.stageGroup = el.value; state.filters.stageSub = ''; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render) }
