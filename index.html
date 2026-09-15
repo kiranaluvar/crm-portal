@@ -93,6 +93,7 @@ const state = {
   reportsData: null,
   reportsFrom: '',
   reportsTo: '',
+  stageCityData: [], stageCityAgentFilter: '', stageCityTypeFilter: '',
   selectedSchoolIds: new Set(),
   currentSchool: null, activities: [], editingSchool: false,
   users: [], schoolCountsByOwner: {},
@@ -254,6 +255,12 @@ async function loadReports() {
   const { data, error } = await supabase.rpc('reports_data', { d_from: state.reportsFrom, d_to: state.reportsTo })
   if (error) { flash('err', error.message); return }
   state.reportsData = data || null
+}
+
+async function loadStageCityBreakdown() {
+  const { data, error } = await supabase.rpc('stage_city_breakdown', { d_from: state.reportsFrom, d_to: state.reportsTo })
+  if (error) { flash('err', error.message); return }
+  state.stageCityData = data || []
 }
 
 async function loadMyOverdueCount() {
@@ -1243,7 +1250,29 @@ function renderReports() {
   const view6 = card('6. L2E % by geography', 'Where you convert best',
     '<div class="grid grid-cols-1 lg:grid-cols-2 gap-6"><div><div class="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">Top 30 cities</div><table class="w-full"><thead class="bg-stone-50 border-b border-stone-200"><tr class="text-left text-xs font-medium text-stone-500 uppercase tracking-wider"><th class="px-4 py-2">City</th><th class="px-4 py-2">Total</th><th class="px-4 py-2">Done</th><th class="px-4 py-2">L2E %</th></tr></thead><tbody>' + cityRows + '</tbody></table></div><div><div class="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">By state</div><table class="w-full"><thead class="bg-stone-50 border-b border-stone-200"><tr class="text-left text-xs font-medium text-stone-500 uppercase tracking-wider"><th class="px-4 py-2">State</th><th class="px-4 py-2">Total</th><th class="px-4 py-2">Done</th><th class="px-4 py-2">L2E %</th></tr></thead><tbody>' + stateRows + '</tbody></table></div></div>')
 
-  return hdr + tiles + view1 + view2 + view3 + view4 + view5 + view6
+  const scRows = state.stageCityData || []
+  const scAgentIds = [...new Set(scRows.map(r => r.user_id))].sort((a,b) => (userName(a)||'').localeCompare(userName(b)||''))
+  const scAgentOpts = '<option value="">All agents</option>' + scAgentIds.map(id => '<option value="' + esc(id) + '"' + (state.stageCityAgentFilter === id ? ' selected' : '') + '>' + esc(userName(id) || '—') + '</option>').join('')
+  const scTypeOpts = '<option value="">All types</option>' + ACTIVITY_TYPES.map(t => '<option' + (state.stageCityTypeFilter === t ? ' selected' : '') + '>' + esc(t) + '</option>').join('')
+  let scFiltered = scRows
+  if (state.stageCityAgentFilter) scFiltered = scFiltered.filter(r => r.user_id === state.stageCityAgentFilter)
+  if (state.stageCityTypeFilter) scFiltered = scFiltered.filter(r => r.activity_type === state.stageCityTypeFilter)
+  const scGrouped = {}
+  scFiltered.forEach(r => {
+    const key = (r.stage_group||'—') + '||' + (r.stage_sub||'—') + '||' + (r.city||'—')
+    if (!scGrouped[key]) scGrouped[key] = { stage_group: r.stage_group, stage_sub: r.stage_sub, city: r.city, schools: 0, activities: 0 }
+    scGrouped[key].schools += Number(r.schools) || 0
+    scGrouped[key].activities += Number(r.activities) || 0
+  })
+  const scGroupedRows = Object.values(scGrouped).sort((a,b) => b.schools - a.schools)
+  const scTotal = scGroupedRows.reduce((s,r) => s + r.schools, 0)
+  const scBodyRows = scGroupedRows.length === 0
+    ? '<tr><td colspan="4" class="text-center text-stone-400 py-8 text-sm">No activity in this range for the selected filters.</td></tr>'
+    : scGroupedRows.map(r => '<tr class="border-b border-stone-100"><td class="px-4 py-2">' + stagePill(r.stage_group, r.stage_sub) + '</td><td class="px-4 py-2 text-sm text-stone-700">' + esc(r.city || '—') + '</td><td class="px-4 py-2 text-sm font-medium text-stone-900">' + r.schools + '</td><td class="px-4 py-2 text-sm text-stone-500">' + r.activities + '</td></tr>').join('')
+  const view7 = card('7. Stage & city breakdown', 'Pick an agent and/or channel to see which stages and cities that activity count (e.g. the bars in View 2) belongs to.',
+    '<div class="flex flex-wrap gap-2 mb-4"><select data-action="stagecity-agent-change" class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring">' + scAgentOpts + '</select><select data-action="stagecity-type-change" class="text-sm px-3 py-1.5 border border-stone-200 rounded-md bg-white focus-ring">' + scTypeOpts + '</select><div class="ml-auto text-sm text-stone-500 self-center">' + scTotal + ' schools total</div></div><div class="overflow-x-auto"><table class="w-full"><thead class="bg-stone-50 border-b border-stone-200"><tr class="text-left text-xs font-medium text-stone-500 uppercase tracking-wider"><th class="px-4 py-2.5">Stage</th><th class="px-4 py-2.5">City</th><th class="px-4 py-2.5">Schools</th><th class="px-4 py-2.5">Activities</th></tr></thead><tbody>' + scBodyRows + '</tbody></table></div>')
+
+  return hdr + tiles + view1 + view2 + view3 + view4 + view5 + view6 + view7
 }
 
 function initReportsCharts() {
@@ -1529,12 +1558,12 @@ function attachHandlers() {
     }
     if (action === 'reports-from-change') {
       state.reportsFrom = el.value
-      loadReports().then(() => { render(); initReportsCharts() })
+      Promise.all([loadReports(), loadStageCityBreakdown()]).then(() => { render(); initReportsCharts() })
       return
     }
     if (action === 'reports-to-change') {
       state.reportsTo = el.value
-      loadReports().then(() => { render(); initReportsCharts() })
+      Promise.all([loadReports(), loadStageCityBreakdown()]).then(() => { render(); initReportsCharts() })
       return
     }
   }
@@ -1580,6 +1609,8 @@ function attachHandlers() {
       state.followUpsOwnerFilter = el.value
       loadFollowUpsView().then(render)
     }
+    if (action === 'stagecity-agent-change') { state.stageCityAgentFilter = el.value; render(); return }
+    if (action === 'stagecity-type-change') { state.stageCityTypeFilter = el.value; render(); return }
   }
 }
 
@@ -1611,7 +1642,7 @@ async function handleRoute() {
   } else if (hash === '/reports') {
     if (!isAdmin()) { window.location.hash = '#/schools'; return }
     state.view = 'reports'; render()
-    await loadReports(); render()
+    await Promise.all([loadReports(), loadStageCityBreakdown()]); render()
     initReportsCharts()
   } else {
     window.location.hash = '#/schools'
