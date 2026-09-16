@@ -250,7 +250,7 @@ async function loadFilterOptions() {
 async function loadReports() {
   const today = new Date()
   const todayStr = today.toISOString().slice(0,10)
-  if (!state.reportsFrom) state.reportsFrom = '2020-01-01'
+  if (!state.reportsFrom) state.reportsFrom = todayStr.slice(0,7) + '-01'
   if (!state.reportsTo) state.reportsTo = todayStr
   const { data, error } = await supabase.rpc('reports_data', { d_from: state.reportsFrom, d_to: state.reportsTo })
   if (error) { flash('err', error.message); return }
@@ -562,6 +562,25 @@ async function takeOwnership() {
 async function submitNewSchool(form) {
   if (state.saving) return
   state.saving = true; render()
+
+  // Hard block: same school name + same address already exists
+  const dupName = form.school_name?.value?.trim()
+  const dupAddress = form.address?.value?.trim()
+  if (dupName && dupAddress) {
+    const { data: dupes, error: dupErr } = await supabase.from('schools')
+      .select('school_profile_id, school_name, address, owner_user_id')
+      .ilike('school_name', dupName)
+      .ilike('address', dupAddress)
+      .limit(1)
+    if (dupErr) { state.saving = false; flash('err', dupErr.message); render(); return }
+    if (dupes && dupes.length) {
+      const d = dupes[0]
+      state.saving = false
+      flash('err', 'Duplicate blocked: "' + d.school_name + '" at this exact address already exists (ID ' + d.school_profile_id + ', owner ' + (userName(d.owner_user_id) || 'unassigned') + '). Open that record instead.')
+      render()
+      return
+    }
+  }
 
   const fields = ['school_name','school_type','address','pin_code','city','state','country','email','phone_no','curriculum_followed','school_fees','school_fees_range','poc1_designation','poc1_email','poc1_name','poc1_number','poc2_designation','poc2_email','poc2_name','poc2_number']
 
