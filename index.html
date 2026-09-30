@@ -80,7 +80,7 @@ const ACTIVITY_TYPE_COLORS = {
   'Other':    { border:'#78716C', dot:'bg-stone-500' },
 }
 const AVATAR_COLORS = ['bg-rose-500','bg-amber-500','bg-emerald-500','bg-cyan-500','bg-indigo-500','bg-fuchsia-500','bg-orange-500','bg-teal-500','bg-violet-500','bg-pink-500','bg-sky-500','bg-lime-600']
-const FEES_RANGES = ['<45000','45000-50000','50000-55000','55000-60000','60000-65000','65000-70000','70000-75000','75000-80000','80000-85000','90000-95000','95000-100000','100000-125000','125000-150000','150000-175000','175000-200000','200000+']
+const FEES_RANGES = ['<45000','45000-50000','50000-55000','55000-60000','60000-65000','65000-70000','70000-75000','75000-80000','80000-85000','85000-90000','90000-95000','95000-100000','100000-125000','125000-150000','150000-175000','175000-200000','200000+']
 const CURRICULUM_LIST = ['CBSE','ICSE','IGCSE','State Board','IB','CISCE','American','British/ Cambridge','Canadian','Arabic','French','Indian','MOE']
 
 const state = {
@@ -534,6 +534,32 @@ async function submitActivity(form) {
   render()
 }
 
+// Returns true if OK to save. Hard-blocks exact dupes, confirms on possible dupes.
+// Resets state.saving itself when returning false.
+async function checkSchoolDupes({ name, address, city, state: st, excludeId }) {
+  if (!name) return true
+  const { data: dupes, error } = await supabase.rpc('find_school_dupes', {
+    p_name: name, p_address: address || null, p_city: city || null,
+    p_state: st || null, p_exclude_id: excludeId ? String(excludeId) : null
+  })
+  if (error) { state.saving = false; flash('err', error.message); render(); return false }
+  const exact = (dupes || []).find(d => d.match_type === 'exact')
+  if (exact) {
+    state.saving = false
+    flash('err', 'Duplicate blocked: "' + exact.school_name + '" at this address already exists (ID ' + exact.school_profile_id + ', owner ' + (userName(exact.owner_user_id) || 'unassigned') + '). Open that record instead.')
+    render(); return false
+  }
+  const others = (dupes || []).filter(d => d.match_type !== 'exact')
+  if (others.length) {
+    const list = others.map(d => '• ' + d.school_name + ' (ID ' + d.school_profile_id + ') – ' +
+      (d.match_type === 'same_address' ? 'SAME ADDRESS' : 'similar name') + ' – ' + (d.address || 'no address')).join('\n')
+    if (!confirm('Possible duplicate already in CRM:\n\n' + list + '\n\nSave anyway?')) {
+      state.saving = false; render(); return false
+    }
+  }
+  return true
+}
+
 async function saveSchoolEdits(form) {
   if (state.saving) return
   state.saving = true; render()
@@ -541,27 +567,19 @@ async function saveSchoolEdits(form) {
   const patch = {}
   fields.forEach(f => { const v = form[f]?.value?.trim(); patch[f] = v === '' ? null : v })
 
-  // Hard block: same school name + same address already exists on a DIFFERENT record
-  if (patch.school_name && patch.address) {
-    const { data: dupes, error: dupErr } = await supabase.from('schools')
-      .select('school_profile_id, school_name, address, owner_user_id')
-      .ilike('school_name', patch.school_name)
-      .ilike('address', patch.address)
-      .neq('school_profile_id', state.currentSchool.school_profile_id)
-      .limit(1)
-    if (dupErr) { state.saving = false; flash('err', dupErr.message); render(); return }
-    if (dupes && dupes.length) {
-      const d = dupes[0]
-      state.saving = false
-      flash('err', 'Duplicate blocked: "' + d.school_name + '" at this exact address already exists (ID ' + d.school_profile_id + ', owner ' + (userName(d.owner_user_id) || 'unassigned') + ').')
-      render()
-      return
-    }
-  }
+  // Duplicate check against OTHER records
+  const dupOk = await checkSchoolDupes({
+    name: patch.school_name, address: patch.address, city: patch.city, state: patch.state,
+    excludeId: state.currentSchool.school_profile_id
+  })
+  if (!dupOk) return
 
   const { error } = await supabase.from('schools').update(patch).eq('school_profile_id', state.currentSchool.school_profile_id)
   state.saving = false
-  if (error) { flash('err', error.message); render(); return }
+  if (error) {
+    flash('err', error.message.includes('schools_name_addr_uniq') ? 'Duplicate blocked: this school at this address already exists.' : error.message)
+    render(); return
+  }
   state.editingSchool = false
   await loadSchool(state.currentSchool.school_profile_id)
   flash('ok', 'School updated'); render()
@@ -582,24 +600,14 @@ async function submitNewSchool(form) {
   if (state.saving) return
   state.saving = true; render()
 
-  // Hard block: same school name + same address already exists
-  const dupName = form.school_name?.value?.trim()
-  const dupAddress = form.address?.value?.trim()
-  if (dupName && dupAddress) {
-    const { data: dupes, error: dupErr } = await supabase.from('schools')
-      .select('school_profile_id, school_name, address, owner_user_id')
-      .ilike('school_name', dupName)
-      .ilike('address', dupAddress)
-      .limit(1)
-    if (dupErr) { state.saving = false; flash('err', dupErr.message); render(); return }
-    if (dupes && dupes.length) {
-      const d = dupes[0]
-      state.saving = false
-      flash('err', 'Duplicate blocked: "' + d.school_name + '" at this exact address already exists (ID ' + d.school_profile_id + ', owner ' + (userName(d.owner_user_id) || 'unassigned') + '). Open that record instead.')
-      render()
-      return
-    }
-  }
+  // Duplicate check (case/punctuation-insensitive, via find_school_dupes RPC)
+  const dupOk = await checkSchoolDupes({
+    name: form.school_name?.value?.trim(),
+    address: form.address?.value?.trim(),
+    city: form.city?.value?.trim(),
+    state: form.state?.value?.trim()
+  })
+  if (!dupOk) return
 
   const fields = ['school_name','school_type','address','pin_code','city','state','country','email','phone_no','curriculum_followed','school_fees','school_fees_range','poc1_designation','poc1_email','poc1_name','poc1_number','poc2_designation','poc2_email','poc2_name','poc2_number']
 
@@ -624,7 +632,13 @@ async function submitNewSchool(form) {
       window.location.hash = '#/schools/' + encodeURIComponent(newId)
       return
     }
-    // Only retry on duplicate key errors
+    // Name+address unique index hit = real duplicate, don't retry
+    if (error.message.includes('schools_name_addr_uniq')) {
+      state.saving = false
+      flash('err', 'Duplicate blocked: this school at this address already exists.')
+      render(); return
+    }
+    // Only retry on duplicate key errors (ID collision)
     if (!error.message.includes('duplicate key')) {
       lastError = error; break
     }
