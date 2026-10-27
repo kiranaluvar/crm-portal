@@ -48,12 +48,20 @@ window.supabase = supabase
 
 const STAGE_GROUPS = ['Prospect', 'Active Pipeline', 'Confirmed', 'Exhausted']
 const STAGE_SUBS = {
-  'Prospect':        ['New Lead','CNC','CD','CBL','NA','Wrong Number','Future Prospect','Not Interested','Backed Out'],
+  'Prospect':        ['New Lead','Work in Progress','CNC','CD','CBL','NA','Wrong Number','Future Prospect','Not Interested','Backed Out'],
   'Active Pipeline': ['Work in Progress','CD','CBL','NA','Future Prospect','Backed Out','Privacy Concern'],
   'Confirmed':       ['Follow Up CD','Follow Up CBL','Follow Up CBC','Follow Up NA','Follow Up Backed Out','Confirm'],
   'Exhausted':       ['Attempt Exhausted']
 }
 const NO_FOLLOWUP_SUBS  = ['Not Interested','Backed Out','Attempt Exhausted']
+// Follow-up date rule for a target group/sub-stage: 'none' (hidden), 'optional', or 'required'.
+// Confirm sub-stage never asks for a follow-up date; other Confirmed sub-stages make it optional.
+function followupRule(group, sub, notEligible) {
+  if (notEligible || NO_FOLLOWUP_SUBS.includes(sub) || group === 'Exhausted') return 'none'
+  if (sub === 'Confirm') return 'none'
+  if (group === 'Confirmed') return 'optional'
+  return 'required'
+}
 const TERMINAL_SUBS     = ['Not Interested','Backed Out','Attempt Exhausted','Confirm']
 const NOT_INTERESTED_REASONS = ['Exam','Vacation','Privacy Concern','Onboarded Too Many Times','Others']
 const EXAM_TYPES    = ['Unit Test','Term Exam','Other Test']
@@ -86,7 +94,7 @@ const CURRICULUM_LIST = ['CBSE','ICSE','IGCSE','State Board','IB','CISCE','Ameri
 const state = {
   session: null, profile: null, view: 'loading',
   schools: [], schoolsTotal: 0, schoolsPage: 1,
-  filters: { search:'', stageGroups:[], stageSubs:[], ownerIds:[], mineOnly:false, countries:[], states_:[], cities_:[], feesRanges:[], notEligible:[], createdFrom:'', createdTo:'' },
+  filters: { search:'', stageGroups:[], stageSubs:[], ownerIds:[], mineOnly:false, countries:[], states_:[], cities_:[], feesRanges:[], curriculums:[], notEligible:[], createdFrom:'', createdTo:'' },
   openFilter: null,
   filterSearch: {},
   filterOptions: { cities: [], states: [], countries: [] },
@@ -191,6 +199,16 @@ function applyCommonFilters(q, f) {
     if (ranges.includes('200000+') && ranges.length === 1) q = q.gte('school_fees', '200000')
     else if (ranges.includes('200000+')) q = q.or('school_fees_range.in.(' + ranges.filter(r => r !== '200000+').join(',') + '),school_fees.gte.200000')
     else q = q.in('school_fees_range', ranges)
+  }
+  if (f.curriculums && f.curriculums.length) {
+    const named = f.curriculums.filter(c => c !== '__blank__')
+    if (f.curriculums.includes('__blank__')) {
+      const parts = ['curriculum_followed.is.null', 'curriculum_followed.eq.']
+      if (named.length) parts.push('curriculum_followed.in.(' + named.map(c => '"' + c.replace(/"/g, '') + '"').join(',') + ')')
+      q = q.or(parts.join(','))
+    } else {
+      q = q.in('curriculum_followed', named)
+    }
   }
   if (f.notEligible && f.notEligible.length === 1) q = q.eq('not_eligible', f.notEligible[0] === 'yes')
   if (f.createdFrom) q = q.gte('created_at', f.createdFrom)
@@ -454,8 +472,8 @@ async function submitActivity(form) {
     const latest = dates.reduce((a, b) => a.webinar_date > b.webinar_date ? a : b)
     return latest.webinar_date < todayYMD()
   })()
-  const isConfirmedStage = effectiveSub === 'Confirm' || (s.stage_sub === 'Confirm' && !newSub)
-  const needFollowup = !noFollowupSub && !s.not_eligible && !webinarPassed && !isConfirmedStage
+  const fuRule = webinarPassed ? 'none' : followupRule(effectiveGroup, effectiveSub, s.not_eligible)
+  const needFollowup = fuRule === 'required'
   if (needFollowup && !scheduledFor) {
     flash('err', 'Set the next follow-up date, or move to a terminal stage (Not Interested, Backed Out, Attempt Exhausted).'); return
   }
@@ -491,7 +509,7 @@ async function submitActivity(form) {
     .not('scheduled_for', 'is', null)
 
   // 3. Create next follow-up task if needed
-  if (scheduledFor && needFollowup) {
+  if (scheduledFor && fuRule !== 'none') {
     await supabase.from('activities').insert({
       school_profile_id: s.school_profile_id,
       user_id: state.session.user.id,
@@ -529,7 +547,7 @@ async function submitActivity(form) {
     loadMyOverdueCount(),
   ])
   state.saving = false
-  flash('ok', noFollowupSub ? 'Activity logged' : 'Activity logged · next follow-up scheduled')
+  flash('ok', (fuRule === 'none' || !scheduledFor) ? 'Activity logged' : 'Activity logged · next follow-up scheduled')
   if (newSub === 'Confirm') celebrate()
   render()
 }
@@ -801,9 +819,9 @@ function renderSchoolsList() {
     }).join('')
 
   const selectedCount = state.selectedSchoolIds.size
-  const filtersActive = state.filters.search || state.filters.stageGroups.length || state.filters.stageSubs.length || state.filters.ownerIds.length || state.filters.mineOnly || state.filters.countries.length || state.filters.states_.length || state.filters.cities_.length || state.filters.feesRanges.length || state.filters.notEligible.length || state.filters.createdFrom || state.filters.createdTo
+  const filtersActive = state.filters.search || state.filters.stageGroups.length || state.filters.stageSubs.length || state.filters.ownerIds.length || state.filters.mineOnly || state.filters.countries.length || state.filters.states_.length || state.filters.cities_.length || state.filters.feesRanges.length || (state.filters.curriculums || []).length || state.filters.notEligible.length || state.filters.createdFrom || state.filters.createdTo
   const f = state.filters
-  return '<div class="mb-5 flex items-end justify-between"><div><h1 class="text-xl font-semibold tracking-tight text-stone-900">Schools</h1><p class="text-sm text-stone-500 mt-0.5">' + state.schoolsTotal.toLocaleString() + ' ' + (f.mineOnly ? 'assigned to you' : 'total') + '. Click a row to open.</p></div>' + (isAdmin() ? '<button data-action="export-csv"' + (state.exporting ? ' disabled' : '') + ' class="text-sm border border-stone-300 hover:border-stone-400 hover:bg-stone-50 disabled:opacity-50 px-3 py-1.5 rounded-md text-stone-700 transition">' + (state.exporting ? 'Exporting…' : '↓ Export CSV') + '</button>' : '') + '</div><div class="bg-white border border-stone-200 rounded-lg overflow-hidden"><div class="px-4 py-3 border-b border-stone-200 flex flex-wrap gap-2 items-center"><input type="text" placeholder="Search by name, city, state…" value="' + esc(f.search) + '" class="flex-1 min-w-[200px] text-sm px-3 py-1.5 border border-stone-200 rounded-md focus-ring focus:border-indigo-300" data-action="filter-search-input">' + multiSelectDropdown('stageGroups', 'All groups', STAGE_GROUPS.map(g => ({ value: g, label: g })), f.stageGroups, {}) + multiSelectDropdown('stageSubs', 'All stages', (f.stageGroups.length ? [...new Set(f.stageGroups.flatMap(g => STAGE_SUBS[g] || []))] : STAGES).map(s => ({ value: s, label: s })), f.stageSubs, { searchable: true }) + '<div class="' + (f.mineOnly ? 'opacity-40 pointer-events-none' : '') + '">' + multiSelectDropdown('ownerIds', 'All agents', [{ value: 'unassigned', label: 'Unassigned' }].concat(state.users.map(u => ({ value: u.user_id, label: u.full_name || u.email }))), f.ownerIds, { searchable: true }) + '</div>' + multiSelectDropdown('countries', 'All countries', state.filterOptions.countries.map(c => ({ value: c, label: c })), f.countries, { searchable: true }) + multiSelectDropdown('states_', 'All states', state.filterOptions.states.map(s => ({ value: s, label: s })), f.states_ || [], { searchable: true }) + '' + multiSelectDropdown('cities_', 'All cities', state.filterOptions.cities.map(c => ({ value: c, label: c })), f.cities_ || [], { searchable: true }) + '' + multiSelectDropdown('feesRanges', 'All fee ranges', FEES_RANGES.map(r => ({ value: r, label: r })), f.feesRanges, {}) + multiSelectDropdown('notEligible', 'All schools', [{ value: 'yes', label: 'Not Eligible' }, { value: 'no', label: 'Eligible' }], f.notEligible, {}) + '<label class="text-xs text-stone-500">Created</label><input type="date" value="' + esc(f.createdFrom) + '" class="text-sm px-2 py-1.5 border border-stone-200 rounded-md focus-ring" data-action="filter-createdfrom-change"><span class="text-xs text-stone-400">→</span><input type="date" value="' + esc(f.createdTo) + '" class="text-sm px-2 py-1.5 border border-stone-200 rounded-md focus-ring" data-action="filter-createdto-change"><button data-action="toggle-mine" class="text-sm px-3 py-1.5 rounded-md border transition ' + (f.mineOnly ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50') + '">Mine only</button>' + (filtersActive ? '<button data-action="clear-filters" class="text-xs text-stone-500 hover:text-stone-900 px-2">Clear</button>' : '') + '</div><div class="overflow-x-auto"><table class="w-full"><thead class="bg-stone-50 border-b border-stone-200"><tr class="text-left text-xs font-medium text-stone-500 uppercase tracking-wider"><th class="py-2 px-4 w-10"><input type="checkbox" id="cb-all" class="row-checkbox sr-only" data-action="toggle-select-all"' + (allSelected ? ' checked' : '') + '><label for="cb-all" class="cursor-pointer block"><span class="check-box inline-block w-4 h-4 rounded border ' + (someSelected ? 'bg-indigo-100 border-indigo-300' : 'border-stone-300') + ' hover:border-indigo-400 transition align-middle"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M5 10l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></label></th><th class="py-2.5 px-3">ID</th><th class="py-2.5 px-4">School</th><th class="py-2.5 px-4">Stage</th><th class="py-2.5 px-4">Owner</th><th class="py-2.5 px-4">Last activity</th><th class="py-2.5 px-4"></th></tr></thead><tbody>' + rows + '</tbody></table></div>' + (state.schoolsTotal > PAGE_SIZE ? '<div class="px-4 py-3 border-t border-stone-200 flex items-center justify-between text-sm text-stone-500"><div>' + start.toLocaleString() + '–' + end.toLocaleString() + ' of ' + state.schoolsTotal.toLocaleString() + '</div><div class="flex items-center gap-2"><button data-action="page-prev"' + (page === 1 ? ' disabled' : '') + ' class="px-2.5 py-1 border border-stone-200 rounded hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed">‹</button><span>Page ' + page + ' of ' + totalPages.toLocaleString() + '</span><button data-action="page-next"' + (page >= totalPages ? ' disabled' : '') + ' class="px-2.5 py-1 border border-stone-200 rounded hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed">›</button></div></div>' : '') + '</div>' + (selectedCount > 0 ? renderBulkBar(selectedCount) : '')
+  return '<div class="mb-5 flex items-end justify-between"><div><h1 class="text-xl font-semibold tracking-tight text-stone-900">Schools</h1><p class="text-sm text-stone-500 mt-0.5">' + state.schoolsTotal.toLocaleString() + ' ' + (f.mineOnly ? 'assigned to you' : 'total') + '. Click a row to open.</p></div>' + (isAdmin() ? '<button data-action="export-csv"' + (state.exporting ? ' disabled' : '') + ' class="text-sm border border-stone-300 hover:border-stone-400 hover:bg-stone-50 disabled:opacity-50 px-3 py-1.5 rounded-md text-stone-700 transition">' + (state.exporting ? 'Exporting…' : '↓ Export CSV') + '</button>' : '') + '</div><div class="bg-white border border-stone-200 rounded-lg overflow-hidden"><div class="px-4 py-3 border-b border-stone-200 flex flex-wrap gap-2 items-center"><input type="text" placeholder="Search by name, city, state…" value="' + esc(f.search) + '" class="flex-1 min-w-[200px] text-sm px-3 py-1.5 border border-stone-200 rounded-md focus-ring focus:border-indigo-300" data-action="filter-search-input">' + multiSelectDropdown('stageGroups', 'All groups', STAGE_GROUPS.map(g => ({ value: g, label: g })), f.stageGroups, {}) + multiSelectDropdown('stageSubs', 'All stages', (f.stageGroups.length ? [...new Set(f.stageGroups.flatMap(g => STAGE_SUBS[g] || []))] : STAGES).map(s => ({ value: s, label: s })), f.stageSubs, { searchable: true }) + '<div class="' + (f.mineOnly ? 'opacity-40 pointer-events-none' : '') + '">' + multiSelectDropdown('ownerIds', 'All agents', [{ value: 'unassigned', label: 'Unassigned' }].concat(state.users.map(u => ({ value: u.user_id, label: u.full_name || u.email }))), f.ownerIds, { searchable: true }) + '</div>' + multiSelectDropdown('countries', 'All countries', state.filterOptions.countries.map(c => ({ value: c, label: c })), f.countries, { searchable: true }) + multiSelectDropdown('states_', 'All states', state.filterOptions.states.map(s => ({ value: s, label: s })), f.states_ || [], { searchable: true }) + '' + multiSelectDropdown('cities_', 'All cities', state.filterOptions.cities.map(c => ({ value: c, label: c })), f.cities_ || [], { searchable: true }) + '' + multiSelectDropdown('feesRanges', 'All fee ranges', FEES_RANGES.map(r => ({ value: r, label: r })), f.feesRanges, {}) + multiSelectDropdown('curriculums', 'All curriculums', [...new Set(CURRICULUM_LIST.concat(state.filterOptions.curriculums || []))].filter(Boolean).map(c => ({ value: c, label: c })).concat([{ value: '__blank__', label: '(Not set)' }]), f.curriculums || [], { searchable: true }) + multiSelectDropdown('notEligible', 'All schools', [{ value: 'yes', label: 'Not Eligible' }, { value: 'no', label: 'Eligible' }], f.notEligible, {}) + '<label class="text-xs text-stone-500">Created</label><input type="date" value="' + esc(f.createdFrom) + '" class="text-sm px-2 py-1.5 border border-stone-200 rounded-md focus-ring" data-action="filter-createdfrom-change"><span class="text-xs text-stone-400">→</span><input type="date" value="' + esc(f.createdTo) + '" class="text-sm px-2 py-1.5 border border-stone-200 rounded-md focus-ring" data-action="filter-createdto-change"><button data-action="toggle-mine" class="text-sm px-3 py-1.5 rounded-md border transition ' + (f.mineOnly ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50') + '">Mine only</button>' + (filtersActive ? '<button data-action="clear-filters" class="text-xs text-stone-500 hover:text-stone-900 px-2">Clear</button>' : '') + '</div><div class="overflow-x-auto"><table class="w-full"><thead class="bg-stone-50 border-b border-stone-200"><tr class="text-left text-xs font-medium text-stone-500 uppercase tracking-wider"><th class="py-2 px-4 w-10"><input type="checkbox" id="cb-all" class="row-checkbox sr-only" data-action="toggle-select-all"' + (allSelected ? ' checked' : '') + '><label for="cb-all" class="cursor-pointer block"><span class="check-box inline-block w-4 h-4 rounded border ' + (someSelected ? 'bg-indigo-100 border-indigo-300' : 'border-stone-300') + ' hover:border-indigo-400 transition align-middle"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M5 10l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></label></th><th class="py-2.5 px-3">ID</th><th class="py-2.5 px-4">School</th><th class="py-2.5 px-4">Stage</th><th class="py-2.5 px-4">Owner</th><th class="py-2.5 px-4">Last activity</th><th class="py-2.5 px-4"></th></tr></thead><tbody>' + rows + '</tbody></table></div>' + (state.schoolsTotal > PAGE_SIZE ? '<div class="px-4 py-3 border-t border-stone-200 flex items-center justify-between text-sm text-stone-500"><div>' + start.toLocaleString() + '–' + end.toLocaleString() + ' of ' + state.schoolsTotal.toLocaleString() + '</div><div class="flex items-center gap-2"><button data-action="page-prev"' + (page === 1 ? ' disabled' : '') + ' class="px-2.5 py-1 border border-stone-200 rounded hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed">‹</button><span>Page ' + page + ' of ' + totalPages.toLocaleString() + '</span><button data-action="page-next"' + (page >= totalPages ? ' disabled' : '') + ' class="px-2.5 py-1 border border-stone-200 rounded hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed">›</button></div></div>' : '') + '</div>' + (selectedCount > 0 ? renderBulkBar(selectedCount) : '')
 }
 
 function renderBulkBar(count) {
@@ -870,15 +888,15 @@ function renderActivityForm(s) {
     const latest = dates.reduce((a, b) => a.webinar_date > b.webinar_date ? a : b)
     return latest.webinar_date < todayYMD()
   })()
-  const isConfirmedStage = s.stage_sub === 'Confirm'
-  const needFollowup = !isTerminalSub && !isNotEligible && !webinarPassed && !isConfirmedStage
+  const fuRuleNow = webinarPassed ? 'none' : followupRule(s.stage_group, s.stage_sub, isNotEligible)
+  const needFollowup = fuRuleNow === 'required'
 
   const groupOpts = STAGE_GROUPS.map(g => '<option value="' + esc(g) + '"' + (g === s.stage_group ? ' selected' : '') + '>' + esc(g) + '</option>').join('')
   const subOpts = (STAGE_SUBS[s.stage_group] || []).map(st => '<option value="' + esc(st) + '"' + (st === s.stage_sub ? ' selected' : '') + '>' + esc(st) + '</option>').join('')
 
-  const hint = isConfirmedStage
-    ? '<div class="text-xs text-stone-500 italic">Confirmed — follow-up date optional until webinar date passes.</div>'
-    : !needFollowup
+  const hint = fuRuleNow === 'optional'
+    ? '<div class="text-xs text-stone-500 italic">Confirmed — follow-up date optional.</div>'
+    : fuRuleNow === 'none'
     ? '<div class="text-xs text-stone-500 italic">No follow-up task required for this stage.</div>'
     : '<div class="text-xs text-stone-500 italic">Follow-up date required — or move to a terminal sub-stage.</div>'
 
@@ -907,8 +925,8 @@ function renderActivityForm(s) {
     // Webinar date/time fields (shown when sub = Confirm)
     '<div id="webinar-date-row" style="display:none"><label class="block text-xs font-medium text-stone-600 mb-1">Webinar date <span class="text-rose-500">*</span></label>' +
       '<div class="grid grid-cols-2 gap-2"><input type="date" name="webinar_date" class="text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring"><input type="time" name="webinar_time" class="text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring"></div></div>' +
-    '<div id="followup-date-row"' + (!needFollowup && !isConfirmedStage ? ' style="display:none"' : '') + '><label class="block text-xs font-medium text-stone-600 mb-1">Next follow-up date' + (needFollowup ? ' <span class="text-rose-500">*</span>' : ' <span class="text-stone-400 font-normal">(optional)</span>') + '</label><input type="date" name="scheduled_for" class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring" min="' + todayYMD() + '"></div>' +
-    hint +
+    '<div id="followup-date-row"' + (fuRuleNow === 'none' ? ' style="display:none"' : '') + '><label class="block text-xs font-medium text-stone-600 mb-1">Next follow-up date <span id="followup-date-tag">' + (needFollowup ? '<span class="text-rose-500">*</span>' : '<span class="text-stone-400 font-normal">(optional)</span>') + '</span></label><input type="date" name="scheduled_for" class="w-full text-sm px-2.5 py-1.5 border border-stone-200 rounded-md focus-ring" min="' + todayYMD() + '"></div>' +
+    '<div id="followup-hint">' + hint + '</div>' +
     '<button type="submit"' + (state.saving ? ' disabled' : '') + ' class="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white text-sm font-medium py-2 rounded-md transition">' + (state.saving ? 'Saving…' : 'Log activity') + '</button>' +
     '</form></section>'
 }
@@ -1466,9 +1484,16 @@ function toggleActivityFormFields() {
   const group = groupSel.value || (state.currentSchool?.stage_group || '')
   const sub   = subSel.value   || (state.currentSchool?.stage_sub   || '')
 
-  const noFollowup = NO_FOLLOWUP_SUBS.includes(sub) || group === 'Exhausted' || (state.currentSchool?.not_eligible)
+  const rule = followupRule(group, sub, state.currentSchool?.not_eligible)
   const fu = document.getElementById('followup-date-row')
-  if (fu) fu.style.display = noFollowup ? 'none' : ''
+  if (fu) {
+    fu.style.display = rule === 'none' ? 'none' : ''
+    if (rule === 'none') { const inp = fu.querySelector('input[name="scheduled_for"]'); if (inp) inp.value = '' }
+  }
+  const tag = document.getElementById('followup-date-tag')
+  if (tag) tag.innerHTML = rule === 'required' ? '<span class="text-rose-500">*</span>' : '<span class="text-stone-400 font-normal">(optional)</span>'
+  const hintEl = document.getElementById('followup-hint')
+  if (hintEl) hintEl.innerHTML = '<div class="text-xs text-stone-500 italic">' + (rule === 'required' ? 'Follow-up date required — or move to a terminal sub-stage.' : rule === 'optional' ? 'Confirmed — follow-up date optional.' : 'No follow-up date needed for this stage.') + '</div>'
 
   const wd = document.getElementById('webinar-date-row')
   if (wd) wd.style.display = sub === 'Confirm' ? '' : 'none'
@@ -1506,7 +1531,7 @@ function attachHandlers() {
     if (action === 'login') { e.preventDefault(); login(); return }
     if (action === 'logout') { e.preventDefault(); logout(); return }
     if (action === 'open-school') { window.location.hash = '#/schools/' + encodeURIComponent(id); return }
-    if (action === 'clear-filters') { state.filters = { search:'', stageGroups:[], stageSubs:[], ownerIds:[], mineOnly:false, countries:[], states_:[], cities_:[], feesRanges:[], notEligible:[], createdFrom:'', createdTo:'' }; state.filterSearch = {}; state.openFilter = null; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render); return }
+    if (action === 'clear-filters') { state.filters = { search:'', stageGroups:[], stageSubs:[], ownerIds:[], mineOnly:false, countries:[], states_:[], cities_:[], feesRanges:[], curriculums:[], notEligible:[], createdFrom:'', createdTo:'' }; state.filterSearch = {}; state.openFilter = null; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render); return }
     if (action === 'toggle-mine') { state.filters.mineOnly = !state.filters.mineOnly; if (state.filters.mineOnly) state.filters.ownerIds = []; state.schoolsPage = 1; state.selectedSchoolIds.clear(); loadSchools().then(render); return }
     if (action === 'page-prev') { state.schoolsPage = Math.max(1, state.schoolsPage - 1); state.selectedSchoolIds.clear(); loadSchools().then(render); return }
     if (action === 'page-next') { state.schoolsPage += 1; state.selectedSchoolIds.clear(); loadSchools().then(render); return }
