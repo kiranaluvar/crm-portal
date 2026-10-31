@@ -173,39 +173,50 @@ function isAdmin() { return state.profile?.role === 'admin' }
 function canEditSchool(s) { return isAdmin() || (s && s.owner_user_id === state.session?.user?.id) }
 function flash(kind, msg) { state.flash = { kind, msg }; render(); setTimeout(() => { state.flash = null; render() }, 3500) }
 
-function applyOwnerFilter(q, f) {
-  if (f.mineOnly) return q.eq('owner_user_id', state.session.user.id)
-  if (f.ownerIds && f.ownerIds.length) {
-    const hasUnassigned = f.ownerIds.includes('unassigned')
-    const realIds = f.ownerIds.filter(id => id !== 'unassigned')
-    if (hasUnassigned && realIds.length) return q.or('owner_user_id.is.null,owner_user_id.in.(' + realIds.join(',') + ')')
-    if (hasUnassigned) return q.is('owner_user_id', null)
-    if (realIds.length) return q.in('owner_user_id', realIds)
-  }
-  return q
+// ---- Filter helpers ----
+// Quote a value for a PostgREST or()/in() list (handles spaces, commas, brackets, quotes)
+function pgq(v) { return '"' + String(v).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"' }
+// Case-insensitive exact match: escape LIKE wildcards so "India" matches "INDIA"/"india" only
+function ciEq(col, v) {
+  const likeSafe = String(v).trim().replace(/\\/g, '\\\\').replace(/[%_]/g, '\\$&')
+  return col + '.ilike.' + pgq(likeSafe)
 }
+const NE_ONLY = '__ne__'        // stage filter option: show Not Eligible schools
+const NE_HIDE = '__hide_ne__'   // stage filter option: hide Not Eligible schools
+
 function applyCommonFilters(q, f) {
+  // OR-groups are collected and sent as one combined condition, so several of them can be active together
+  const groups = []
   if (f.search) {
-    const s = f.search.replace(/[%_]/g,'')
-    q = q.or('school_name.ilike.%' + s + '%,city.ilike.%' + s + '%,state.ilike.%' + s + '%')
+    const s = '%' + f.search.replace(/[%_\\]/g, '') + '%'
+    groups.push('school_name.ilike.' + pgq(s) + ',city.ilike.' + pgq(s) + ',state.ilike.' + pgq(s))
   }
   if (f.stageGroups && f.stageGroups.length) q = q.in('stage_group', f.stageGroups)
-  if (f.stageSubs && f.stageSubs.length) q = q.in('stage_sub', f.stageSubs)
-  if (f.countries && f.countries.length) q = q.in('country', f.countries)
-  if (f.states_ && f.states_.length) q = q.in('state', f.states_)
-  if (f.cities_ && f.cities_.length) q = q.in('city', f.cities_)
+  const subsSel = f.stageSubs || []
+  const subs = subsSel.filter(v => v !== NE_ONLY && v !== NE_HIDE)
+  const wantNE = subsSel.includes(NE_ONLY)
+  if (wantNE && subs.length) groups.push('stage_sub.in.(' + subs.map(pgq).join(',') + '),not_eligible.is.true')
+  else if (wantNE) q = q.eq('not_eligible', true)
+  else if (subs.length) q = q.in('stage_sub', subs)
+  if (subsSel.includes(NE_HIDE)) q = q.not('not_eligible', 'is', true)   // keeps false and blank
+
+  // Country / state / city: case-insensitive, so "India" also matches "INDIA"
+  if (f.countries && f.countries.length) groups.push(f.countries.map(v => ciEq('country', v)).join(','))
+  if (f.states_ && f.states_.length) groups.push(f.states_.map(v => ciEq('state', v)).join(','))
+  if (f.cities_ && f.cities_.length) groups.push(f.cities_.map(v => ciEq('city', v)).join(','))
+
   if (f.feesRanges && f.feesRanges.length) {
     const ranges = f.feesRanges
     if (ranges.includes('200000+') && ranges.length === 1) q = q.gte('school_fees', '200000')
-    else if (ranges.includes('200000+')) q = q.or('school_fees_range.in.(' + ranges.filter(r => r !== '200000+').join(',') + '),school_fees.gte.200000')
+    else if (ranges.includes('200000+')) groups.push('school_fees_range.in.(' + ranges.filter(r => r !== '200000+').map(pgq).join(',') + '),school_fees.gte.200000')
     else q = q.in('school_fees_range', ranges)
   }
   if (f.curriculums && f.curriculums.length) {
     const named = f.curriculums.filter(c => c !== '__blank__')
     if (f.curriculums.includes('__blank__')) {
-      const parts = ['curriculum_followed.is.null', 'curriculum_followed.eq.']
-      if (named.length) parts.push('curriculum_followed.in.(' + named.map(c => '"' + c.replace(/"/g, '') + '"').join(',') + ')')
-      q = q.or(parts.join(','))
+      const parts = ['curriculum_followed.is.null', 'curriculum_followed.eq.""']
+      if (named.length) parts.push('curriculum_followed.in.(' + named.map(pgq).join(',') + ')')
+      groups.push(parts.join(','))
     } else {
       q = q.in('curriculum_followed', named)
     }
@@ -213,8 +224,58 @@ function applyCommonFilters(q, f) {
   if (f.notEligible && f.notEligible.length === 1) q = q.eq('not_eligible', f.notEligible[0] === 'yes')
   if (f.createdFrom) q = q.gte('created_at', f.createdFrom)
   if (f.createdTo) q = q.lte('created_at', f.createdTo + 'T23:59:59')
-  q = applyOwnerFilter(q, f)
+
+  // Owner
+  if (f.mineOnly) q = q.eq('owner_user_id', state.session.user.id)
+  else if (f.ownerIds && f.ownerIds.length) {
+    const hasUnassigned = f.ownerIds.includes('unassigned')
+    const realIds = f.ownerIds.filter(id => id !== 'unassigned')
+    if (hasUnassigned && realIds.length) groups.push('owner_user_id.is.null,owner_user_id.in.(' + realIds.join(',') + ')')
+    else if (hasUnassigned) q = q.is('owner_user_id', null)
+    else if (realIds.length) q = q.in('owner_user_id', realIds)
+  }
+
+  if (groups.length === 1) q = q.or(groups[0])
+  else if (groups.length > 1) q = q.or('and(' + groups.map(g => 'or(' + g + ')').join(',') + ')')
   return q
+}
+
+// ---- Case-insensitive de-duplication of location values ----
+// Picks one display spelling per value: "India" over "INDIA"/"india"; keeps short codes like "UAE"
+function bestSpelling(a, b) {
+  const score = v => {
+    const hasLo = /\p{Ll}/u.test(v), hasUp = /\p{Lu}/u.test(v)
+    if (hasLo && hasUp) return 3
+    if (hasUp && !hasLo && v.length <= 4) return 3
+    if (hasLo) return 1
+    return 0
+  }
+  return score(b) > score(a) ? b : a
+}
+function dedupeCI(arr) {
+  const m = new Map()
+  for (const raw of arr || []) {
+    if (raw === null || raw === undefined) continue
+    const v = String(raw).trim(); if (!v) continue
+    const k = v.toLowerCase()
+    m.set(k, m.has(k) ? bestSpelling(m.get(k), v) : v)
+  }
+  return [...m.values()].sort((a, b) => a.localeCompare(b))
+}
+function mergeMapCI(obj) {
+  const out = {}
+  for (const [key, vals] of Object.entries(obj || {})) {
+    const k = String(key).trim().toLowerCase()
+    out[k] = dedupeCI((out[k] || []).concat(vals || []))
+  }
+  return out
+}
+// Snap a typed location to the existing spelling (e.g. "INDIA" -> "India") so new data stays consistent
+function canonLoc(kind, v) {
+  if (!v) return v
+  const list = state.filterOptions?.[kind] || []
+  const hit = list.find(x => x.toLowerCase() === String(v).trim().toLowerCase())
+  return hit || String(v).trim()
 }
 
 async function loadProfile() {
@@ -255,11 +316,11 @@ async function loadFilterOptions() {
   const { data, error } = await supabase.rpc('filter_options')
   if (error) { console.error('loadFilterOptions', error); return }
   state.filterOptions = {
-    cities: data?.cities || [],
-    states: data?.states || [],
-    countries: data?.countries || [],
-    states_by_country: data?.states_by_country || {},
-    cities_by_state: data?.cities_by_state || {},
+    cities: dedupeCI(data?.cities),
+    states: dedupeCI(data?.states),
+    countries: dedupeCI(data?.countries),
+    states_by_country: mergeMapCI(data?.states_by_country),
+    cities_by_state: mergeMapCI(data?.cities_by_state),
     school_types: data?.school_types || [],
     curriculums: data?.curriculums || [],
   }
@@ -584,6 +645,7 @@ async function saveSchoolEdits(form) {
   const fields = ['school_name','school_type','address','pin_code','city','state','country','email','phone_no','curriculum_followed','school_fees','school_fees_range','poc1_designation','poc1_email','poc1_name','poc1_number','poc2_designation','poc2_email','poc2_name','poc2_number']
   const patch = {}
   fields.forEach(f => { const v = form[f]?.value?.trim(); patch[f] = v === '' ? null : v })
+  patch.country = canonLoc('countries', patch.country); patch.state = canonLoc('states', patch.state); patch.city = canonLoc('cities', patch.city)
 
   // Duplicate check against OTHER records - only for fields that changed
   const norm = v => (v || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim()
@@ -644,6 +706,9 @@ async function submitNewSchool(form) {
     const newId = String(newIdData)
     const row = { school_profile_id: newId }
     fields.forEach(f => { const v = form[f]?.value?.trim(); if (v) row[f] = v })
+    if (row.country) row.country = canonLoc('countries', row.country)
+    if (row.state) row.state = canonLoc('states', row.state)
+    if (row.city) row.city = canonLoc('cities', row.city)
     row.created_by = state.session.user.id
     row.owner_user_id = state.session.user.id
     const { error } = await supabase.from('schools').insert(row)
@@ -821,7 +886,7 @@ function renderSchoolsList() {
   const selectedCount = state.selectedSchoolIds.size
   const filtersActive = state.filters.search || state.filters.stageGroups.length || state.filters.stageSubs.length || state.filters.ownerIds.length || state.filters.mineOnly || state.filters.countries.length || state.filters.states_.length || state.filters.cities_.length || state.filters.feesRanges.length || (state.filters.curriculums || []).length || state.filters.notEligible.length || state.filters.createdFrom || state.filters.createdTo
   const f = state.filters
-  return '<div class="mb-5 flex items-end justify-between"><div><h1 class="text-xl font-semibold tracking-tight text-stone-900">Schools</h1><p class="text-sm text-stone-500 mt-0.5">' + state.schoolsTotal.toLocaleString() + ' ' + (f.mineOnly ? 'assigned to you' : 'total') + '. Click a row to open.</p></div>' + (isAdmin() ? '<button data-action="export-csv"' + (state.exporting ? ' disabled' : '') + ' class="text-sm border border-stone-300 hover:border-stone-400 hover:bg-stone-50 disabled:opacity-50 px-3 py-1.5 rounded-md text-stone-700 transition">' + (state.exporting ? 'Exporting…' : '↓ Export CSV') + '</button>' : '') + '</div><div class="bg-white border border-stone-200 rounded-lg overflow-hidden"><div class="px-4 py-3 border-b border-stone-200 flex flex-wrap gap-2 items-center"><input type="text" placeholder="Search by name, city, state…" value="' + esc(f.search) + '" class="flex-1 min-w-[200px] text-sm px-3 py-1.5 border border-stone-200 rounded-md focus-ring focus:border-indigo-300" data-action="filter-search-input">' + multiSelectDropdown('stageGroups', 'All groups', STAGE_GROUPS.map(g => ({ value: g, label: g })), f.stageGroups, {}) + multiSelectDropdown('stageSubs', 'All stages', (f.stageGroups.length ? [...new Set(f.stageGroups.flatMap(g => STAGE_SUBS[g] || []))] : STAGES).map(s => ({ value: s, label: s })), f.stageSubs, { searchable: true }) + '<div class="' + (f.mineOnly ? 'opacity-40 pointer-events-none' : '') + '">' + multiSelectDropdown('ownerIds', 'All agents', [{ value: 'unassigned', label: 'Unassigned' }].concat(state.users.map(u => ({ value: u.user_id, label: u.full_name || u.email }))), f.ownerIds, { searchable: true }) + '</div>' + multiSelectDropdown('countries', 'All countries', state.filterOptions.countries.map(c => ({ value: c, label: c })), f.countries, { searchable: true }) + multiSelectDropdown('states_', 'All states', state.filterOptions.states.map(s => ({ value: s, label: s })), f.states_ || [], { searchable: true }) + '' + multiSelectDropdown('cities_', 'All cities', state.filterOptions.cities.map(c => ({ value: c, label: c })), f.cities_ || [], { searchable: true }) + '' + multiSelectDropdown('feesRanges', 'All fee ranges', FEES_RANGES.map(r => ({ value: r, label: r })), f.feesRanges, {}) + multiSelectDropdown('curriculums', 'All curriculums', [...new Set(CURRICULUM_LIST.concat(state.filterOptions.curriculums || []))].filter(Boolean).map(c => ({ value: c, label: c })).concat([{ value: '__blank__', label: '(Not set)' }]), f.curriculums || [], { searchable: true }) + multiSelectDropdown('notEligible', 'All schools', [{ value: 'yes', label: 'Not Eligible' }, { value: 'no', label: 'Eligible' }], f.notEligible, {}) + '<label class="text-xs text-stone-500">Created</label><input type="date" value="' + esc(f.createdFrom) + '" class="text-sm px-2 py-1.5 border border-stone-200 rounded-md focus-ring" data-action="filter-createdfrom-change"><span class="text-xs text-stone-400">→</span><input type="date" value="' + esc(f.createdTo) + '" class="text-sm px-2 py-1.5 border border-stone-200 rounded-md focus-ring" data-action="filter-createdto-change"><button data-action="toggle-mine" class="text-sm px-3 py-1.5 rounded-md border transition ' + (f.mineOnly ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50') + '">Mine only</button>' + (filtersActive ? '<button data-action="clear-filters" class="text-xs text-stone-500 hover:text-stone-900 px-2">Clear</button>' : '') + '</div><div class="overflow-x-auto"><table class="w-full"><thead class="bg-stone-50 border-b border-stone-200"><tr class="text-left text-xs font-medium text-stone-500 uppercase tracking-wider"><th class="py-2 px-4 w-10"><input type="checkbox" id="cb-all" class="row-checkbox sr-only" data-action="toggle-select-all"' + (allSelected ? ' checked' : '') + '><label for="cb-all" class="cursor-pointer block"><span class="check-box inline-block w-4 h-4 rounded border ' + (someSelected ? 'bg-indigo-100 border-indigo-300' : 'border-stone-300') + ' hover:border-indigo-400 transition align-middle"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M5 10l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></label></th><th class="py-2.5 px-3">ID</th><th class="py-2.5 px-4">School</th><th class="py-2.5 px-4">Stage</th><th class="py-2.5 px-4">Owner</th><th class="py-2.5 px-4">Last activity</th><th class="py-2.5 px-4"></th></tr></thead><tbody>' + rows + '</tbody></table></div>' + (state.schoolsTotal > PAGE_SIZE ? '<div class="px-4 py-3 border-t border-stone-200 flex items-center justify-between text-sm text-stone-500"><div>' + start.toLocaleString() + '–' + end.toLocaleString() + ' of ' + state.schoolsTotal.toLocaleString() + '</div><div class="flex items-center gap-2"><button data-action="page-prev"' + (page === 1 ? ' disabled' : '') + ' class="px-2.5 py-1 border border-stone-200 rounded hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed">‹</button><span>Page ' + page + ' of ' + totalPages.toLocaleString() + '</span><button data-action="page-next"' + (page >= totalPages ? ' disabled' : '') + ' class="px-2.5 py-1 border border-stone-200 rounded hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed">›</button></div></div>' : '') + '</div>' + (selectedCount > 0 ? renderBulkBar(selectedCount) : '')
+  return '<div class="mb-5 flex items-end justify-between"><div><h1 class="text-xl font-semibold tracking-tight text-stone-900">Schools</h1><p class="text-sm text-stone-500 mt-0.5">' + state.schoolsTotal.toLocaleString() + ' ' + (f.mineOnly ? 'assigned to you' : 'total') + '. Click a row to open.</p></div>' + (isAdmin() ? '<button data-action="export-csv"' + (state.exporting ? ' disabled' : '') + ' class="text-sm border border-stone-300 hover:border-stone-400 hover:bg-stone-50 disabled:opacity-50 px-3 py-1.5 rounded-md text-stone-700 transition">' + (state.exporting ? 'Exporting…' : '↓ Export CSV') + '</button>' : '') + '</div><div class="bg-white border border-stone-200 rounded-lg overflow-hidden"><div class="px-4 py-3 border-b border-stone-200 flex flex-wrap gap-2 items-center"><input type="text" placeholder="Search by name, city, state…" value="' + esc(f.search) + '" class="flex-1 min-w-[200px] text-sm px-3 py-1.5 border border-stone-200 rounded-md focus-ring focus:border-indigo-300" data-action="filter-search-input">' + multiSelectDropdown('stageGroups', 'All groups', STAGE_GROUPS.map(g => ({ value: g, label: g })), f.stageGroups, {}) + multiSelectDropdown('stageSubs', 'All stages', [{ value: NE_ONLY, label: '🚫 Not Eligible' }, { value: NE_HIDE, label: '✕ Hide Not Eligible' }].concat([...new Set(f.stageGroups.length ? f.stageGroups.flatMap(g => STAGE_SUBS[g] || []) : STAGES)].map(s => ({ value: s, label: s }))), f.stageSubs, { searchable: true }) + '<div class="' + (f.mineOnly ? 'opacity-40 pointer-events-none' : '') + '">' + multiSelectDropdown('ownerIds', 'All agents', [{ value: 'unassigned', label: 'Unassigned' }].concat(state.users.map(u => ({ value: u.user_id, label: u.full_name || u.email }))), f.ownerIds, { searchable: true }) + '</div>' + multiSelectDropdown('countries', 'All countries', state.filterOptions.countries.map(c => ({ value: c, label: c })), f.countries, { searchable: true }) + multiSelectDropdown('states_', 'All states', state.filterOptions.states.map(s => ({ value: s, label: s })), f.states_ || [], { searchable: true }) + '' + multiSelectDropdown('cities_', 'All cities', state.filterOptions.cities.map(c => ({ value: c, label: c })), f.cities_ || [], { searchable: true }) + '' + multiSelectDropdown('feesRanges', 'All fee ranges', FEES_RANGES.map(r => ({ value: r, label: r })), f.feesRanges, {}) + multiSelectDropdown('curriculums', 'All curriculums', [...new Set(CURRICULUM_LIST.concat(state.filterOptions.curriculums || []))].filter(Boolean).map(c => ({ value: c, label: c })).concat([{ value: '__blank__', label: '(Not set)' }]), f.curriculums || [], { searchable: true }) + multiSelectDropdown('notEligible', 'Eligibility: all', [{ value: 'yes', label: 'Not Eligible' }, { value: 'no', label: 'Eligible' }], f.notEligible, {}) + '<label class="text-xs text-stone-500">Created</label><input type="date" value="' + esc(f.createdFrom) + '" class="text-sm px-2 py-1.5 border border-stone-200 rounded-md focus-ring" data-action="filter-createdfrom-change"><span class="text-xs text-stone-400">→</span><input type="date" value="' + esc(f.createdTo) + '" class="text-sm px-2 py-1.5 border border-stone-200 rounded-md focus-ring" data-action="filter-createdto-change"><button data-action="toggle-mine" class="text-sm px-3 py-1.5 rounded-md border transition ' + (f.mineOnly ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50') + '">Mine only</button>' + (filtersActive ? '<button data-action="clear-filters" class="text-xs text-stone-500 hover:text-stone-900 px-2">Clear</button>' : '') + '</div><div class="overflow-x-auto"><table class="w-full"><thead class="bg-stone-50 border-b border-stone-200"><tr class="text-left text-xs font-medium text-stone-500 uppercase tracking-wider"><th class="py-2 px-4 w-10"><input type="checkbox" id="cb-all" class="row-checkbox sr-only" data-action="toggle-select-all"' + (allSelected ? ' checked' : '') + '><label for="cb-all" class="cursor-pointer block"><span class="check-box inline-block w-4 h-4 rounded border ' + (someSelected ? 'bg-indigo-100 border-indigo-300' : 'border-stone-300') + ' hover:border-indigo-400 transition align-middle"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M5 10l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></label></th><th class="py-2.5 px-3">ID</th><th class="py-2.5 px-4">School</th><th class="py-2.5 px-4">Stage</th><th class="py-2.5 px-4">Owner</th><th class="py-2.5 px-4">Last activity</th><th class="py-2.5 px-4"></th></tr></thead><tbody>' + rows + '</tbody></table></div>' + (state.schoolsTotal > PAGE_SIZE ? '<div class="px-4 py-3 border-t border-stone-200 flex items-center justify-between text-sm text-stone-500"><div>' + start.toLocaleString() + '–' + end.toLocaleString() + ' of ' + state.schoolsTotal.toLocaleString() + '</div><div class="flex items-center gap-2"><button data-action="page-prev"' + (page === 1 ? ' disabled' : '') + ' class="px-2.5 py-1 border border-stone-200 rounded hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed">‹</button><span>Page ' + page + ' of ' + totalPages.toLocaleString() + '</span><button data-action="page-next"' + (page >= totalPages ? ' disabled' : '') + ' class="px-2.5 py-1 border border-stone-200 rounded hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed">›</button></div></div>' : '') + '</div>' + (selectedCount > 0 ? renderBulkBar(selectedCount) : '')
 }
 
 function renderBulkBar(count) {
@@ -1595,14 +1660,14 @@ function attachHandlers() {
       if (t.tagName === 'INPUT' && t.name === 'country') {
         const dl = document.getElementById('dl-state')
         if (dl) {
-          const arr = state.filterOptions?.states_by_country?.[t.value] || state.filterOptions?.states || []
+          const arr = state.filterOptions?.states_by_country?.[t.value.trim().toLowerCase()] || state.filterOptions?.states || []
           dl.innerHTML = arr.map(s => '<option value="' + esc(s) + '">').join('')
         }
       }
       if (t.tagName === 'INPUT' && t.name === 'state') {
         const dl = document.getElementById('dl-city')
         if (dl) {
-          const arr = state.filterOptions?.cities_by_state?.[t.value] || state.filterOptions?.cities || []
+          const arr = state.filterOptions?.cities_by_state?.[t.value.trim().toLowerCase()] || state.filterOptions?.cities || []
           dl.innerHTML = arr.map(c => '<option value="' + esc(c) + '">').join('')
         }
       }
